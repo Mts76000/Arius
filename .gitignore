@@ -1,0 +1,7 @@
+# BMAD
+.bmad-core/
+web-bundles/
+
+
+# GitHub (souvent inutile dans un repo)
+.github/
