@@ -22,32 +22,32 @@ Mettre en place environnement de dev complet (Express + Expo + MySQL + MongoDB).
 
 ## Tasks Backend
 
-- [ ] Init Node 20 + Express + TS
-- [ ] Install : express, helmet, cors, rate-limit, pino, dotenv, uuid, mysql2
-- [ ] Config tsconfig (ES modules, strict)
-- [ ] Structure : src/index.ts, middleware/, routes/, utils/
-- [ ] Config MySQL (pool mysql2)
-- [ ] Config Mongoose
-- [ ] Endpoint GET /health
-- [ ] Test npm run dev
+- [x] Init Node 20 + Express + TS
+- [x] Install : express, helmet, cors, rate-limit, pino, dotenv, uuid, mysql2
+- [x] Config tsconfig (ES modules, strict)
+- [x] Structure : src/index.ts, middleware/, routes/, utils/
+- [x] Config MySQL (pool mysql2)
+- [x] Config Mongoose
+- [x] Endpoint GET /health
+- [x] Test npm run dev
 
 ## Tasks Frontend
 
-- [ ] Init Expo
-- [ ] Install : zustand, react-query, axios, nativewind
-- [ ] Config Tailwind + NativeWind
-- [ ] Structure : app/, components/, hooks/, services/, store/
-- [ ] Config EXPO_PUBLIC_API_URL
-- [ ] Test build
+- [x] Init Expo
+- [x] Install : zustand, react-query, axios, nativewind
+- [x] Config Tailwind + NativeWind
+- [x] Structure : app/, components/, hooks/, services/, store/
+- [x] Config EXPO_PUBLIC_API_URL
+- [x] Test build
 
 ## Tasks DB
 
-- [ ] MySQL 8 local (installation native ou Homebrew)
-- [ ] MongoDB 6 local (installation native ou Homebrew)
-- [ ] .env avec DATABASE_URL + MONGO_URL
-- [ ] Test connexions
+- [x] MySQL 8 local (installation native ou Homebrew)
+- [x] MongoDB 6 local (installation native ou Homebrew)
+- [x] .env avec DATABASE_URL + MONGO_URL
+- [x] Test connexions
 
 ## Tasks DevOps
 
-- [ ] .gitignore
-- [ ] README.md
+- [x] .gitignore
+- [x] README.md

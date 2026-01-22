@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
-import { env } from '../config/env.js';
+import mongoose from "mongoose";
+import { env } from "../config/env.js";
 
 export async function connectMongo() {
   if (mongoose.connection.readyState === 1) return;

@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "frontend",
+    "scheme": "arius",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -45,7 +45,8 @@
       "reactCompiler": true
     },
     "extra": {
-      "apiUrl": "http://localhost:3000"
+      "apiUrl": "http://localhost:3000",
+      "googleClientId": "136340952391-ruur6kc175ji1bpm1kkuuivrcg25n7ju.apps.googleusercontent.com"
     }
   }
 }

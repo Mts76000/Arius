@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -9,13 +9,13 @@ function required(name: string, fallback?: string) {
 }
 
 export const env = {
-  nodeEnv: process.env.NODE_ENV ?? 'development',
+  nodeEnv: process.env.NODE_ENV ?? "development",
   port: Number(process.env.PORT ?? 3000),
-  mysqlHost: required('MYSQL_HOST', 'localhost'),
+  mysqlHost: required("MYSQL_HOST", "localhost"),
   mysqlPort: Number(process.env.MYSQL_PORT ?? 3306),
-  mysqlUser: required('MYSQL_USER', 'root'),
-  mysqlPassword: process.env.MYSQL_PASSWORD ?? '',
-  mysqlDatabase: required('MYSQL_DATABASE', 'arius'),
-  mongoUrl: required('MONGO_URL', 'mongodb://localhost:27017/arius'),
-  jwtSecret: required('JWT_SECRET', 'change-me-in-prod'),
+  mysqlUser: required("MYSQL_USER", "root"),
+  mysqlPassword: process.env.MYSQL_PASSWORD ?? "",
+  mysqlDatabase: required("MYSQL_DATABASE", "arius"),
+  mongoUrl: required("MONGO_URL", "mongodb://localhost:27017/arius"),
+  jwtSecret: required("JWT_SECRET", "change-me-in-prod"),
 };

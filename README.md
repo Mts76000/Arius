@@ -5,12 +5,14 @@ Application CRM mobile-first pour gérer entreprises, contacts, notes, RDVs et d
 ## Stack Technique
 
 **Backend**
+
 - Node 20 + Express + TypeScript
 - MySQL 8 (utilisateurs, entreprises, contacts, objectifs, CA)
 - MongoDB 6 (notes, RDVs, devis, activités)
 - Authentification JWT (+ Google Sign-In)
 
 **Frontend**
+
 - Expo React Native + React Native Web
 - Zustand (state), TanStack Query (cache), Axios (HTTP)
 - NativeWind/Tailwind CSS
@@ -18,11 +20,13 @@ Application CRM mobile-first pour gérer entreprises, contacts, notes, RDVs et d
 ## Installation
 
 ### Prérequis
+
 - Node 20+
 - MySQL 8 (local ou Homebrew)
 - MongoDB 6 (local ou Homebrew)
 
 ### Backend
+
 ```bash
 cd backend
 npm install
@@ -32,6 +36,7 @@ npm run dev
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
@@ -66,11 +71,13 @@ docs/
 ## Commandes
 
 **Backend**
+
 - `npm run dev` - Dev avec hot reload (tsx)
 - `npm run build` - Build TypeScript
 - `npm start` - Production (node dist/server.js)
 
 **Frontend**
+
 - `npm start` - Dev server
 - `npm run ios` - iOS simulator
 - `npm run android` - Android emulator
