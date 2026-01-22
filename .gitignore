@@ -5,3 +5,16 @@ web-bundles/
 
 # GitHub (souvent inutile dans un repo)
 .github/
+.DS_Store
+ 
+# Node/Build
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+backend/dist/
+
+# Env
+.env
+.env.*
+backend/.env
+frontend/.env
