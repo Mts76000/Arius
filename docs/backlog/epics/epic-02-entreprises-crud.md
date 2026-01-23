@@ -27,24 +27,25 @@ Création, lecture, modification, suppression entreprises (clients/prospects/fou
 
 ## Tasks Backend
 
-- [ ] Créer table entreprises MySQL (id CHAR(36) PRIMARY KEY, utilisateur_id CHAR(36), nom VARCHAR(255), statut ENUM('client','prospect','fournisseur'), adresse TEXT, ville VARCHAR(100), code_postal VARCHAR(20), pays VARCHAR(100), description TEXT, logo_url VARCHAR(500), cree_le DATETIME, modifie_le DATETIME, INDEX idx_user_statut_nom(utilisateur_id, statut, nom))
-- [ ] Requêtes SQL avec mysql2 (SELECT, INSERT, UPDATE, DELETE)
-- [ ] Schéma Zod : CreateEntreprise, UpdateEntreprise
-- [ ] Route GET /v1/entreprises?recherche=&statut=&page=&limite=
-- [ ] Route GET /v1/entreprises/:id
-- [ ] Route POST /v1/entreprises
-- [ ] Route PUT /v1/entreprises/:id
-- [ ] Route DELETE /v1/entreprises/:id
-- [ ] Émettre activité (insert MongoDB activites)
+- [x] Créer table entreprises MySQL (id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36) NOT NULL, nom VARCHAR(255) NOT NULL, statut ENUM('client','prospect','fournisseur') NOT NULL, rue VARCHAR(255), code_postal VARCHAR(10), ville VARCHAR(100), pays VARCHAR(100), description TEXT, logo VARCHAR(500), created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, INDEX idx_user_statut_nom(user_id, statut, nom))
+- [x] Model entreprise (getAll, getById, create, update, delete)
+- [x] Controller entrepriseController (list, get, create, update, delete)
+- [x] Schéma Zod : CreateEntreprise, UpdateEntreprise
+- [x] Route GET /v1/entreprises?recherche=&statut=&page=&limite=
+- [x] Route GET /v1/entreprises/:id
+- [x] Route POST /v1/entreprises
+- [x] Route PUT /v1/entreprises/:id
+- [x] Route DELETE /v1/entreprises/:id
 - [ ] Test Postman
 
 ## Tasks Frontend
 
-- [ ] Store useEntreprisesStore
-- [ ] Service entreprisesService
-- [ ] Liste entreprises (FlatList, pull-refresh, recherche, filtres)
-- [ ] Détail entreprise
-- [ ] Création entreprise (form + Zod)
-- [ ] Modification entreprise
-- [ ] Cache TanStack Query
-- [ ] Loading + erreurs
+- [x] Service entreprisesService
+- [x] Hooks TanStack Query (useEntreprises, useCreateEntreprise, etc.)
+- [x] Liste entreprises (FlatList, pull-refresh, recherche, filtres)
+- [ ] Détail entreprise ([id].tsx)
+- [x] Création entreprise (create.tsx)
+- [ ] Modification entreprise (edit/[id].tsx)
+- [x] Cache TanStack Query
+- [x] Loading + erreurs
+- [x] Navigation (Stack layout)

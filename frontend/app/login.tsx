@@ -30,7 +30,7 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (user) {
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/home");
     }
   }, [user]);
 
@@ -195,10 +195,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: "#e5e7eb",
-    shadowColor: "#1e293b",
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
+    boxShadow: "0 6px 10px rgba(30, 41, 59, 0.12)",
     elevation: 5,
   },
   title: {
@@ -231,10 +228,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     marginTop: 8,
-    shadowColor: "#2563eb",
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    boxShadow: "0 4px 8px rgba(37, 99, 235, 0.25)",
   },
   primaryButtonText: {
     color: "#fff",

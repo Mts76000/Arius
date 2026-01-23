@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { authService, UserProfile } from "../services/auth";
+import { setupAuthInterceptors } from "../services/api";
 import { storage } from "../utils/storage";
 
 interface AuthState {
@@ -95,6 +96,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initializeAuth: async () => {
     set({ isLoading: true });
+    // Initialiser les intercepteurs au premier démarrage
+    setupAuthInterceptors();
     try {
       const savedToken = await storage.getItem(STORAGE_KEY);
       if (savedToken) {

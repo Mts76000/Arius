@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
+import { Colors } from "@/constants/theme";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function HomeScreen() {
     return (
       <View style={styles.centered}>
         {isLoading ? (
-          <ActivityIndicator size="large" color="#2563eb" />
+          <ActivityIndicator size="large" color={Colors.light.tint} />
         ) : (
           <>
             <Text style={styles.infoText}>Non connecté</Text>
@@ -70,52 +71,53 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#f5f7fb",
+    backgroundColor: "#f8fafc", // clair
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f7fb",
     padding: 20,
+    backgroundColor: "#f8fafc",
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
+    fontSize: 26,
+    fontWeight: "800",
     marginBottom: 16,
     color: "#0f172a",
   },
   card: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: "#e5e7eb",
-    shadowColor: "#1e293b",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    borderColor: "#e2e8f0",
   },
   label: {
     fontSize: 12,
     color: "#64748b",
     marginTop: 8,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
   },
   value: {
     fontSize: 16,
     color: "#0f172a",
-    fontWeight: "600",
+    fontWeight: "700",
+    marginTop: 2,
   },
   primaryButton: {
-    backgroundColor: "#2563eb",
-    borderRadius: 10,
+    backgroundColor: "#0ea5e9",
+    borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
+    marginTop: 12,
   },
   primaryButtonText: {
-    color: "#fff",
-    fontWeight: "700",
+    color: "#0b1222",
+    fontWeight: "800",
     fontSize: 16,
+    textAlign: "center",
   },
   infoText: {
     fontSize: 18,
@@ -125,13 +127,13 @@ const styles = StyleSheet.create({
   },
   dangerButton: {
     marginTop: 24,
-    backgroundColor: "#dc2626",
-    borderRadius: 10,
+    backgroundColor: "#f87171",
+    borderRadius: 12,
     paddingVertical: 12,
     alignItems: "center",
   },
   dangerButtonText: {
-    color: "#fff",
+    color: "#ffffff",
     fontWeight: "700",
     fontSize: 16,
   },
