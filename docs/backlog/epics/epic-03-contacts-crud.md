@@ -23,23 +23,22 @@ Gestion des contacts liés aux entreprises.
 
 ## Tasks Backend
 
-- [ ] Créer table contacts MySQL (id CHAR(36) PRIMARY KEY, utilisateur_id CHAR(36), entreprise_id CHAR(36), prenom VARCHAR(100), nom VARCHAR(100), poste VARCHAR(150), email VARCHAR(255), tel_direct VARCHAR(50), tel_mobile VARCHAR(50), contact_principal BOOLEAN, commentaire TEXT, cree_le DATETIME, INDEX idx_user_entreprise(utilisateur_id, entreprise_id, contact_principal))
-- [ ] Requêtes SQL avec mysql2
-- [ ] Schéma Zod : CreateContact, UpdateContact
-- [ ] Route GET /v1/entreprises/:entreprise_id/contacts
-- [ ] Route GET /v1/contacts/:id
-- [ ] Route POST /v1/entreprises/:entreprise_id/contacts
-- [ ] Route PUT /v1/contacts/:id
-- [ ] Route DELETE /v1/contacts/:id
-- [ ] Émettre activité
+- [x] Créer table contacts MySQL (id CHAR(36) PRIMARY KEY, utilisateur_id CHAR(36), entreprise_id CHAR(36), prenom VARCHAR(100), nom VARCHAR(100), poste VARCHAR(150), email VARCHAR(255), tel_direct VARCHAR(50), tel_mobile VARCHAR(50), contact_principal BOOLEAN, commentaire TEXT, cree_le DATETIME, INDEX idx_user_entreprise(utilisateur_id, entreprise_id, contact_principal))
+- [x] Requêtes SQL avec mysql2
+- [x] Schéma Zod : CreateContact, UpdateContact
+- [x] Route GET /v1/entreprises/:entreprise_id/contacts
+- [x] Route GET /v1/contacts/:id
+- [x] Route POST /v1/entreprises/:entreprise_id/contacts
+- [x] Route PUT /v1/contacts/:id
+- [x] Route DELETE /v1/contacts/:id
 - [ ] Test Postman
 
 ## Tasks Frontend
 
-- [ ] Service contactsService
-- [ ] Onglet Contacts dans détail entreprise
-- [ ] Liste contacts (badge Principal)
-- [ ] Création contact (form)
-- [ ] Modification contact
-- [ ] Cache TanStack Query
-- [ ] Boutons action (appeler, email) avec Linking
+- [x] Service contactsService
+- [x] Onglet Contacts dans détail entreprise
+- [x] Liste contacts (badge Principal)
+- [x] Création contact (form)
+- [x] Modification contact
+- [x] Cache TanStack Query
+- [x] Boutons action (appeler, email) avec Linking

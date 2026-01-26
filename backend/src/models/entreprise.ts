@@ -190,9 +190,27 @@ export async function deleteEntreprise(
   const existing = await getEntrepriseById(id, userId);
   if (!existing) return false;
 
-  await pool.execute("DELETE FROM entreprises WHERE id = ? AND user_id = ?", [
-    id,
-    userId,
-  ]);
-  return true;
+  const conn = await pool.getConnection();
+  try {
+    await conn.beginTransaction();
+
+    // Supprimer d'abord les contacts liés pour éviter les contraintes FK
+    await conn.execute(
+      "DELETE FROM contacts WHERE entreprise_id = ? AND user_id = ?",
+      [id, userId],
+    );
+
+    const [result] = await conn.execute(
+      "DELETE FROM entreprises WHERE id = ? AND user_id = ?",
+      [id, userId],
+    );
+
+    await conn.commit();
+    return (result as any).affectedRows > 0;
+  } catch (err) {
+    await conn.rollback();
+    throw err;
+  } finally {
+    conn.release();
+  }
 }
