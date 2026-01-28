@@ -11,6 +11,7 @@ import { pool } from "./db/mysql.js";
 import authRoutes from "./routes/auth.js";
 import entreprisesRoutes from "./routes/entreprises.js";
 import contactsRoutes from "./routes/contacts.js";
+import notesRoutes from "./routes/notes.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -128,6 +129,7 @@ export function createApp() {
   app.use("/v1/auth", authRoutes);
   app.use("/v1/entreprises", entreprisesRoutes);
   app.use("/v1", contactsRoutes);
+  app.use("/v1", notesRoutes);
 
   return app;
 }

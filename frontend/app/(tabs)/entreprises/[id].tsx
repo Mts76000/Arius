@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Alert,
-  Image,
   Linking,
   Platform,
 } from "react-native";
@@ -19,13 +18,22 @@ import {
   useDeleteContact,
 } from "@/hooks/useContacts";
 import { Contact, CreateContactInput } from "@/services/contacts";
+import {
+  useNotes,
+  useCreateNote,
+  useUpdateNote,
+  useDeleteNote,
+  useTemplatesByType,
+} from "@/hooks/useNotes";
+import { Note, CreateNoteInput, NoteType } from "@/services/notes";
 import { ValidationRules, FormErrors, hasErrors } from "@/utils/validation";
-import Constants from "expo-constants";
 import { styles } from "@/styles/entrepriseDetailStyles";
-import { ContactCard } from "@/components/ContactCard";
 import { ContactModal } from "@/components/ContactModal";
-
-const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
+import { NoteModal } from "@/components/NoteModal";
+import { TabNavigation, TabType } from "@/components/entreprise/TabNavigation";
+import { EntrepriseHeader } from "@/components/entreprise/EntrepriseHeader";
+import { InfosTab } from "@/components/entreprise/InfosTab";
+import { NotesTab } from "@/components/entreprise/NotesTab";
 
 export default function EntrepriseDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -34,10 +42,25 @@ export default function EntrepriseDetailScreen() {
   const { data: contacts, isLoading: contactsLoading } = useContacts(
     id as string,
   );
+  const { data: notesData, isLoading: notesLoading } = useNotes(id as string);
   const deleteEntreprise = useDeleteEntreprise();
   const createContact = useCreateContact();
   const updateContact = useUpdateContact();
   const deleteContact = useDeleteContact();
+
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabType>("infos");
+  const [noteTypeFilter, setNoteTypeFilter] = useState<NoteType | "all">("all");
+  const [noteSearchQuery, setNoteSearchQuery] = useState<string>("");
+
+  // Notes
+  const createNoteMutation = useCreateNote();
+  const updateNoteMutation = useUpdateNote();
+  const deleteNoteMutation = useDeleteNote();
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
+  const [selectedNoteType, setSelectedNoteType] = useState<NoteType>("info");
+  const { data: templates = [] } = useTemplatesByType(selectedNoteType);
 
   const [showContactModal, setShowContactModal] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
@@ -244,22 +267,70 @@ export default function EntrepriseDetailScreen() {
     Linking.openURL(`mailto:${email}`);
   };
 
-  const getStatutLabel = (statut: string) => {
-    return statut === "a_reactiver" ? "À réactiver" : statut;
+  // Notes handlers
+  const handleAddNote = () => {
+    setSelectedNote(null);
+    setSelectedNoteType("info");
+    setShowNoteModal(true);
   };
 
-  const getStatutStyle = (statut: string) => {
-    switch (statut) {
-      case "client":
-        return styles.badgeClient;
-      case "prospect":
-        return styles.badgeProspect;
-      case "fournisseur":
-        return styles.badgeFournisseur;
-      case "a_reactiver":
-        return styles.badgeReactiver;
-      default:
-        return styles.badgeClient;
+  const handleEditNote = (note: Note) => {
+    setSelectedNote(note);
+    setSelectedNoteType(note.type);
+    setShowNoteModal(true);
+  };
+
+  const handleDeleteNote = (noteId: string) => {
+    const doDelete = async () => {
+      try {
+        await deleteNoteMutation.mutateAsync({
+          id: noteId,
+          entrepriseId: id as string,
+        });
+      } catch (error) {
+        Alert.alert("Erreur", "Impossible de supprimer la note");
+      }
+    };
+
+    if (Platform.OS === "web") {
+      const ok = window.confirm(
+        "Êtes-vous sûr de vouloir supprimer cette note ?",
+      );
+      if (ok) doDelete();
+      return;
+    }
+
+    Alert.alert(
+      "Confirmer la suppression",
+      "Êtes-vous sûr de vouloir supprimer cette note ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: doDelete,
+        },
+      ],
+    );
+  };
+
+  const handleSubmitNote = async (data: CreateNoteInput) => {
+    try {
+      const noteData = {
+        ...data,
+        entreprise_id: id as string,
+      };
+      if (selectedNote) {
+        await updateNoteMutation.mutateAsync({
+          id: selectedNote._id,
+          updates: noteData,
+        });
+      } else {
+        await createNoteMutation.mutateAsync(noteData);
+      }
+      setShowNoteModal(false);
+    } catch (error) {
+      Alert.alert("Erreur", "Impossible de sauvegarder la note");
     }
   };
 
@@ -281,95 +352,58 @@ export default function EntrepriseDetailScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title} numberOfLines={2}>
-          {entreprise.nom}
-        </Text>
-        <View style={[styles.badge, getStatutStyle(entreprise.statut)]}>
-          <Text style={styles.badgeText}>
-            {getStatutLabel(entreprise.statut)}
-          </Text>
-        </View>
-      </View>
+      <EntrepriseHeader entreprise={entreprise} />
 
-      {/* Logo */}
-      {entreprise.logo && (
-        <View style={styles.logoSection}>
-          <Image
-            source={{
-              uri: entreprise.logo.startsWith("http")
-                ? entreprise.logo
-                : `${baseURL}${entreprise.logo}`,
-            }}
-            style={styles.logoImage}
-          />
-        </View>
+      <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
+
+      {/* Tab Content */}
+      {activeTab === "infos" && (
+        <InfosTab
+          entreprise={entreprise}
+          contacts={contacts}
+          contactsLoading={contactsLoading}
+          onAddContact={() => openContactModal()}
+          onEditContact={openContactModal}
+          onDeleteContact={handleDeleteContact}
+          onCall={handleCall}
+          onEmail={handleEmail}
+        />
       )}
 
-      {/* Description Section */}
-      {entreprise.description && (
+      {activeTab === "rdv" && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.text}>{entreprise.description}</Text>
+          <Text style={styles.sectionTitle}>📅 Rendez-vous</Text>
+          <Text style={styles.noContacts}>Fonctionnalité à venir</Text>
         </View>
       )}
 
-      {/* Address Section */}
-      {(entreprise.rue ||
-        entreprise.ville ||
-        entreprise.code_postal ||
-        entreprise.pays) && (
+      {activeTab === "devis" && (
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Adresse</Text>
-          <View style={styles.addressCard}>
-            {entreprise.rue && (
-              <Text style={styles.addressText}>{entreprise.rue}</Text>
-            )}
-            {(entreprise.code_postal || entreprise.ville) && (
-              <Text style={styles.addressText}>
-                {entreprise.code_postal && `${entreprise.code_postal} `}
-                {entreprise.ville}
-              </Text>
-            )}
-            {entreprise.pays && (
-              <Text style={styles.addressText}>{entreprise.pays}</Text>
-            )}
-          </View>
+          <Text style={styles.sectionTitle}>📄 Devis</Text>
+          <Text style={styles.noContacts}>Fonctionnalité à venir</Text>
         </View>
       )}
 
-      {/* Contacts Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Contacts</Text>
-          <TouchableOpacity
-            style={styles.addContactButton}
-            onPress={() => openContactModal()}
-          >
-            <Text style={styles.addContactButtonText}>+ Ajouter</Text>
-          </TouchableOpacity>
-        </View>
+      {activeTab === "notes" && (
+        <NotesTab
+          notes={notesData?.notes}
+          notesLoading={notesLoading}
+          noteTypeFilter={noteTypeFilter}
+          noteSearchQuery={noteSearchQuery}
+          onTypeFilterChange={setNoteTypeFilter}
+          onSearchChange={setNoteSearchQuery}
+          onAddNote={handleAddNote}
+          onEditNote={handleEditNote}
+          onDeleteNote={handleDeleteNote}
+        />
+      )}
 
-        {contactsLoading ? (
-          <ActivityIndicator size="small" color="#2563eb" />
-        ) : contacts && contacts.length > 0 ? (
-          <View style={styles.contactsList}>
-            {contacts.map((contact) => (
-              <ContactCard
-                key={contact.id}
-                contact={contact}
-                onEdit={openContactModal}
-                onDelete={handleDeleteContact}
-                onCall={handleCall}
-                onEmail={handleEmail}
-              />
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.noContacts}>Aucun contact</Text>
-        )}
-      </View>
+      {activeTab === "chiffres" && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📊 Chiffres</Text>
+          <Text style={styles.noContacts}>Fonctionnalité à venir</Text>
+        </View>
+      )}
 
       {/* Actions */}
       <View style={styles.actions}>
@@ -399,6 +433,17 @@ export default function EntrepriseDetailScreen() {
         contactErrors={contactErrors}
         onChange={handleContactChange}
         onTogglePrincipal={toggleContactPrincipal}
+      />
+
+      <NoteModal
+        visible={showNoteModal}
+        entrepriseId={id as string}
+        note={selectedNote}
+        templates={templates}
+        onSubmit={handleSubmitNote}
+        onTypeChange={setSelectedNoteType}
+        onClose={() => setShowNoteModal(false)}
+        isLoading={createNoteMutation.isPending || updateNoteMutation.isPending}
       />
     </ScrollView>
   );

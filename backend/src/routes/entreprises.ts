@@ -10,6 +10,7 @@ import {
 
 const router = Router();
 
+// Entreprises CRUD
 router.get("/", requireAuth, list);
 router.get("/:id", requireAuth, get);
 router.post("/", requireAuth, create);
