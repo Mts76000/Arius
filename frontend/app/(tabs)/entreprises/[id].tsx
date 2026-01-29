@@ -10,7 +10,11 @@ import {
   Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEntreprise, useDeleteEntreprise } from "@/hooks/useEntreprises";
+import {
+  useEntreprise,
+  useDeleteEntreprise,
+  useEntreprises,
+} from "@/hooks/useEntreprises";
 import {
   useContacts,
   useCreateContact,
@@ -26,27 +30,50 @@ import {
   useTemplatesByType,
 } from "@/hooks/useNotes";
 import { Note, CreateNoteInput, NoteType } from "@/services/notes";
+import {
+  useRdvsByEntreprise,
+  useCreateRdv,
+  useUpdateRdv,
+  useDeleteRdv,
+} from "@/hooks/useRdvs";
+import { Rdv, CreateRdvInput, RdvStatus } from "@/services/rdvs";
 import { ValidationRules, FormErrors, hasErrors } from "@/utils/validation";
 import { styles } from "@/styles/entrepriseDetailStyles";
 import { ContactModal } from "@/components/ContactModal";
 import { NoteModal } from "@/components/NoteModal";
+import { RdvModal } from "@/components/RdvModal";
 import { TabNavigation, TabType } from "@/components/entreprise/TabNavigation";
 import { EntrepriseHeader } from "@/components/entreprise/EntrepriseHeader";
 import { InfosTab } from "@/components/entreprise/InfosTab";
 import { NotesTab } from "@/components/entreprise/NotesTab";
+import { RdvsTab } from "@/components/entreprise/RdvsTab";
 
 export default function EntrepriseDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const { data: entreprise, isLoading, error } = useEntreprise(id as string);
-  const { data: contacts, isLoading: contactsLoading } = useContacts(
-    id as string,
-  );
-  const { data: notesData, isLoading: notesLoading } = useNotes(id as string);
+
+  // Normalize id to string
+  const entrepriseId = Array.isArray(id) ? id[0] : id || "";
+
+  const { data: entreprise, isLoading, error } = useEntreprise(entrepriseId);
+  const { data: contacts, isLoading: contactsLoading } =
+    useContacts(entrepriseId);
+  const { data: notesData, isLoading: notesLoading } = useNotes(entrepriseId);
+  const { data: rdvsData, isLoading: rdvsLoading } =
+    useRdvsByEntreprise(entrepriseId);
+  const { data: entreprisesData } = useEntreprises();
+  const entreprises = entreprisesData?.entreprises || [];
   const deleteEntreprise = useDeleteEntreprise();
   const createContact = useCreateContact();
   const updateContact = useUpdateContact();
   const deleteContact = useDeleteContact();
+
+  // RDVs
+  const createRdvMutation = useCreateRdv();
+  const updateRdvMutation = useUpdateRdv();
+  const deleteRdvMutation = useDeleteRdv();
+  const [showRdvModal, setShowRdvModal] = useState(false);
+  const [selectedRdv, setSelectedRdv] = useState<Rdv | null>(null);
 
   // Tab state
   const [activeTab, setActiveTab] = useState<TabType>("infos");
@@ -267,6 +294,79 @@ export default function EntrepriseDetailScreen() {
     Linking.openURL(`mailto:${email}`);
   };
 
+  // RDVs handlers
+  const handleAddRdv = () => {
+    setSelectedRdv(null);
+    setShowRdvModal(true);
+  };
+
+  const handleEditRdv = (rdv: Rdv) => {
+    setSelectedRdv(rdv);
+    setShowRdvModal(true);
+  };
+
+  const handleDeleteRdv = (rdvId: string) => {
+    const doDelete = async () => {
+      try {
+        await deleteRdvMutation.mutateAsync(rdvId);
+      } catch (error) {
+        Alert.alert("Erreur", "Impossible de supprimer le RDV");
+      }
+    };
+
+    if (Platform.OS === "web") {
+      const ok = window.confirm("Êtes-vous sûr de vouloir supprimer ce RDV ?");
+      if (ok) doDelete();
+      return;
+    }
+
+    Alert.alert(
+      "Confirmer la suppression",
+      "Êtes-vous sûr de vouloir supprimer ce RDV ?",
+      [
+        { text: "Annuler", style: "cancel" },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: doDelete,
+        },
+      ],
+    );
+  };
+
+  const handleChangeRdvStatus = async (rdvId: string, status: RdvStatus) => {
+    try {
+      await updateRdvMutation.mutateAsync({
+        id: rdvId,
+        updates: { statut: status },
+      });
+      if (status === "termine") {
+        Alert.alert("RDV Terminé", "Voulez-vous créer une note pour ce RDV ?", [
+          { text: "Non", style: "cancel" },
+          { text: "Oui", onPress: handleAddNote },
+        ]);
+      }
+    } catch (error) {
+      Alert.alert("Erreur", "Impossible de mettre à jour le RDV");
+    }
+  };
+
+  const handleSubmitRdv = async (data: CreateRdvInput) => {
+    try {
+      if (selectedRdv) {
+        await updateRdvMutation.mutateAsync({
+          id: selectedRdv._id,
+          updates: data,
+        });
+      } else {
+        await createRdvMutation.mutateAsync(data);
+      }
+      setShowRdvModal(false);
+    } catch (error) {
+      Alert.alert("Erreur", "Impossible de sauvegarder le RDV");
+    }
+  };
+
   // Notes handlers
   const handleAddNote = () => {
     setSelectedNote(null);
@@ -371,10 +471,14 @@ export default function EntrepriseDetailScreen() {
       )}
 
       {activeTab === "rdv" && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📅 Rendez-vous</Text>
-          <Text style={styles.noContacts}>Fonctionnalité à venir</Text>
-        </View>
+        <RdvsTab
+          rdvs={rdvsData?.rdvs}
+          rdvsLoading={rdvsLoading}
+          onAddRdv={handleAddRdv}
+          onEditRdv={handleEditRdv}
+          onDeleteRdv={handleDeleteRdv}
+          onChangeStatus={handleChangeRdvStatus}
+        />
       )}
 
       {activeTab === "devis" && (
@@ -437,13 +541,24 @@ export default function EntrepriseDetailScreen() {
 
       <NoteModal
         visible={showNoteModal}
-        entrepriseId={id as string}
+        entrepriseId={entrepriseId}
         note={selectedNote}
         templates={templates}
         onSubmit={handleSubmitNote}
         onTypeChange={setSelectedNoteType}
         onClose={() => setShowNoteModal(false)}
         isLoading={createNoteMutation.isPending || updateNoteMutation.isPending}
+      />
+
+      <RdvModal
+        visible={showRdvModal}
+        rdv={selectedRdv}
+        entrepriseId={entrepriseId}
+        entreprises={entreprises}
+        contacts={contacts || []}
+        onSubmit={handleSubmitRdv}
+        onClose={() => setShowRdvModal(false)}
+        isLoading={createRdvMutation.isPending || updateRdvMutation.isPending}
       />
     </ScrollView>
   );

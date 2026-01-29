@@ -12,6 +12,7 @@ import authRoutes from "./routes/auth.js";
 import entreprisesRoutes from "./routes/entreprises.js";
 import contactsRoutes from "./routes/contacts.js";
 import notesRoutes from "./routes/notes.js";
+import rdvsRoutes from "./routes/rdvs.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -25,7 +26,28 @@ export function createApp() {
   app.use(cors());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
-  app.use(pinoHttp({ level: "info" }));
+
+  // Logs HTTP simplifiés
+  app.use(
+    pinoHttp({
+      level: "info",
+      transport: {
+        target: "pino-pretty",
+        options: {
+          colorize: true,
+          translateTime: "HH:MM:ss",
+          ignore: "pid,hostname",
+          messageFormat:
+            "{req.method} {req.url} → {res.statusCode} ({responseTime}ms)",
+        },
+      },
+      customLogLevel: (_req, res, err) => {
+        if (res.statusCode >= 400 && res.statusCode < 500) return "warn";
+        if (res.statusCode >= 500 || err) return "error";
+        return "silent"; // Ne log que les erreurs
+      },
+    }),
+  );
 
   // Servir les fichiers uploadés
   const uploadsDir = path.join(path.dirname(__dirname), "uploads");
@@ -130,6 +152,7 @@ export function createApp() {
   app.use("/v1/entreprises", entreprisesRoutes);
   app.use("/v1", contactsRoutes);
   app.use("/v1", notesRoutes);
+  app.use("/v1", rdvsRoutes);
 
   return app;
 }

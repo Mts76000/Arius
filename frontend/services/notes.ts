@@ -76,13 +76,9 @@ export const notesService = {
     id: string,
     updates: Partial<CreateNoteInput>,
   ): Promise<Note> {
-    const response = await api.put<Note>(
-      `/v1/notes/${id}`,
-      updates,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
+    const response = await api.put<Note>(`/v1/notes/${id}`, updates, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return response.data;
   },
 

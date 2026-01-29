@@ -85,6 +85,16 @@ export default function TabsLayout() {
           },
         }}
       />
+      <Tabs.Screen
+        name="rdvs"
+        options={{
+          title: "RDVs",
+          headerTitle: "Mes Rendez-vous",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="calendar" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
