@@ -24,6 +24,7 @@ interface EntrepriseFormProps {
   onCancel: () => void;
   isLoading?: boolean;
   submitLabel?: string;
+  entrepriseId?: string;
 }
 
 export function EntrepriseForm({
@@ -32,6 +33,7 @@ export function EntrepriseForm({
   onCancel,
   isLoading = false,
   submitLabel = "Enregistrer",
+  entrepriseId,
 }: EntrepriseFormProps) {
   const token = useAuthStore((state) => state.token);
   const baseURL =
@@ -111,6 +113,14 @@ export function EntrepriseForm({
       return;
     }
 
+    if (!entrepriseId) {
+      Alert.alert(
+        "Avertissement",
+        "Vous devez créer l'entreprise d'abord avant de pouvoir uploader un logo",
+      );
+      return;
+    }
+
     try {
       setUploading(true);
       const formData = new FormData();
@@ -134,6 +144,9 @@ export function EntrepriseForm({
       } else if (filename.toLowerCase().includes(".webp")) {
         mimeType = "image/webp";
       }
+
+      // Ajouter l'entrepriseId au FormData
+      formData.append("entrepriseId", entrepriseId);
 
       // Fetcher le fichier et convertir en blob
       // Sur mobile, utiliser directement l'objet {uri, type, name}
@@ -203,7 +216,7 @@ export function EntrepriseForm({
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <View style={styles.formGroup}>
-        <Text style={styles.label}>Nom de l'entreprise *</Text>
+        <Text style={styles.label}>Nom de l&apos;entreprise *</Text>
         <TextInput
           style={[styles.input, formErrors.nom && styles.inputError]}
           placeholder="Nom de l'entreprise"

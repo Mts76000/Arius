@@ -51,7 +51,8 @@ export default function EditEntrepriseScreen() {
       onSubmit={handleSubmit}
       onCancel={() => router.back()}
       isLoading={updateMutation.isPending}
-      submitLabel="Enregistrer les modifications"
+      submitLabel="Modifier l'entreprise"
+      entrepriseId={id}
     />
   );
 }

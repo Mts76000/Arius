@@ -13,6 +13,7 @@ import entreprisesRoutes from "./routes/entreprises.js";
 import contactsRoutes from "./routes/contacts.js";
 import notesRoutes from "./routes/notes.js";
 import rdvsRoutes from "./routes/rdvs.js";
+import devisRoutes from "./routes/devis.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -59,13 +60,20 @@ export function createApp() {
   }
 
   const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => {
-      cb(null, uploadsDir);
+    destination: (req: any, _file, cb) => {
+      const { entrepriseId } = req.body;
+      if (!entrepriseId) {
+        return cb(new Error("entrepriseId required"), "");
+      }
+      const id = Array.isArray(entrepriseId) ? entrepriseId[0] : entrepriseId;
+      const logoDir = path.join(uploadsDir, "entreprises", id, "logos");
+      fs.mkdirSync(logoDir, { recursive: true });
+      cb(null, logoDir);
     },
     filename: (_req, file, cb) => {
       const timestamp = Date.now();
       const ext = path.extname(file.originalname);
-      cb(null, `${timestamp}${ext}`);
+      cb(null, `logo_${timestamp}${ext}`);
     },
   });
 
@@ -92,12 +100,21 @@ export function createApp() {
         return res.status(400).json({ error: "Aucun fichier uploadé" });
       }
 
+      let { entrepriseId } = req.body;
+      if (!entrepriseId) {
+        return res.status(400).json({ error: "entrepriseId requis" });
+      }
+
+      // Convertir en string si tableau
+      if (Array.isArray(entrepriseId)) {
+        entrepriseId = entrepriseId[0];
+      }
+
       try {
-        // TEMPORAIRE: Désactiver la conversion pour test
+        // Assurer qu'il y a une extension
         let finalFilename: string;
         const originalPath = req.file.path;
 
-        // Juste assurer qu'il y a une extension
         let filename = req.file.filename;
         const ext = path.extname(filename);
 
@@ -117,12 +134,18 @@ export function createApp() {
           filename = filename + extFromMime;
 
           // Renommer le fichier
-          const newPath = path.join(uploadsDir, filename);
+          const logoDir = path.join(
+            uploadsDir,
+            "entreprises",
+            entrepriseId,
+            "logos",
+          );
+          const newPath = path.join(logoDir, filename);
           fs.renameSync(originalPath, newPath);
         }
         finalFilename = filename;
 
-        const fileUrl = `/uploads/${finalFilename}`;
+        const fileUrl = `/uploads/entreprises/${entrepriseId}/logos/${finalFilename}`;
         res.json({ url: fileUrl });
       } catch (error) {
         console.error("Upload processing error:", error);
@@ -153,6 +176,7 @@ export function createApp() {
   app.use("/v1", contactsRoutes);
   app.use("/v1", notesRoutes);
   app.use("/v1", rdvsRoutes);
+  app.use("/v1", devisRoutes);
 
   return app;
 }

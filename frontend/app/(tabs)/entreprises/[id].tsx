@@ -47,6 +47,7 @@ import { EntrepriseHeader } from "@/components/entreprise/EntrepriseHeader";
 import { InfosTab } from "@/components/entreprise/InfosTab";
 import { NotesTab } from "@/components/entreprise/NotesTab";
 import { RdvsTab } from "@/components/entreprise/RdvsTab";
+import { DevisSection } from "@/components/DevisSection";
 
 export default function EntrepriseDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -481,12 +482,7 @@ export default function EntrepriseDetailScreen() {
         />
       )}
 
-      {activeTab === "devis" && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📄 Devis</Text>
-          <Text style={styles.noContacts}>Fonctionnalité à venir</Text>
-        </View>
-      )}
+      {activeTab === "devis" && <DevisSection entrepriseId={entrepriseId} />}
 
       {activeTab === "notes" && (
         <NotesTab
