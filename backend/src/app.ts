@@ -14,6 +14,8 @@ import contactsRoutes from "./routes/contacts.js";
 import notesRoutes from "./routes/notes.js";
 import rdvsRoutes from "./routes/rdvs.js";
 import devisRoutes from "./routes/devis.js";
+import objectifsRoutes from "./routes/objectifs.js";
+import caRoutes from "./routes/ca.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -177,6 +179,8 @@ export function createApp() {
   app.use("/v1", notesRoutes);
   app.use("/v1", rdvsRoutes);
   app.use("/v1", devisRoutes);
+  app.use("/v1/objectifs", objectifsRoutes);
+  app.use("/v1/ca", caRoutes);
 
   return app;
 }

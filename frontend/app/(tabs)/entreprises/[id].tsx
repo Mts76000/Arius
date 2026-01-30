@@ -47,6 +47,7 @@ import { EntrepriseHeader } from "@/components/entreprise/EntrepriseHeader";
 import { InfosTab } from "@/components/entreprise/InfosTab";
 import { NotesTab } from "@/components/entreprise/NotesTab";
 import { RdvsTab } from "@/components/entreprise/RdvsTab";
+import { ChiffresTab } from "@/components/entreprise/ChiffresTab";
 import { DevisSection } from "@/components/DevisSection";
 
 export default function EntrepriseDetailScreen() {
@@ -498,12 +499,7 @@ export default function EntrepriseDetailScreen() {
         />
       )}
 
-      {activeTab === "chiffres" && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Chiffres</Text>
-          <Text style={styles.noContacts}>Fonctionnalité à venir</Text>
-        </View>
-      )}
+      {activeTab === "chiffres" && <ChiffresTab entreprise={entreprise} />}
 
       {/* Actions */}
       <View style={styles.actions}>

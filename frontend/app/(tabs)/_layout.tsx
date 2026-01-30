@@ -95,6 +95,16 @@ export default function TabsLayout() {
           ),
         }}
       />
+      <Tabs.Screen
+        name="ca"
+        options={{
+          title: "CA",
+          headerTitle: "Chiffre d'affaires",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="stats-chart" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }
