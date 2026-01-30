@@ -136,7 +136,9 @@ export async function getCAStatsHandler(req: Request, res: Response) {
 export async function getCAEntrepriseHandler(req: Request, res: Response) {
   try {
     const userId = (req as any).userId;
-    const entreprise_id = Array.isArray(req.params.entreprise_id) ? req.params.entreprise_id[0] : req.params.entreprise_id;
+    const entreprise_id = Array.isArray(req.params.entreprise_id)
+      ? req.params.entreprise_id[0]
+      : req.params.entreprise_id;
     const anneeStr = req.query.annee as string;
 
     if (!anneeStr) {

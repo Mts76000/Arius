@@ -205,11 +205,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
                     style={styles.actionIcon}
                     onPress={() => handleDeleteCA(ca)}
                   >
-                    <Ionicons
-                      name="trash"
-                      size={20}
-                      color="#FF6B6B"
-                    />
+                    <Ionicons name="trash" size={20} color="#FF6B6B" />
                   </TouchableOpacity>
                 </View>
               </View>
