@@ -1,6 +1,6 @@
-# Epic 8 : Dashboard & Activités
+# Epic 9 : Dashboard & Activités
 
-**Estimation** : M (3-5j) | **Dépendances** : Epic 2, 4, 5, 6 | **Slice** : 6
+**Estimation** : M (3-5j) | **Dépendances** : Epic 2, 4, 5, 6, 8 | **Slice** : 7
 
 ## Objectif
 

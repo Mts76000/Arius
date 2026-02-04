@@ -1,6 +1,6 @@
-# Epic 9 : Export RGPD
+# Epic 10 : Export RGPD
 
-**Estimation** : S-M (2-4j) | **Dépendances** : Epic 1, 2, 3, 4, 5, 6 | **Slice** : 7
+**Estimation** : S-M (2-4j) | **Dépendances** : Epic 1, 2, 3, 4, 5, 6, 8 | **Slice** : 8
 
 ## Objectif
 

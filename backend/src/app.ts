@@ -16,6 +16,7 @@ import rdvsRoutes from "./routes/rdvs.js";
 import devisRoutes from "./routes/devis.js";
 import objectifsRoutes from "./routes/objectifs.js";
 import caRoutes from "./routes/ca.js";
+import profilRoutes from "./routes/profil.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -174,6 +175,7 @@ export function createApp() {
     }
   });
   app.use("/v1/auth", authRoutes);
+  app.use("/v1/utilisateurs", profilRoutes);
   app.use("/v1/entreprises", entreprisesRoutes);
   app.use("/v1", contactsRoutes);
   app.use("/v1", notesRoutes);

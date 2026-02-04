@@ -8,6 +8,7 @@ import "@/web-config";
 
 import { useAuthStore } from "@/store/authStore";
 import { Colors } from "@/constants/theme";
+import { Header } from "@/components/Header";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,8 @@ export const unstable_settings = {
 
 export default function RootLayout() {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const token = useAuthStore((state) => state.token);
+  const isInitialized = useAuthStore((state) => state.isInitialized);
 
   const navigationTheme = {
     ...DefaultTheme,
@@ -37,9 +40,18 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={navigationTheme}>
+        {isInitialized && token && <Header />}
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="profil"
+            options={{
+              title: "Mon Profil",
+              headerShown: false,
+              presentation: "modal",
+            }}
+          />
         </Stack>
 
         <StatusBar style="light" />

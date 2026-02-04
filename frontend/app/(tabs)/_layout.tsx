@@ -31,7 +31,7 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
+        headerShown: false,
         headerStyle: {
           backgroundColor: Colors.light.card,
         },
@@ -103,6 +103,13 @@ export default function TabsLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="stats-chart" size={size} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="profil"
+        options={{
+          title: "Mon Profil",
+          href: null,
         }}
       />
     </Tabs>

@@ -11,7 +11,7 @@ export default function EntreprisesLayout() {
         name="index"
         options={{
           title: "Entreprises",
-          headerShown: true,
+          headerShown: false,
           headerBackVisible: false,
           headerLeft: () => null,
           gestureEnabled: false,
@@ -21,7 +21,7 @@ export default function EntreprisesLayout() {
         name="[id]"
         options={{
           title: "Détail Entreprise",
-          headerShown: true,
+          headerShown: false,
           animationEnabled: true,
         }}
       />
@@ -29,7 +29,7 @@ export default function EntreprisesLayout() {
         name="create"
         options={{
           title: "Nouvelle Entreprise",
-          headerShown: true,
+          headerShown: false,
           animationEnabled: true,
         }}
       />
@@ -37,7 +37,7 @@ export default function EntreprisesLayout() {
         name="edit/[id]"
         options={{
           title: "Modifier Entreprise",
-          headerShown: true,
+          headerShown: false,
           animationEnabled: true,
         }}
       />
