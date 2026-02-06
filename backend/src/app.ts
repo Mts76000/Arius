@@ -17,6 +17,7 @@ import devisRoutes from "./routes/devis.js";
 import objectifsRoutes from "./routes/objectifs.js";
 import caRoutes from "./routes/ca.js";
 import profilRoutes from "./routes/profil.js";
+import exportRoutes from "./routes/export.js";
 import { requireAuth } from "./middleware/auth.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -183,6 +184,7 @@ export function createApp() {
   app.use("/v1", devisRoutes);
   app.use("/v1/objectifs", objectifsRoutes);
   app.use("/v1/ca", caRoutes);
+  app.use("/v1", exportRoutes);
 
   return app;
 }

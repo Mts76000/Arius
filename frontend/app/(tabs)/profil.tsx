@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ import { FormInput } from "@/components/FormInput";
 import { updateProfil, changerMotdepasse } from "@/services/profil";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/services/api";
+import { exportService } from "@/services/export";
 
 interface ProfilData {
   id: string;
@@ -27,6 +29,7 @@ interface ProfilData {
 export default function ProfilModal() {
   const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
+  const token = useAuthStore((state) => state.token);
   const [editMode, setEditMode] = useState(false);
   const [passwordMode, setPasswordMode] = useState(false);
 
@@ -50,6 +53,10 @@ export default function ProfilModal() {
     type: "success";
     text: string;
   } | null>(null);
+
+  // Export RGPD
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const {
     data: profilData,
@@ -192,12 +199,51 @@ export default function ProfilModal() {
     router.replace("/login");
   };
 
-  const handleExportData = () => {
-    Alert.alert(
-      "Export de données",
-      "Redirigez-vous vers la section export dans les paramètres (Epic 10)",
-    );
-    // TODO: Router vers la page d'export (Epic 10)
+  const handleExportData = async (
+    type?: "prospects" | "rdvs" | "notes" | "ca" | "objectifs" | any,
+  ) => {
+    if (!token) {
+      Alert.alert("Erreur", "Vous devez être connecté");
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+      setExportError(null);
+      if (Platform.OS !== "web") {
+        setIsExporting(false);
+        Alert.alert(
+          "Info",
+          "Téléchargement disponible sur la version web pour l’instant",
+        );
+        return;
+      }
+
+      const exportType = typeof type === "string" ? type : undefined;
+      const { data, filename, contentType } = await exportService.download(
+        token,
+        exportType,
+      );
+
+      const blob =
+        data instanceof Blob ? data : new Blob([data], { type: contentType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+
+      setIsExporting(false);
+    } catch (error: any) {
+      const message =
+        error?.response?.data?.error || "Impossible de lancer l'export";
+      setIsExporting(false);
+      setExportError(message);
+      Alert.alert("Erreur", message);
+    }
   };
 
   if (isLoading) {
@@ -402,17 +448,79 @@ export default function ProfilModal() {
           )}
         </View>
 
-        {/* Données */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Données</Text>
+        {/* Export de données */}
+        <View style={styles.exportSection}>
+          <View style={styles.exportHeader}>
+            <View style={styles.exportHeaderIcon}>
+              <Text style={styles.exportHeaderIconText}>⬇️</Text>
+            </View>
+            <View style={styles.exportHeaderText}>
+              <Text style={styles.exportTitle}>Export de données</Text>
+              <Text style={styles.exportSubtitle}>
+                Sauvegardez ou utilisez vos données dans d'autres outils
+              </Text>
+            </View>
+          </View>
+
           <TouchableOpacity
-            style={styles.dataButton}
+            style={[styles.exportPrimaryCard, isExporting && { opacity: 0.7 }]}
             onPress={handleExportData}
+            disabled={isExporting}
           >
-            <Text style={styles.dataButtonText}>
-              Exporter mes données (RGPD)
-            </Text>
+            <View style={styles.exportPrimaryLeft}>
+              <View style={styles.exportPrimaryIcon}>
+                <Text style={styles.exportPrimaryIconText}>📄</Text>
+              </View>
+              <View>
+                <Text style={styles.exportPrimaryTitle}>Export complet</Text>
+                <Text style={styles.exportPrimarySubtitle}>
+                  Tout en un fichier ZIP
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.exportPrimaryAction}>⬇️</Text>
           </TouchableOpacity>
+
+          <View style={styles.exportDivider}>
+            <View style={styles.exportDividerLine} />
+            <Text style={styles.exportDividerText}>OU PAR CATÉGORIE</Text>
+            <View style={styles.exportDividerLine} />
+          </View>
+
+          <View style={styles.exportList}>
+            {[
+              { label: "Prospects", icon: "🏢", type: "prospects" },
+              { label: "Rendez-vous", icon: "📅", type: "rdvs" },
+              { label: "Notes", icon: "📝", type: "notes" },
+              { label: "Chiffre d'affaires", icon: "📊", type: "ca" },
+              { label: "Objectifs", icon: "🎯", type: "objectifs" },
+            ].map((item) => (
+              <TouchableOpacity
+                key={item.label}
+                style={styles.exportListItem}
+                onPress={() => handleExportData(item.type as any)}
+              >
+                <View style={styles.exportListLeft}>
+                  <View style={styles.exportListIcon}>
+                    <Text style={styles.exportListIconText}>{item.icon}</Text>
+                  </View>
+                  <Text style={styles.exportListLabel}>{item.label}</Text>
+                </View>
+                <Text style={styles.exportListAction}>⬇️</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {!!exportError && (
+            <Text style={styles.exportErrorText}>{exportError}</Text>
+          )}
+
+          <View style={styles.exportInfoBox}>
+            <Text style={styles.exportInfoText}>
+              Vos données vous appartiennent. Exportez-les à tout moment en
+              toute liberté.
+            </Text>
+          </View>
         </View>
 
         {/* Déconnexion */}
@@ -614,6 +722,161 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "600",
+  },
+  exportSection: {
+    marginBottom: 24,
+    backgroundColor: Colors.light.card,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    shadowColor: "#000",
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 2,
+  },
+  exportHeader: {
+    flexDirection: "row",
+    gap: 12,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  exportHeaderIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#EAF2FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  exportHeaderIconText: {
+    fontSize: 18,
+  },
+  exportHeaderText: {
+    flex: 1,
+  },
+  exportTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: Colors.light.text,
+  },
+  exportSubtitle: {
+    fontSize: 12,
+    color: Colors.light.muted,
+    marginTop: 2,
+  },
+  exportPrimaryCard: {
+    backgroundColor: "#2F6FED",
+    borderRadius: 12,
+    padding: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 14,
+  },
+  exportPrimaryLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  exportPrimaryIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  exportPrimaryIconText: {
+    fontSize: 18,
+  },
+  exportPrimaryTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "white",
+  },
+  exportPrimarySubtitle: {
+    fontSize: 12,
+    color: "rgba(255,255,255,0.9)",
+    marginTop: 2,
+  },
+  exportPrimaryAction: {
+    fontSize: 18,
+    color: "white",
+  },
+  exportDivider: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 12,
+  },
+  exportDividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.light.border,
+  },
+  exportDividerText: {
+    fontSize: 11,
+    color: Colors.light.muted,
+    fontWeight: "600",
+  },
+  exportList: {
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "white",
+  },
+  exportListItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.light.border,
+  },
+  exportListLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  exportListIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    backgroundColor: "#F3F6FF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  exportListIconText: {
+    fontSize: 14,
+  },
+  exportListLabel: {
+    fontSize: 13,
+    color: Colors.light.text,
+    fontWeight: "600",
+  },
+  exportListAction: {
+    fontSize: 16,
+    color: "#94a3b8",
+  },
+  exportInfoBox: {
+    marginTop: 14,
+    backgroundColor: "#EEF4FF",
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#D6E4FF",
+  },
+  exportInfoText: {
+    fontSize: 12,
+    color: "#3764D8",
+  },
+  exportErrorText: {
+    fontSize: 12,
+    color: "#ef4444",
   },
   logoutButton: {
     backgroundColor: "#E5484D",

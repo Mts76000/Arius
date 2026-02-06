@@ -22,7 +22,7 @@ Permettre à l'utilisateur d'exporter l'ensemble de ses données (conformité RG
 
 - [ ] Endpoint POST /v1/export/rgpd (démarre la génération et retourne un id).
 - [ ] Endpoint GET /v1/export/rgpd/:id (statut + téléchargement si prêt).
-- [ ] Extraction MySQL (entreprises, contacts, objectifs_mensuels, ca_mensuel) par utilisateur.
+- [x] Extraction MySQL (entreprises, contacts, objectifs_mensuels, ca_mensuel) par utilisateur.
 - [ ] Extraction Mongo (notes, rdvs, devis, activites) par utilisateur.
 - [ ] Inclusion des fichiers devis depuis le stockage.
 - [ ] Génération ZIP en flux (ex: archiver) dans un répertoire temporaire isolé par utilisateur.
@@ -31,7 +31,7 @@ Permettre à l'utilisateur d'exporter l'ensemble de ses données (conformité RG
 
 ## Tasks Frontend
 
-- [ ] Service `exportService`.
-- [ ] Écran/section Paramètres : bouton "Exporter mes données".
+- [x] Service `exportService`.
+- [x] Écran/section Paramètres : bouton "Exporter mes données".
 - [ ] Affichage statut export (en cours, prêt, erreur) + téléchargement.
-- [ ] Notifications/toasts et gestion d'erreurs.
+- [x] Notifications/toasts et gestion d'erreurs.
