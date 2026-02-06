@@ -41,8 +41,11 @@ export default function HomeScreen() {
     [startDate, endDate],
   );
 
-  const { data: rdvsData, isLoading: isLoadingRdvs, refetch: refetchRdvs } =
-    useMyRdvs(rdvFilters);
+  const {
+    data: rdvsData,
+    isLoading: isLoadingRdvs,
+    refetch: refetchRdvs,
+  } = useMyRdvs(rdvFilters);
 
   const entrepriseFilters = useMemo(
     () => ({ statut: "a_reactiver" as const, limite: 5 }),
@@ -72,8 +75,7 @@ export default function HomeScreen() {
     .filter((rdv) => new Date(rdv.date_prevue) >= new Date())
     .sort(
       (a, b) =>
-        new Date(a.date_prevue).getTime() -
-        new Date(b.date_prevue).getTime(),
+        new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime(),
     )
     .slice(0, 3);
 
