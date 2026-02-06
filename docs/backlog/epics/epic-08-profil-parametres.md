@@ -34,20 +34,20 @@ Permettre à l'utilisateur de gérer son profil, modifier ses informations perso
 
 ## Tasks Backend
 
-- [ ] Route GET /v1/utilisateurs/profil (récupérer les données du profil actuel).
-- [ ] Route PATCH /v1/utilisateurs/profil (mettre à jour prénom/nom).
-- [ ] Route POST /v1/utilisateurs/changer-motdepasse (validation ancien + nouveau x2 + hachage).
+- [x] Route GET /v1/utilisateurs/profil (récupérer les données du profil actuel).
+- [x] Route PATCH /v1/utilisateurs/profil (mettre à jour prénom/nom).
+- [x] Route POST /v1/utilisateurs/changer-motdepasse (validation ancien + nouveau x2 + hachage).
 - [ ] Validation : prénom et nom non vides (3-50 caractères), mot de passe fort (min 8 caractères, maj/min/chiffre/special).
 - [ ] Audit log : enregistrer les changements de profil et mot de passe.
 - [ ] Tests Postman (succès + erreurs).
 
 ## Tasks Frontend
 
-- [ ] Service `profilService` (GET /profil, PATCH /profil, POST /changer-motdepasse).
+- [x] Service `profilService` (GET /profil, PATCH /profil, POST /changer-motdepasse).
 - [ ] Composant `Header` réutilisable : date, "Bonjour {prénom}", avatar cliquable.
-- [ ] Écran Profil : sections infos perso + sécurité + données.
-- [ ] Formulaire édition profil avec validation client.
-- [ ] Formulaire changement mot de passe avec confirmation.
+- [x] Écran Profil : sections infos perso + sécurité + données.
+- [x] Formulaire édition profil avec validation client.
+- [x] Formulaire changement mot de passe avec confirmation.
 - [ ] Intégration avec l'export RGPD (Epic 9).
 - [ ] Toasts/notifications pour les actions utilisateur.
 - [ ] Sécurité : confirmation avant suppression/déconnexion.

@@ -156,6 +156,18 @@ export async function create(req: Request, res: Response) {
     return res.status(201).json(entreprise);
   } catch (error) {
     console.error("Error creating entreprise:", error);
+    const err = error as any;
+    const message = typeof err?.message === "string" ? err.message : "";
+    if (
+      message.includes("statut") &&
+      (message.includes("Incorrect") || message.includes("Data truncated"))
+    ) {
+      return res.status(400).json({
+        error: "invalid_statut",
+        message:
+          "Statut invalide. Vérifie que la colonne enum `statut` inclut 'a_reactiver'.",
+      });
+    }
     return res.status(500).json({ error: "internal_error" });
   }
 }
@@ -188,6 +200,18 @@ export async function update(req: Request, res: Response) {
     return res.status(200).json(entreprise);
   } catch (error) {
     console.error("Error updating entreprise:", error);
+    const err = error as any;
+    const message = typeof err?.message === "string" ? err.message : "";
+    if (
+      message.includes("statut") &&
+      (message.includes("Incorrect") || message.includes("Data truncated"))
+    ) {
+      return res.status(400).json({
+        error: "invalid_statut",
+        message:
+          "Statut invalide. Vérifie que la colonne enum `statut` inclut 'a_reactiver'.",
+      });
+    }
     return res.status(500).json({ error: "internal_error" });
   }
 }

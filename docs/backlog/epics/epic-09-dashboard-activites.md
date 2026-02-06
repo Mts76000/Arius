@@ -1,36 +1,31 @@
-# Epic 9 : Dashboard & Activités
+# Epic 9 : Dashboard (raccourcis & infos utiles)
 
 **Estimation** : M (3-5j) | **Dépendances** : Epic 2, 4, 5, 6, 8 | **Slice** : 7
 
 ## Objectif
 
-Vue consolidée des activités récentes et des indicateurs clés (KPIs).
+Vue d’accueil orientée action : raccourcis rapides et informations réellement utiles à l’utilisateur.
 
 ## Critères acceptation
 
-- Flux d'activités trié par date décroissante.
-- Filtres : type d'activité, période (de/à).
-- KPIs du mois courant (nouveaux contacts, RDVs à venir, devis uploadés, notes créées).
-- Pagination ou infinite scroll.
-- Sécurité : isolement par `utilisateur_id`.
+- Raccourcis d’actions prioritaires (création + accès rapide).
+- Informations pertinentes uniquement (aucune métrique “bruit” comme le CA affiché en permanence).
+- Données contextualisées (ex : prochains RDV, derniers devis à relancer, prospects inactifs).
+- Sécurité : isolement par `user_id`.
 
 ## User Stories
 
-- US 8.1 : Voir le flux d'activités.
-- US 8.2 : Filtrer par type et période.
-- US 8.3 : Voir les KPIs du mois courant.
+- US 8.1 : Accéder en 1 clic aux actions clés.
+- US 8.2 : Voir des infos utiles et actionnables.
 
 ## Tasks Backend
 
-- [ ] Modèle Mongoose `activites` (vérifier index: (utilisateur_id, type, cree_le)).
-- [ ] Route GET /v1/activites?type=&de=&a=&page=&limite=
-- [ ] Route GET /v1/kpis/tableau-de-bord?mois=&annee=
-- [ ] Harmoniser les émissions d'activités des autres epics (payload uniforme).
-- [ ] Tests Postman (filtres + pagination).
+- [ ] Réutiliser les routes existantes pour alimenter le dashboard.
+- [ ] Clarifier les endpoints utilisés par section (RDV, devis, contacts, notes).
+- [ ] Tests Postman des filtres/limites nécessaires.
 
 ## Tasks Frontend
 
-- [ ] Services `activitesService`, `kpisService`.
-- [ ] Écran Dashboard (liste + filtres + KPIs).
-- [ ] Infinite scroll + pull-to-refresh.
+- [x] Agréger les données via les services existants.
+- [x] Écran Dashboard (raccourcis + infos utiles).
 - [ ] Cartes KPI réactives (TanStack Query + invalidations).
