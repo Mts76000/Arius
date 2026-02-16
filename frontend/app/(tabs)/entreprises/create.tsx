@@ -2,7 +2,7 @@ import React from "react";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { useCreateEntreprise } from "@/hooks/useEntreprises";
-import { EntrepriseForm } from "@/components/EntrepriseForm";
+import { EntrepriseForm } from "@/components/forms/EntrepriseForm";
 import type { CreateEntrepriseInput } from "@/services/entreprises";
 
 export default function CreateEntrepriseScreen() {

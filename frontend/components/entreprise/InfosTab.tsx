@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { Contact } from "@/services/contacts";
-import { ContactCard } from "@/components/ContactCard";
+import { ContactCard } from "@/components/cards/ContactCard";
 import { styles } from "@/styles/entrepriseDetailStyles";
+import { AppButton } from "@/components/ui/AppButton";
 
 interface InfosTabProps {
   entreprise: any;
@@ -63,12 +64,7 @@ export const InfosTab: React.FC<InfosTabProps> = ({
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Contacts</Text>
-          <TouchableOpacity
-            style={styles.addContactButton}
-            onPress={onAddContact}
-          >
-            <Text style={styles.addContactButtonText}>+ Ajouter</Text>
-          </TouchableOpacity>
+          <AppButton title="+ Ajouter" onPress={onAddContact} size="sm" />
         </View>
 
         {contactsLoading ? (

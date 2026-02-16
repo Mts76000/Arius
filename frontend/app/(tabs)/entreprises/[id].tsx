@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   ActivityIndicator,
-  TouchableOpacity,
   Alert,
   Linking,
   Platform,
@@ -39,16 +38,17 @@ import {
 import { Rdv, CreateRdvInput, RdvStatus } from "@/services/rdvs";
 import { ValidationRules, FormErrors, hasErrors } from "@/utils/validation";
 import { styles } from "@/styles/entrepriseDetailStyles";
-import { ContactModal } from "@/components/ContactModal";
-import { NoteModal } from "@/components/NoteModal";
-import { RdvModal } from "@/components/RdvModal";
+import { ContactModal } from "@/components/modals/ContactModal";
+import { NoteModal } from "@/components/modals/NoteModal";
+import { RdvModal } from "@/components/modals/RdvModal";
 import { TabNavigation, TabType } from "@/components/entreprise/TabNavigation";
 import { EntrepriseHeader } from "@/components/entreprise/EntrepriseHeader";
 import { InfosTab } from "@/components/entreprise/InfosTab";
 import { NotesTab } from "@/components/entreprise/NotesTab";
 import { RdvsTab } from "@/components/entreprise/RdvsTab";
 import { ChiffresTab } from "@/components/entreprise/ChiffresTab";
-import { DevisSection } from "@/components/DevisSection";
+import { DevisSection } from "@/components/sections/DevisSection";
+import { AppButton } from "@/components/ui/AppButton";
 
 export default function EntrepriseDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -503,21 +503,19 @@ export default function EntrepriseDetailScreen() {
 
       {/* Actions */}
       <View style={styles.actions}>
-        <TouchableOpacity
+        <AppButton
+          title="Modifier"
+          onPress={() => router.push(`/entreprises/${id}/edit` as any)}
+          variant="secondary"
           style={styles.editButton}
-          onPress={() => router.push(`/entreprises/edit/${id}` as any)}
-        >
-          <Text style={styles.editButtonText}>Modifier</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.deleteButton}
+        />
+        <AppButton
+          title={deleteEntreprise.isPending ? "..." : "Supprimer"}
           onPress={handleDelete}
+          variant="danger"
           disabled={deleteEntreprise.isPending}
-        >
-          <Text style={styles.deleteButtonText}>
-            {deleteEntreprise.isPending ? "..." : "Supprimer"}
-          </Text>
-        </TouchableOpacity>
+          style={styles.deleteButton}
+        />
       </View>
 
       <ContactModal

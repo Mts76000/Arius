@@ -13,6 +13,7 @@ import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/theme";
 import { Entreprise } from "@/services/entreprises";
+import { AppButton } from "@/components/ui/AppButton";
 
 const MOIS_LABELS = [
   "Janvier",
@@ -111,15 +112,11 @@ export function CAModal({
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
-            <Text style={styles.closeText}>Annuler</Text>
-          </TouchableOpacity>
+          <AppButton title="Annuler" onPress={onClose} variant="link" />
           <Text style={styles.title}>
             {isEditing ? "Modifier CA" : "Ajouter du CA"}
           </Text>
-          <TouchableOpacity onPress={handleSave}>
-            <Text style={styles.saveText}>Enregistrer</Text>
-          </TouchableOpacity>
+          <AppButton title="Enregistrer" onPress={handleSave} size="sm" />
         </View>
 
         <ScrollView style={styles.content}>

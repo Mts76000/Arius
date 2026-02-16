@@ -14,8 +14,9 @@ import { Colors } from "@/constants/theme";
 import { useCAStats, useCA, useCreateCA } from "@/hooks/useCA";
 import { useObjectifs, useCreateObjectif } from "@/hooks/useObjectifs";
 import { useEntreprises } from "@/hooks/useEntreprises";
-import { ObjectifModal } from "@/components/ObjectifModal";
-import { CAModal } from "@/components/CAModal";
+import { ObjectifModal } from "@/components/modals/ObjectifModal";
+import { CAModal } from "@/components/modals/CAModal";
+import { AppButton } from "@/components/ui/AppButton";
 import { useRouter } from "expo-router";
 
 const MOIS_LABELS = [
@@ -216,22 +217,17 @@ export default function CAScreen() {
 
       {/* Boutons actions */}
       <View style={styles.actionsContainer}>
-        <TouchableOpacity
-          style={styles.actionButton}
+        <AppButton
+          title="Ajouter"
           onPress={() => setShowCAModal(true)}
-        >
-          <Ionicons name="add-circle" size={20} color="#fff" />
-          <Text style={styles.actionButtonText}>Ajouter</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.actionButtonSecondary]}
+          style={styles.actionButton}
+        />
+        <AppButton
+          title="Objectif"
           onPress={() => setShowObjectifModal(true)}
-        >
-          <Ionicons name="add-circle" size={20} color={Colors.light.tint} />
-          <Text style={[styles.actionButtonText, { color: Colors.light.tint }]}>
-            Objectif
-          </Text>
-        </TouchableOpacity>
+          variant="secondary"
+          style={styles.actionButton}
+        />
       </View>
 
       {/* CA par entreprise */}

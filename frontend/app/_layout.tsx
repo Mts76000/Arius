@@ -8,7 +8,7 @@ import "@/web-config";
 
 import { useAuthStore } from "@/store/authStore";
 import { Colors } from "@/constants/theme";
-import { Header } from "@/components/Header";
+import { Header } from "@/components/layout/Header";
 
 const queryClient = new QueryClient();
 
@@ -43,15 +43,7 @@ export default function RootLayout() {
         {isInitialized && token && <Header />}
         <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="profil"
-            options={{
-              title: "Mon Profil",
-              headerShown: false,
-              presentation: "modal",
-            }}
-          />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         </Stack>
 
         <StatusBar style="light" />

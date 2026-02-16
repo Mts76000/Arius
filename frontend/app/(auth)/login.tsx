@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  TouchableOpacity,
-  ActivityIndicator,
   Alert,
   StyleSheet,
   KeyboardAvoidingView,
@@ -11,9 +9,10 @@ import {
   Text,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useAuthStore } from "../store/authStore";
-import { FormInput } from "../components/FormInput";
-import { ValidationRules, hasErrors, FormErrors } from "../utils/validation";
+import { useAuthStore } from "@/store/authStore";
+import { FormInput } from "@/components/forms/FormInput";
+import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
+import { AppButton } from "@/components/ui/AppButton";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -30,7 +29,7 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (user) {
-      router.replace("/(tabs)/home");
+      router.replace("/(tabs)");
     }
   }, [user]);
 
@@ -152,27 +151,23 @@ export default function LoginScreen() {
             </>
           )}
 
-          <TouchableOpacity
-            style={[styles.primaryButton, isLoading && styles.buttonDisabled]}
+          <AppButton
+            title={isRegisterMode ? "S'inscrire" : "Se connecter"}
             onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Text style={styles.primaryButtonText}>
-                {isRegisterMode ? "S'inscrire" : "Se connecter"}
-              </Text>
-            )}
-          </TouchableOpacity>
+            isLoading={isLoading}
+            style={styles.primaryButton}
+          />
 
-          <TouchableOpacity onPress={toggleMode} style={styles.switchButton}>
-            <Text style={styles.switchButtonText}>
-              {isRegisterMode
+          <AppButton
+            title={
+              isRegisterMode
                 ? "Déjà un compte ? Se connecter"
-                : "Pas de compte ? S'inscrire"}
-            </Text>
-          </TouchableOpacity>
+                : "Pas de compte ? S'inscrire"
+            }
+            onPress={toggleMode}
+            variant="link"
+            style={styles.switchButton}
+          />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -223,28 +218,10 @@ const styles = StyleSheet.create({
     color: "#b91c1c",
   },
   primaryButton: {
-    backgroundColor: "#2563eb",
-    borderRadius: 12,
-    padding: 16,
     marginBottom: 16,
     marginTop: 8,
-    boxShadow: "0 4px 8px rgba(37, 99, 235, 0.25)",
-  },
-  primaryButtonText: {
-    color: "#fff",
-    textAlign: "center",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  buttonDisabled: {
-    opacity: 0.6,
   },
   switchButton: {
     marginTop: 8,
-  },
-  switchButtonText: {
-    textAlign: "center",
-    color: "#2563eb",
-    fontSize: 14,
   },
 });

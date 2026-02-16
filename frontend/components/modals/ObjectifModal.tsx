@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/theme";
+import { AppButton } from "@/components/ui/AppButton";
 
 const MOIS_LABELS = [
   "Janvier",
@@ -78,13 +79,9 @@ export function ObjectifModal({
     >
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={onClose}>
-            <Text style={styles.closeText}>Annuler</Text>
-          </TouchableOpacity>
+          <AppButton title="Annuler" onPress={onClose} variant="link" />
           <Text style={styles.title}>Objectifs {annee}</Text>
-          <TouchableOpacity onPress={handleSave}>
-            <Text style={styles.saveText}>Enregistrer</Text>
-          </TouchableOpacity>
+          <AppButton title="Enregistrer" onPress={handleSave} size="sm" />
         </View>
 
         <ScrollView style={styles.content}>

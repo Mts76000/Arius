@@ -17,6 +17,7 @@ import { useEntreprises } from "@/hooks/useEntreprises";
 import type { Entreprise } from "@/services/entreprises";
 import Constants from "expo-constants";
 import { Colors } from "@/constants/theme";
+import { AppButton } from "@/components/ui/AppButton";
 
 const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
 
@@ -91,9 +92,12 @@ export default function EntreprisesScreen() {
         <Text style={styles.errorText}>
           Erreur de chargement des entreprises
         </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryButtonText}>Réessayer</Text>
-        </TouchableOpacity>
+        <AppButton
+          title="Reessayer"
+          onPress={() => refetch()}
+          size="sm"
+          style={styles.retryButton}
+        />
       </View>
     );
   }
@@ -397,13 +401,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   retryButton: {
-    backgroundColor: Colors.light.tint,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 10,
-  },
-  retryButtonText: {
-    color: "#0b1222",
-    fontWeight: "700",
   },
 });

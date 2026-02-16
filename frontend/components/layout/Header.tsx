@@ -55,9 +55,15 @@ export const Header: React.FC = () => {
   const getPageTitle = (path: string) => {
     if (path.includes("/profil")) return "Mon Profil";
 
-    if (path.includes("/entreprises/edit/")) return "Modifier Entreprise";
+    if (path.includes("/entreprises/") && path.endsWith("/edit")) {
+      return "Modifier Entreprise";
+    }
     if (path.endsWith("/entreprises/create")) return "Nouvelle Entreprise";
-    if (path.includes("/entreprises/") && !path.endsWith("/entreprises")) {
+    if (
+      path.includes("/entreprises/") &&
+      !path.endsWith("/entreprises") &&
+      !path.endsWith("/edit")
+    ) {
       return "Détail Entreprise";
     }
     if (path.includes("/entreprises")) return "Entreprises";
@@ -65,7 +71,7 @@ export const Header: React.FC = () => {
     if (path.includes("/rdvs")) return "Mes Rendez-vous";
     if (path.includes("/ca")) return "Chiffre d'affaires";
 
-    if (path.includes("/home") || path === "/" || path.endsWith("/(tabs)")) {
+    if (path === "/" || path === "/(tabs)" || path === "/(tabs)/index") {
       return "Accueil";
     }
 

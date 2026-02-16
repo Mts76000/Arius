@@ -14,6 +14,7 @@ import { useAuthStore } from "@/store/authStore";
 import { Colors } from "@/constants/theme";
 import { useMyRdvs } from "@/hooks/useRdvs";
 import { useEntreprises } from "@/hooks/useEntreprises";
+import { AppButton } from "@/components/ui/AppButton";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -98,12 +99,11 @@ export default function HomeScreen() {
         ) : (
           <>
             <Text style={styles.infoText}>Non connecté</Text>
-            <TouchableOpacity
+            <AppButton
+              title="Aller a la connexion"
               onPress={() => router.push("/login")}
               style={styles.primaryButton}
-            >
-              <Text style={styles.primaryButtonText}>Aller à la connexion</Text>
-            </TouchableOpacity>
+            />
           </>
         )}
       </View>
@@ -218,12 +218,12 @@ export default function HomeScreen() {
             </View>
           ))
         )}
-        <TouchableOpacity
-          style={styles.linkButton}
+        <AppButton
+          title="Voir toutes les entreprises"
           onPress={() => router.push("/entreprises")}
-        >
-          <Text style={styles.linkButtonText}>Voir toutes les entreprises</Text>
-        </TouchableOpacity>
+          variant="link"
+          style={styles.linkButton}
+        />
       </View>
     </ScrollView>
   );
@@ -257,17 +257,7 @@ const styles = StyleSheet.create({
     color: Colors.light.text,
   },
   primaryButton: {
-    backgroundColor: Colors.light.tint,
-    borderRadius: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
     marginTop: 12,
-  },
-  primaryButtonText: {
-    color: Colors.light.background,
-    fontWeight: "800",
-    fontSize: 16,
-    textAlign: "center",
   },
   infoText: {
     fontSize: 18,
@@ -385,9 +375,8 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignSelf: "flex-start",
   },
-  linkButtonText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: Colors.light.tint,
+  linkButton: {
+    marginTop: 12,
+    alignSelf: "flex-start",
   },
 });

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   TextInput,
   ScrollView,
   Alert,
@@ -11,8 +10,9 @@ import {
 } from "react-native";
 import { useDevis, useUploadDevis, useDeleteDevis } from "@/hooks/useDevis";
 import { devisService } from "@/services/devis";
-import { DevisModal } from "./DevisModal";
+import { DevisModal } from "@/components/modals/DevisModal";
 import { styles } from "@/styles/entrepriseDetailStyles";
+import { AppButton } from "@/components/ui/AppButton";
 
 interface DevisSectionProps {
   entrepriseId: string;
@@ -81,17 +81,11 @@ export function DevisSection({ entrepriseId }: DevisSectionProps) {
         <Text style={{ fontSize: 14, color: "#ef4444", marginBottom: 12 }}>
           Erreur lors du chargement des devis
         </Text>
-        <TouchableOpacity
+        <AppButton
+          title="Reessayer"
           onPress={() => window.location.reload()}
-          style={{
-            backgroundColor: "#0ea5e9",
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            borderRadius: 6,
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontWeight: "600" }}>Réessayer</Text>
-        </TouchableOpacity>
+          size="sm"
+        />
       </View>
     );
   }
@@ -110,20 +104,11 @@ export function DevisSection({ entrepriseId }: DevisSectionProps) {
         >
           📄 Devis
         </Text>
-        <TouchableOpacity
+        <AppButton
+          title="+ Upload devis"
           onPress={() => setShowUploadModal(true)}
-          style={{
-            backgroundColor: "#0ea5e9",
-            paddingHorizontal: 14,
-            paddingVertical: 10,
-            borderRadius: 8,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontWeight: "600", fontSize: 14 }}>
-            + Upload devis
-          </Text>
-        </TouchableOpacity>
+          size="sm"
+        />
       </View>
 
       {/* Search */}
@@ -180,47 +165,21 @@ export function DevisSection({ entrepriseId }: DevisSectionProps) {
                 </Text>
               )}
               <View style={{ flexDirection: "row", gap: 8 }}>
-                <TouchableOpacity
+                <AppButton
+                  title="Voir"
                   onPress={() => handleDownloadDevis(devisItem)}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#dbeafe",
-                    paddingVertical: 8,
-                    borderRadius: 6,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#0ea5e9",
-                      fontWeight: "600",
-                      fontSize: 13,
-                    }}
-                  >
-                    👁️ Voir
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                  variant="secondary"
+                  size="sm"
+                  style={{ flex: 1 }}
+                />
+                <AppButton
+                  title="Supprimer"
                   onPress={() => handleDeleteDevis(devisItem._id)}
+                  variant="danger"
+                  size="sm"
                   disabled={deleteMutation.isPending}
-                  style={{
-                    flex: 1,
-                    backgroundColor: "#fee2e2",
-                    paddingVertical: 8,
-                    borderRadius: 6,
-                    alignItems: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#ef4444",
-                      fontWeight: "600",
-                      fontSize: 13,
-                    }}
-                  >
-                    🗑️ Supprimer
-                  </Text>
-                </TouchableOpacity>
+                  style={{ flex: 1 }}
+                />
               </View>
             </View>
           ))}
@@ -237,7 +196,9 @@ export function DevisSection({ entrepriseId }: DevisSectionProps) {
       {/* Modal */}
       <DevisModal
         visible={showUploadModal}
-        onSubmit={uploadMutation.mutateAsync}
+        onSubmit={async (data) => {
+          await uploadMutation.mutateAsync(data);
+        }}
         onClose={() => setShowUploadModal(false)}
         isLoading={uploadMutation.isPending}
       />

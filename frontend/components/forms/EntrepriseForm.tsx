@@ -16,6 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
 import type { CreateEntrepriseInput } from "@/services/entreprises";
 import { useAuthStore } from "@/store/authStore";
+import { AppButton } from "@/components/ui/AppButton";
 import Constants from "expo-constants";
 
 interface EntrepriseFormProps {
@@ -349,18 +350,18 @@ export function EntrepriseForm({
         </View>
       </View>
       <View style={styles.actions}>
-        <TouchableOpacity style={styles.cancelBtn} onPress={onCancel}>
-          <Text style={styles.cancelText}>Annuler</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.submitBtn}
+        <AppButton
+          title="Annuler"
+          onPress={onCancel}
+          variant="secondary"
+          style={styles.cancelBtn}
+        />
+        <AppButton
+          title={isLoading ? "En cours..." : submitLabel}
           onPress={handleSubmit}
-          disabled={isLoading}
-        >
-          <Text style={styles.submitText}>
-            {isLoading ? "En cours..." : submitLabel}
-          </Text>
-        </TouchableOpacity>
+          isLoading={isLoading}
+          style={styles.submitBtn}
+        />
       </View>
       {Platform.OS === "web" && (
         <input

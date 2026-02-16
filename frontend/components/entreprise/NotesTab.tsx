@@ -7,7 +7,8 @@ import {
   TextInput,
 } from "react-native";
 import { Note, NoteType } from "@/services/notes";
-import { NoteCard } from "@/components/NoteCard";
+import { NoteCard } from "@/components/cards/NoteCard";
+import { AppButton } from "@/components/ui/AppButton";
 
 interface NotesTabProps {
   notes: Note[] | undefined;
@@ -83,19 +84,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
         <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
           Notes
         </Text>
-        <TouchableOpacity
-          onPress={onAddNote}
-          style={{
-            backgroundColor: "#0ea5e9",
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            borderRadius: 10,
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 14 }}>
-            + Nouvelle note
-          </Text>
-        </TouchableOpacity>
+        <AppButton title="+ Nouvelle note" onPress={onAddNote} size="sm" />
       </View>
 
       <View

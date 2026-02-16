@@ -17,6 +17,7 @@ import { Entreprise } from "@/services/entreprises";
 import { Contact } from "@/services/contacts";
 import { ValidationRules, FormErrors } from "@/utils/validation";
 import { styles } from "@/styles/entrepriseDetailStyles";
+import { AppButton } from "@/components/ui/AppButton";
 
 interface RdvModalProps {
   visible: boolean;
@@ -131,17 +132,21 @@ export function RdvModal({
     >
       <ScrollView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
-          <TouchableOpacity onPress={onClose} disabled={isLoading}>
-            <Text style={styles.modalClose}>Annuler</Text>
-          </TouchableOpacity>
+          <AppButton
+            title="Annuler"
+            onPress={onClose}
+            variant="link"
+            disabled={isLoading}
+          />
           <Text style={styles.modalTitle}>
             {rdv ? "Modifier RDV" : "Nouveau RDV"}
           </Text>
-          <TouchableOpacity onPress={handleSubmit} disabled={isLoading}>
-            <Text style={[styles.modalSave, isLoading && { opacity: 0.5 }]}>
-              {isLoading ? "..." : "Enregistrer"}
-            </Text>
-          </TouchableOpacity>
+          <AppButton
+            title={isLoading ? "..." : "Enregistrer"}
+            onPress={handleSubmit}
+            size="sm"
+            disabled={isLoading}
+          />
         </View>
 
         <View style={styles.modalForm}>

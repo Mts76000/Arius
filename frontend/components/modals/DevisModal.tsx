@@ -13,6 +13,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { UploadDevisInput } from "@/services/devis";
 import { FormErrors } from "@/utils/validation";
 import { styles } from "@/styles/entrepriseDetailStyles";
+import { AppButton } from "@/components/ui/AppButton";
 
 interface DevisModalProps {
   visible: boolean;
@@ -150,23 +151,19 @@ export function DevisModal({
     >
       <ScrollView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
-          <TouchableOpacity onPress={onClose} disabled={isLoading}>
-            <Text style={styles.modalClose}>Annuler</Text>
-          </TouchableOpacity>
+          <AppButton
+            title="Annuler"
+            onPress={onClose}
+            variant="link"
+            disabled={isLoading}
+          />
           <Text style={styles.modalTitle}>Nouveau Devis</Text>
-          <TouchableOpacity
+          <AppButton
+            title={isLoading ? "..." : "Enregistrer"}
             onPress={handleSubmit}
+            size="sm"
             disabled={isLoading || !selectedFile}
-          >
-            <Text
-              style={[
-                styles.modalSave,
-                (isLoading || !selectedFile) && { opacity: 0.5 },
-              ]}
-            >
-              {isLoading ? "..." : "Enregistrer"}
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
 
         <View style={styles.modalForm}>

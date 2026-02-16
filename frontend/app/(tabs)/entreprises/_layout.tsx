@@ -4,7 +4,7 @@ export default function EntreprisesLayout() {
   return (
     <Stack
       screenOptions={{
-        animationEnabled: true,
+        headerShown: false,
       }}
     >
       <Stack.Screen
@@ -22,7 +22,6 @@ export default function EntreprisesLayout() {
         options={{
           title: "Détail Entreprise",
           headerShown: false,
-          animationEnabled: true,
         }}
       />
       <Stack.Screen
@@ -30,15 +29,13 @@ export default function EntreprisesLayout() {
         options={{
           title: "Nouvelle Entreprise",
           headerShown: false,
-          animationEnabled: true,
         }}
       />
       <Stack.Screen
-        name="edit/[id]"
+        name="[id]/edit"
         options={{
           title: "Modifier Entreprise",
           headerShown: false,
-          animationEnabled: true,
         }}
       />
     </Stack>

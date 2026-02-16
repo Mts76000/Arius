@@ -13,11 +13,12 @@ import {
 import { useRouter } from "expo-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Colors } from "@/constants/theme";
-import { FormInput } from "@/components/FormInput";
+import { FormInput } from "@/components/forms/FormInput";
 import { updateProfil, changerMotdepasse } from "@/services/profil";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/services/api";
 import { exportService } from "@/services/export";
+import { AppButton } from "@/components/ui/AppButton";
 
 interface ProfilData {
   id: string;
@@ -219,7 +220,16 @@ export default function ProfilModal() {
         return;
       }
 
-      const exportType = typeof type === "string" ? type : undefined;
+      const exportType:
+        | "prospects"
+        | "rdvs"
+        | "notes"
+        | "ca"
+        | "objectifs"
+        | undefined =
+        typeof type === "string"
+          ? (type as "prospects" | "rdvs" | "notes" | "ca" | "objectifs")
+          : undefined;
       const { data, filename, contentType } = await exportService.download(
         token,
         exportType,
@@ -260,9 +270,12 @@ export default function ProfilModal() {
         <Text style={styles.errorText}>
           Erreur lors du chargement du profil
         </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryButtonText}>Réessayer</Text>
-        </TouchableOpacity>
+        <AppButton
+          title="Reessayer"
+          onPress={() => refetch()}
+          size="sm"
+          style={styles.retryButton}
+        />
       </View>
     );
   }
@@ -299,9 +312,12 @@ export default function ProfilModal() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Informations Personnelles</Text>
             {!editMode && (
-              <TouchableOpacity onPress={() => setEditMode(true)}>
-                <Text style={styles.editLink}>Modifier</Text>
-              </TouchableOpacity>
+              <AppButton
+                title="Modifier"
+                onPress={() => setEditMode(true)}
+                variant="link"
+                size="sm"
+              />
             )}
           </View>
 
@@ -325,28 +341,23 @@ export default function ProfilModal() {
               />
 
               <View style={styles.buttonGroup}>
-                <TouchableOpacity
-                  style={[styles.button, styles.cancelButton]}
+                <AppButton
+                  title="Annuler"
                   onPress={() => {
                     setEditMode(false);
                     setPrenom(profilData?.prenom || "");
                     setNom(profilData?.nom || "");
                     setErrorsProfil({});
                   }}
-                >
-                  <Text style={styles.cancelButtonText}>Annuler</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.primaryButton]}
+                  variant="secondary"
+                  style={styles.button}
+                />
+                <AppButton
+                  title="Enregistrer"
                   onPress={handleUpdateProfil}
-                  disabled={updateMutation.isPending}
-                >
-                  {updateMutation.isPending ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <Text style={styles.primaryButtonText}>Enregistrer</Text>
-                  )}
-                </TouchableOpacity>
+                  isLoading={updateMutation.isPending}
+                  style={styles.button}
+                />
               </View>
             </View>
           ) : (
@@ -374,9 +385,12 @@ export default function ProfilModal() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Sécurité</Text>
             {!passwordMode && (
-              <TouchableOpacity onPress={() => setPasswordMode(true)}>
-                <Text style={styles.editLink}>Modifier</Text>
-              </TouchableOpacity>
+              <AppButton
+                title="Modifier"
+                onPress={() => setPasswordMode(true)}
+                variant="link"
+                size="sm"
+              />
             )}
           </View>
 
@@ -419,26 +433,21 @@ export default function ProfilModal() {
               />
 
               <View style={styles.buttonGroup}>
-                <TouchableOpacity
-                  style={[styles.button, styles.cancelButton]}
+                <AppButton
+                  title="Annuler"
                   onPress={() => {
                     setPasswordMode(false);
                     resetPasswordFields();
                   }}
-                >
-                  <Text style={styles.cancelButtonText}>Annuler</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.primaryButton]}
+                  variant="secondary"
+                  style={styles.button}
+                />
+                <AppButton
+                  title="Enregistrer"
                   onPress={handleChangePassword}
-                  disabled={passwordMutation.isPending}
-                >
-                  {passwordMutation.isPending ? (
-                    <ActivityIndicator color="white" />
-                  ) : (
-                    <Text style={styles.primaryButtonText}>Enregistrer</Text>
-                  )}
-                </TouchableOpacity>
+                  isLoading={passwordMutation.isPending}
+                  style={styles.button}
+                />
               </View>
             </View>
           ) : (
@@ -525,9 +534,12 @@ export default function ProfilModal() {
 
         {/* Déconnexion */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Text style={styles.logoutButtonText}>Déconnexion</Text>
-          </TouchableOpacity>
+          <AppButton
+            title="Deconnexion"
+            onPress={handleLogout}
+            variant="danger"
+            style={styles.logoutButton}
+          />
         </View>
       </ScrollView>
     </View>
@@ -607,14 +619,6 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    backgroundColor: Colors.light.tint,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "600",
   },
   section: {
     marginBottom: 24,
@@ -639,11 +643,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "700",
     color: Colors.light.text,
-  },
-  editLink: {
-    fontSize: 14,
-    color: Colors.light.tint,
-    fontWeight: "600",
   },
   infoContainer: {
     gap: 12,
@@ -689,39 +688,6 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cancelButton: {
-    backgroundColor: Colors.light.border,
-  },
-  cancelButtonText: {
-    color: Colors.light.text,
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  primaryButton: {
-    backgroundColor: Colors.light.tint,
-  },
-  primaryButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  dataButton: {
-    backgroundColor: Colors.light.tint,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  dataButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "600",
   },
   exportSection: {
     marginBottom: 24,
@@ -879,16 +845,6 @@ const styles = StyleSheet.create({
     color: "#ef4444",
   },
   logoutButton: {
-    backgroundColor: "#E5484D",
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  logoutButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "600",
+    alignSelf: "stretch",
   },
 });

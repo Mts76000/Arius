@@ -10,6 +10,7 @@ import {
 import { CreateContactInput } from "@/services/contacts";
 import { FormErrors } from "@/utils/validation";
 import { styles } from "@/styles/entrepriseDetailStyles";
+import { AppButton } from "@/components/ui/AppButton";
 
 type Props = {
   visible: boolean;
@@ -41,15 +42,11 @@ export function ContactModal({
     >
       <ScrollView style={styles.modalContainer}>
         <View style={styles.modalHeader}>
-          <TouchableOpacity onPress={onClose}>
-            <Text style={styles.modalClose}>Annuler</Text>
-          </TouchableOpacity>
+          <AppButton title="Annuler" onPress={onClose} variant="link" />
           <Text style={styles.modalTitle}>
             {isEditing ? "Modifier contact" : "Nouveau contact"}
           </Text>
-          <TouchableOpacity onPress={onSave}>
-            <Text style={styles.modalSave}>Enregistrer</Text>
-          </TouchableOpacity>
+          <AppButton title="Enregistrer" onPress={onSave} size="sm" />
         </View>
 
         <View style={styles.modalForm}>

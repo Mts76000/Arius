@@ -18,16 +18,6 @@ export default function TabsLayout() {
     return <Redirect href="/login" />;
   }
 
-  const handleEntreprisesPress = () => {
-    // Si on est déjà dans la section entreprises mais pas sur la page liste
-    if (
-      pathname.includes("/entreprises") &&
-      pathname !== "/(tabs)/entreprises"
-    ) {
-      router.replace("/(tabs)/entreprises");
-    }
-  };
-
   return (
     <Tabs
       screenOptions={{
@@ -54,7 +44,7 @@ export default function TabsLayout() {
       }}
     >
       <Tabs.Screen
-        name="home"
+        name="index"
         options={{
           title: "Accueil",
           headerTitle: "Accueil",

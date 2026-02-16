@@ -17,9 +17,10 @@ import {
   useUpdateCA,
   useDeleteCA,
 } from "@/hooks/useCA";
-import { CAModal } from "@/components/CAModal";
+import { CAModal } from "@/components/modals/CAModal";
 import { CAMensuel } from "@/services/ca";
 import { Entreprise } from "@/services/entreprises";
+import { AppButton } from "@/components/ui/AppButton";
 
 const MOIS_LABELS = [
   "Janvier",
@@ -128,10 +129,11 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.addButton} onPress={handleAddCA}>
-          <Ionicons name="add-circle" size={20} color="#fff" />
-          <Text style={styles.addButtonText}>Ajouter du CA</Text>
-        </TouchableOpacity>
+        <AppButton
+          title="Ajouter du CA"
+          onPress={handleAddCA}
+          style={styles.addButton}
+        />
 
         <View style={styles.yearSelector}>
           <Picker
@@ -264,29 +266,19 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: Colors.light.tint,
-    padding: 12,
-    borderRadius: 12,
-    flex: 1,
-    justifyContent: "center",
-  },
-  addButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
+    alignSelf: "flex-start",
   },
   yearSelector: {
-    backgroundColor: Colors.light.card,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: Colors.light.border,
-    minWidth: 120,
+    backgroundColor: Colors.light.card,
+    overflow: "hidden",
+    flex: 1,
   },
   picker: {
     height: 50,
+    width: "100%",
   },
   kpisContainer: {
     flexDirection: "row",

@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator } from "react-native";
 import { Rdv, RdvStatus } from "@/services/rdvs";
-import { RdvCard } from "@/components/RdvCard";
+import { RdvCard } from "@/components/cards/RdvCard";
 import { styles } from "@/styles/entrepriseDetailStyles";
+import { AppButton } from "@/components/ui/AppButton";
 
 interface RdvsTabProps {
   rdvs: Rdv[] | undefined;
@@ -41,19 +42,7 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
         <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
           Rendez-vous
         </Text>
-        <TouchableOpacity
-          onPress={onAddRdv}
-          style={{
-            backgroundColor: "#0ea5e9",
-            paddingHorizontal: 16,
-            paddingVertical: 10,
-            borderRadius: 10,
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 14 }}>
-            + Nouveau RDV
-          </Text>
-        </TouchableOpacity>
+        <AppButton title="+ Nouveau RDV" onPress={onAddRdv} size="sm" />
       </View>
 
       {rdvsLoading ? (
@@ -107,19 +96,7 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
           >
             Planifie un rendez-vous avec ce client
           </Text>
-          <TouchableOpacity
-            onPress={onAddRdv}
-            style={{
-              backgroundColor: "#0ea5e9",
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              borderRadius: 10,
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-              + Ajouter un RDV
-            </Text>
-          </TouchableOpacity>
+          <AppButton title="+ Ajouter un RDV" onPress={onAddRdv} size="sm" />
         </View>
       )}
     </View>

@@ -21,8 +21,9 @@ import { useEntreprises } from "@/hooks/useEntreprises";
 import { useContacts } from "@/hooks/useContacts";
 import { Rdv, CreateRdvInput, RdvStatus } from "@/services/rdvs";
 import { Contact } from "@/services/contacts";
-import { RdvCard } from "@/components/RdvCard";
-import { RdvModal } from "@/components/RdvModal";
+import { RdvCard } from "@/components/cards/RdvCard";
+import { RdvModal } from "@/components/modals/RdvModal";
+import { AppButton } from "@/components/ui/AppButton";
 import { styles } from "@/styles/entrepriseDetailStyles";
 
 type DateFilter = "today" | "week" | "month" | "all";
@@ -219,20 +220,7 @@ export default function RdvsScreen() {
 
       {/* Add Button */}
       <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-        <TouchableOpacity
-          onPress={handleAddRdv}
-          style={{
-            backgroundColor: "#0ea5e9",
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            borderRadius: 10,
-            alignItems: "center",
-          }}
-        >
-          <Text style={{ color: "#ffffff", fontWeight: "700", fontSize: 16 }}>
-            + Créer un RDV
-          </Text>
-        </TouchableOpacity>
+        <AppButton title="+ Créer un RDV" onPress={handleAddRdv} />
       </View>
 
       {/* Filters */}
@@ -344,20 +332,13 @@ export default function RdvsScreen() {
                 }}
               />
               {selectedDate && (
-                <TouchableOpacity
+                <AppButton
+                  title="Effacer le filtre"
                   onPress={() => setSelectedDate(null)}
+                  variant="link"
+                  size="sm"
                   style={{ marginTop: 12, alignSelf: "center" }}
-                >
-                  <Text
-                    style={{
-                      color: "#ef4444",
-                      fontSize: 12,
-                      fontWeight: "600",
-                    }}
-                  >
-                    Effacer le filtre
-                  </Text>
-                </TouchableOpacity>
+                />
               )}
             </View>
           )}
@@ -413,19 +394,7 @@ export default function RdvsScreen() {
           >
             Planifie un rendez-vous avec tes clients
           </Text>
-          <TouchableOpacity
-            onPress={handleAddRdv}
-            style={{
-              backgroundColor: "#0ea5e9",
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              borderRadius: 10,
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-              + Créer un RDV
-            </Text>
-          </TouchableOpacity>
+          <AppButton title="+ Créer un RDV" onPress={handleAddRdv} size="sm" />
         </View>
       )}
 

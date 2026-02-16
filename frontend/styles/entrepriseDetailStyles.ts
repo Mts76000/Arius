@@ -12,9 +12,9 @@ export const styles = StyleSheet.create({
     backgroundColor: "#f9fafb",
   },
   header: {
-    backgroundColor: "#ffffff",
-    padding: 20,
-    paddingTop: 60,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
   },
@@ -23,17 +23,6 @@ export const styles = StyleSheet.create({
     fontWeight: "800",
     color: "#1f2937",
     marginBottom: 12,
-  },
-  logoSection: {
-    alignItems: "center",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-  },
-  logoImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 12,
-    backgroundColor: "#f3f4f6",
   },
   badge: {
     paddingHorizontal: 14,
@@ -58,6 +47,15 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     textTransform: "capitalize",
+  },
+  logoSection: {
+    alignItems: "center",
+    paddingVertical: 16,
+  },
+  logoImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 12,
   },
   section: {
     padding: 20,
@@ -95,31 +93,9 @@ export const styles = StyleSheet.create({
   },
   editButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: "#2563eb",
-    alignItems: "center",
-    boxShadow: "0 2px 4px rgba(37, 99, 235, 0.2)",
-    elevation: 3,
-  },
-  editButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "700",
   },
   deleteButton: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: "#dc2626",
-    alignItems: "center",
-    boxShadow: "0 2px 4px rgba(220, 38, 38, 0.2)",
-    elevation: 3,
-  },
-  deleteButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "700",
   },
   errorText: {
     color: "#dc2626",
@@ -130,17 +106,6 @@ export const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 12,
-  },
-  addContactButton: {
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  addContactButtonText: {
-    color: "#ffffff",
-    fontSize: 14,
-    fontWeight: "600",
   },
   contactsList: {
     gap: 12,
@@ -220,31 +185,22 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#e5e7eb",
   },
-  modalClose: {
-    color: "#6b7280",
-    fontSize: 16,
-  },
   modalTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: "#1f2937",
   },
-  modalSave: {
-    color: "#2563eb",
-    fontSize: 16,
-    fontWeight: "600",
-  },
   modalForm: {
     padding: 20,
-    gap: 16,
   },
   formGroup: {
-    gap: 8,
+    marginBottom: 16,
   },
   label: {
     fontSize: 14,
     fontWeight: "600",
     color: "#374151",
+    marginBottom: 6,
   },
   required: {
     color: "#dc2626",
@@ -259,32 +215,28 @@ export const styles = StyleSheet.create({
     color: "#1f2937",
     backgroundColor: "#ffffff",
   },
-  inputError: {
-    borderColor: "#dc2626",
-  },
-  errorTextSmall: {
-    color: "#dc2626",
-    fontSize: 12,
-    marginTop: 4,
-  },
   textArea: {
-    minHeight: 100,
+    minHeight: 90,
     textAlignVertical: "top",
+  },
+  inputError: {
+    borderColor: "#ef4444",
   },
   checkboxRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
-    paddingVertical: 8,
+    gap: 10,
+    marginTop: 8,
   },
   checkbox: {
-    width: 24,
-    height: 24,
-    borderWidth: 2,
-    borderColor: "#d1d5db",
+    width: 20,
+    height: 20,
     borderRadius: 4,
-    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "#cbd5f5",
     alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ffffff",
   },
   checkboxChecked: {
     backgroundColor: "#2563eb",
@@ -292,11 +244,11 @@ export const styles = StyleSheet.create({
   },
   checkboxCheck: {
     color: "#ffffff",
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: "700",
   },
   checkboxLabel: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#374151",
   },
 });
