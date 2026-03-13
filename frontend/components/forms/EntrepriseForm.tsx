@@ -215,38 +215,29 @@ export function EntrepriseForm({
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Nom de l&apos;entreprise *</Text>
+    <ScrollView>
+      <View>
+        <Text>Nom de l&apos;entreprise *</Text>
         <TextInput
-          style={[styles.input, formErrors.nom && styles.inputError]}
           placeholder="Nom de l'entreprise"
           placeholderTextColor="#9ca3af"
           value={formData.nom ?? ""}
           onChangeText={(t) => setFormData({ ...formData, nom: t ?? "" })}
         />
         {formErrors.nom && (
-          <Text style={styles.errorText}>{formErrors.nom}</Text>
+          <Text>{formErrors.nom}</Text>
         )}
       </View>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Statut</Text>
-        <View style={styles.buttonGroup}>
+      <View>
+        <Text>Statut</Text>
+        <View>
           {(["client", "prospect", "fournisseur", "a_reactiver"] as const).map(
             (s) => (
               <TouchableOpacity
                 key={s}
-                style={[
-                  styles.statut,
-                  formData.statut === s && styles.statutActive,
-                ]}
                 onPress={() => setFormData({ ...formData, statut: s })}
               >
                 <Text
-                  style={[
-                    styles.statutText,
-                    formData.statut === s && styles.statutTextActive,
-                  ]}
                 >
                   {s === "a_reactiver" ? "À réactiver" : s}
                 </Text>
@@ -255,23 +246,21 @@ export function EntrepriseForm({
           )}
         </View>
       </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Adresse</Text>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Rue</Text>
+      <View>
+        <Text>Adresse</Text>
+        <View>
+          <Text>Rue</Text>
           <TextInput
-            style={styles.input}
             placeholder="Numéro et nom de rue"
             placeholderTextColor="#9ca3af"
             value={formData.rue ?? ""}
             onChangeText={(t) => setFormData({ ...formData, rue: t ?? "" })}
           />
         </View>
-        <View style={styles.row}>
-          <View style={[styles.formGroup, styles.flex1]}>
-            <Text style={styles.label}>Code Postal</Text>
+        <View>
+          <View>
+            <Text>Code Postal</Text>
             <TextInput
-              style={styles.input}
               placeholder="75000"
               placeholderTextColor="#9ca3af"
               value={formData.code_postal ?? ""}
@@ -280,10 +269,9 @@ export function EntrepriseForm({
               }
             />
           </View>
-          <View style={[styles.formGroup, styles.flex2]}>
-            <Text style={styles.label}>Ville</Text>
+          <View>
+            <Text>Ville</Text>
             <TextInput
-              style={styles.input}
               placeholder="Ville"
               placeholderTextColor="#9ca3af"
               value={formData.ville ?? ""}
@@ -291,10 +279,9 @@ export function EntrepriseForm({
             />
           </View>
         </View>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Pays</Text>
+        <View>
+          <Text>Pays</Text>
           <TextInput
-            style={styles.input}
             placeholder="France"
             placeholderTextColor="#9ca3af"
             value={formData.pays ?? ""}
@@ -302,10 +289,9 @@ export function EntrepriseForm({
           />
         </View>
       </View>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Description</Text>
+      <View>
+        <Text>Description</Text>
         <TextInput
-          style={[styles.input, styles.textarea]}
           placeholder="Description de l'entreprise..."
           placeholderTextColor="#9ca3af"
           value={formData.description ?? ""}
@@ -316,9 +302,9 @@ export function EntrepriseForm({
           numberOfLines={4}
         />
       </View>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Logo</Text>
-        <View style={styles.logoContainer}>
+      <View>
+        <Text>Logo</Text>
+        <View>
           {formData.logo && (
             <Image
               source={{
@@ -326,22 +312,19 @@ export function EntrepriseForm({
                   ? formData.logo
                   : `${baseURL}${formData.logo}`,
               }}
-              style={styles.logoPreview}
             />
           )}
-          <View style={styles.logoButtons}>
+          <View>
             <TouchableOpacity
-              style={styles.logoBtn}
               onPress={pickImage}
               disabled={uploading}
             >
               <Ionicons name="image" size={20} color="#2563eb" />
-              <Text style={styles.logoBtnText}>Galerie</Text>
+              <Text>Galerie</Text>
             </TouchableOpacity>
           </View>
           {formData.logo && (
             <TouchableOpacity
-              style={styles.removeLogo}
               onPress={() => setFormData({ ...formData, logo: "" })}
             >
               <Ionicons name="close" size={18} color="#dc2626" />
@@ -349,18 +332,16 @@ export function EntrepriseForm({
           )}
         </View>
       </View>
-      <View style={styles.actions}>
+      <View>
         <AppButton
           title="Annuler"
           onPress={onCancel}
           variant="secondary"
-          style={styles.cancelBtn}
         />
         <AppButton
           title={isLoading ? "En cours..." : submitLabel}
           onPress={handleSubmit}
           isLoading={isLoading}
-          style={styles.submitBtn}
         />
       </View>
       {Platform.OS === "web" && (
@@ -369,7 +350,6 @@ export function EntrepriseForm({
           ref={fileInputRef as any}
           type="file"
           accept="image/*"
-          style={{ display: "none" }}
           onChange={handleWebFileSelect as any}
         />
       )}

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
+
 import { Entreprise } from "@/services/entreprises";
 import { AppButton } from "@/components/ui/AppButton";
 
@@ -110,24 +110,23 @@ export function CAModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View>
+        <View>
           <AppButton title="Annuler" onPress={onClose} variant="link" />
-          <Text style={styles.title}>
+          <Text>
             {isEditing ? "Modifier CA" : "Ajouter du CA"}
           </Text>
-          <AppButton title="Enregistrer" onPress={handleSave} size="sm" />
+          <AppButton title="Enregistrer" onPress={handleSave} />
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView>
           {/* Entreprise */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Entreprise *</Text>
-            <View style={styles.pickerContainer}>
+          <View>
+            <Text>Entreprise *</Text>
+            <View>
               <Picker
                 selectedValue={entrepriseId}
                 onValueChange={setEntrepriseId}
-                style={styles.picker}
                 enabled={!isEditing}
               >
                 <Picker.Item label="Sélectionner une entreprise" value="" />
@@ -139,13 +138,12 @@ export function CAModal({
           </View>
 
           {/* Mois */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Mois *</Text>
-            <View style={styles.pickerContainer}>
+          <View>
+            <Text>Mois *</Text>
+            <View>
               <Picker
                 selectedValue={mois}
                 onValueChange={(value) => setMois(value)}
-                style={styles.picker}
                 enabled={!isEditing}
               >
                 {MOIS_LABELS.map((moisLabel, index) => (
@@ -160,13 +158,12 @@ export function CAModal({
           </View>
 
           {/* Année */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Année *</Text>
-            <View style={styles.pickerContainer}>
+          <View>
+            <Text>Année *</Text>
+            <View>
               <Picker
                 selectedValue={annee}
                 onValueChange={(value) => setAnnee(value)}
-                style={styles.picker}
                 enabled={!isEditing}
               >
                 {annees.map((a) => (
@@ -177,18 +174,17 @@ export function CAModal({
           </View>
 
           {/* Montant CA */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Montant (€) *</Text>
-            <View style={styles.inputContainer}>
+          <View>
+            <Text>Montant (€) *</Text>
+            <View>
               <TextInput
-                style={styles.input}
                 placeholder="0.00"
-                placeholderTextColor={Colors.light.muted}
+                placeholderTextColor={"#64748b"}
                 keyboardType="numeric"
                 value={ca}
                 onChangeText={setCa}
               />
-              <Text style={styles.inputSuffix}>€</Text>
+              <Text>€</Text>
             </View>
           </View>
 
@@ -196,9 +192,9 @@ export function CAModal({
           {annee > currentDate.getFullYear() ||
           (annee === currentDate.getFullYear() &&
             mois > currentDate.getMonth() + 1) ? (
-            <View style={styles.warningContainer}>
+            <View>
               <Ionicons name="warning" size={20} color="#856404" />
-              <Text style={styles.warningText}>
+              <Text>
                 Vous ajoutez du CA pour un mois futur
               </Text>
             </View>
@@ -212,29 +208,29 @@ export function CAModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 20,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#e2e8f0",
   },
   closeText: {
     fontSize: 16,
-    color: Colors.light.tint,
+    color: "#0ea5e9",
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   saveText: {
     fontSize: 16,
-    color: Colors.light.tint,
+    color: "#0ea5e9",
     fontWeight: "600",
   },
   content: {
@@ -247,14 +243,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.light.text,
+    color: "#0f172a",
     marginBottom: 8,
   },
   pickerContainer: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     overflow: "hidden",
   },
   picker: {
@@ -269,17 +265,17 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.text,
-    backgroundColor: Colors.light.card,
+    color: "#0f172a",
+    backgroundColor: "#ffffff",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
   },
   inputSuffix: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.muted,
+    color: "#64748b",
   },
   warningContainer: {
     flexDirection: "row",

@@ -66,64 +66,30 @@ export const NotesTab: React.FC<NotesTabProps> = ({
 
   return (
     <View
-      style={{
-        backgroundColor: "#ffffff",
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 24,
-      }}
     >
       <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
       >
-        <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
+        <Text>
           Notes
         </Text>
-        <AppButton title="+ Nouvelle note" onPress={onAddNote} size="sm" />
+        <AppButton title="+ Nouvelle note" onPress={onAddNote} />
       </View>
 
       <View
-        style={{
-          marginBottom: 16,
-          paddingBottom: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: "#e5e7eb",
-        }}
       >
         <View
-          style={{
-            backgroundColor: "#f1f5f9",
-            borderRadius: 10,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-          }}
         >
-          <Text style={{ fontSize: 16, color: "#64748b" }}>🔍</Text>
+          <Text>🔍</Text>
           <TextInput
             placeholder="Rechercher par titre, date..."
             placeholderTextColor="#94a3b8"
             value={noteSearchQuery}
             onChangeText={onSearchChange}
-            style={{ flex: 1, fontSize: 14, color: "#0f172a", padding: 0 }}
           />
         </View>
       </View>
 
       <View
-        style={{
-          flexDirection: "row",
-          gap: 8,
-          marginBottom: 16,
-          flexWrap: "wrap",
-        }}
       >
         {[
           { value: "all", label: "Tout" },
@@ -136,20 +102,8 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           <TouchableOpacity
             key={filter.value}
             onPress={() => onTypeFilterChange(filter.value as any)}
-            style={{
-              paddingHorizontal: 14,
-              paddingVertical: 8,
-              borderRadius: 8,
-              backgroundColor:
-                noteTypeFilter === filter.value ? "#0ea5e9" : "#f1f5f9",
-            }}
           >
             <Text
-              style={{
-                fontWeight: "600",
-                fontSize: 13,
-                color: noteTypeFilter === filter.value ? "#ffffff" : "#64748b",
-              }}
             >
               {filter.label}
             </Text>
@@ -161,10 +115,9 @@ export const NotesTab: React.FC<NotesTabProps> = ({
         <ActivityIndicator
           size="small"
           color="#0ea5e9"
-          style={{ marginTop: 32 }}
         />
       ) : filteredNotes && filteredNotes.length > 0 ? (
-        <View style={{ gap: 12 }}>
+        <View>
           {filteredNotes.map((note) => (
             <NoteCard
               key={note._id}
@@ -176,47 +129,20 @@ export const NotesTab: React.FC<NotesTabProps> = ({
         </View>
       ) : (
         <View
-          style={{
-            backgroundColor: "#f8fafc",
-            borderColor: "#e2e8f0",
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 24,
-            alignItems: "center",
-            marginTop: 32,
-          }}
         >
-          <Text style={{ fontSize: 48, marginBottom: 12 }}>📝</Text>
+          <Text>📝</Text>
           <Text
-            style={{
-              color: "#0f172a",
-              fontWeight: "700",
-              fontSize: 16,
-              marginBottom: 6,
-            }}
           >
             Aucune note pour l'instant
           </Text>
           <Text
-            style={{
-              color: "#64748b",
-              fontSize: 14,
-              marginBottom: 16,
-              textAlign: "center",
-            }}
           >
             Commence à documenter tes interactions avec ce client
           </Text>
           <TouchableOpacity
             onPress={onAddNote}
-            style={{
-              backgroundColor: "#0ea5e9",
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              borderRadius: 10,
-            }}
           >
-            <Text style={{ color: "#ffffff", fontWeight: "700" }}>
+            <Text>
               + Ajouter une note
             </Text>
           </TouchableOpacity>

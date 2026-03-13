@@ -10,7 +10,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
+
 import { useCAStats, useCA, useCreateCA } from "@/hooks/useCA";
 import { useObjectifs, useCreateObjectif } from "@/hooks/useObjectifs";
 import { useEntreprises } from "@/hooks/useEntreprises";
@@ -70,9 +70,9 @@ export default function CAScreen() {
   };
 
   const getProgressionColor = (progression: number | null) => {
-    if (!progression) return Colors.light.muted;
+    if (!progression) return "#64748b";
     if (progression >= 100) return "#10b981";
-    if (progression >= 90) return Colors.light.tint;
+    if (progression >= 90) return "#0ea5e9";
     if (progression >= 50) return "#f59e0b";
     return "#ef4444";
   };
@@ -136,39 +136,38 @@ export default function CAScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.light.tint} />
+      <View>
+        <ActivityIndicator size="large" color={"#0ea5e9"} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView>
       {/* Header - Sélecteur mois/année */}
-      <View style={styles.header}>
+      <View>
         <TouchableOpacity
           onPress={handleMoisPrecedent}
-          style={styles.navButton}
         >
-          <Ionicons name="chevron-back" size={24} color={Colors.light.tint} />
+          <Ionicons name="chevron-back" size={24} color={"#0ea5e9"} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
+        <Text>
           {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
         </Text>
-        <TouchableOpacity onPress={handleMoisSuivant} style={styles.navButton}>
+        <TouchableOpacity onPress={handleMoisSuivant}>
           <Ionicons
             name="chevron-forward"
             size={24}
-            color={Colors.light.tint}
+            color={"#0ea5e9"}
           />
         </TouchableOpacity>
       </View>
 
       {/* KPIs du mois */}
-      <View style={styles.kpisContainer}>
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiLabel}>CA du mois</Text>
-          <Text style={[styles.kpiValue, { color: Colors.light.tint }]}>
+      <View>
+        <View>
+          <Text>CA du mois</Text>
+          <Text>
             {(stats?.ca_total || 0).toLocaleString("fr-FR", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -176,9 +175,9 @@ export default function CAScreen() {
             €
           </Text>
         </View>
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiLabel}>Objectif</Text>
-          <Text style={[styles.kpiValue, { color: "#10b981" }]}>
+        <View>
+          <Text>Objectif</Text>
+          <Text>
             {stats?.objectif
               ? `${(stats.objectif || 0).toLocaleString("fr-FR", {
                   minimumFractionDigits: 2,
@@ -191,56 +190,44 @@ export default function CAScreen() {
 
       {/* Barre de progression */}
       {stats?.progression !== null && (
-        <View style={styles.progressionContainer}>
-          <View style={styles.progressionHeader}>
-            <Text style={styles.progressionLabel}>Progression</Text>
-            <Text style={styles.progressionValue}>
+        <View>
+          <View>
+            <Text>Progression</Text>
+            <Text>
               {getProgressionIcon(stats?.progression ?? null)}{" "}
               {stats?.progression?.toFixed(1)}%
             </Text>
           </View>
-          <View style={styles.progressBar}>
+          <View>
             <View
-              style={[
-                styles.progressFill,
-                {
-                  width: `${Math.min(stats?.progression || 0, 100)}%`,
-                  backgroundColor: getProgressionColor(
-                    stats?.progression ?? null,
-                  ),
-                },
-              ]}
             />
           </View>
         </View>
       )}
 
       {/* Boutons actions */}
-      <View style={styles.actionsContainer}>
+      <View>
         <AppButton
           title="Ajouter"
           onPress={() => setShowCAModal(true)}
-          style={styles.actionButton}
         />
         <AppButton
           title="Objectif"
           onPress={() => setShowObjectifModal(true)}
           variant="secondary"
-          style={styles.actionButton}
         />
       </View>
 
       {/* CA par entreprise */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>CA par entreprise</Text>
-        <View style={styles.searchContainer}>
-          <Ionicons name="search" size={20} color={Colors.light.muted} />
+      <View>
+        <Text>CA par entreprise</Text>
+        <View>
+          <Ionicons name="search" size={20} color={"#64748b"} />
           <TextInput
-            style={styles.searchInput}
             placeholder="Rechercher une entreprise..."
             value={rechercheEntreprise}
             onChangeText={setRechercheEntreprise}
-            placeholderTextColor={Colors.light.muted}
+            placeholderTextColor={"#64748b"}
           />
         </View>
 
@@ -248,16 +235,15 @@ export default function CAScreen() {
           entreprisesFiltrees.map((entreprise, index) => (
             <TouchableOpacity
               key={entreprise.entreprise_id}
-              style={styles.entrepriseCard}
               onPress={() => handleEntrepriseClick(entreprise.entreprise_id)}
             >
-              <View style={styles.entrepriseInfo}>
-                <Text style={styles.entrepriseNom}>
+              <View>
+                <Text>
                   {index === 0 && "🏆 "}
                   {entreprise.entreprise_nom}
                 </Text>
               </View>
-              <Text style={styles.entrepriseCA}>
+              <Text>
                 {(entreprise.ca_total || 0).toLocaleString("fr-FR", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -267,34 +253,33 @@ export default function CAScreen() {
             </TouchableOpacity>
           ))
         ) : (
-          <Text style={styles.emptyText}>Aucun CA ce mois</Text>
+          <Text>Aucun CA ce mois</Text>
         )}
       </View>
 
       {/* Vue annuelle */}
-      <View style={styles.section}>
+      <View>
         <TouchableOpacity
-          style={styles.sectionHeader}
           onPress={() => setShowAnnuelle(!showAnnuelle)}
         >
-          <Text style={styles.sectionTitle}>Vue annuelle {selectedAnnee}</Text>
+          <Text>Vue annuelle {selectedAnnee}</Text>
           <Ionicons
             name={showAnnuelle ? "chevron-up" : "chevron-down"}
             size={24}
-            color={Colors.light.text}
+            color={"#0f172a"}
           />
         </TouchableOpacity>
 
         {showAnnuelle && (
-          <View style={styles.annuelleContainer}>
+          <View>
             {MOIS_LABELS.map((mois, index) => {
               const moisNum = index + 1;
               const caTotal = caParMois[index];
 
               return (
-                <View key={moisNum} style={styles.moisRow}>
-                  <Text style={styles.moisLabel}>{mois}</Text>
-                  <Text style={styles.moisCA}>
+                <View key={moisNum}>
+                  <Text>{mois}</Text>
+                  <Text>
                     {(caTotal || 0).toLocaleString("fr-FR", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -335,20 +320,20 @@ export default function CAScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     padding: 20,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
   },
   navButton: {
     padding: 8,
@@ -356,7 +341,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   kpisContainer: {
     flexDirection: "row",
@@ -365,15 +350,15 @@ const styles = StyleSheet.create({
   },
   kpiCard: {
     flex: 1,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
   },
   kpiLabel: {
     fontSize: 12,
-    color: Colors.light.muted,
+    color: "#64748b",
     marginBottom: 4,
   },
   kpiValue: {
@@ -384,10 +369,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginBottom: 20,
     padding: 16,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
   },
   progressionHeader: {
     flexDirection: "row",
@@ -397,16 +382,16 @@ const styles = StyleSheet.create({
   },
   progressionLabel: {
     fontSize: 14,
-    color: Colors.light.muted,
+    color: "#64748b",
   },
   progressionValue: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   progressBar: {
     height: 12,
-    backgroundColor: Colors.light.border,
+    backgroundColor: "#e2e8f0",
     borderRadius: 6,
     overflow: "hidden",
   },
@@ -426,14 +411,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    backgroundColor: Colors.light.tint,
+    backgroundColor: "#0ea5e9",
     padding: 16,
     borderRadius: 12,
   },
   actionButtonSecondary: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: Colors.light.tint,
+    borderColor: "#0ea5e9",
   },
   actionButtonText: {
     color: "#fff",
@@ -453,34 +438,34 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.text,
+    color: "#0f172a",
     marginBottom: 12,
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     padding: 12,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     marginBottom: 12,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   entrepriseCard: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     marginBottom: 8,
   },
   entrepriseInfo: {
@@ -489,24 +474,24 @@ const styles = StyleSheet.create({
   entrepriseNom: {
     fontSize: 16,
     fontWeight: "600",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   entrepriseCA: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.tint,
+    color: "#0ea5e9",
   },
   emptyText: {
     textAlign: "center",
-    color: Colors.light.muted,
+    color: "#64748b",
     fontSize: 14,
     padding: 20,
   },
   annuelleContainer: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     padding: 16,
   },
   moisRow: {
@@ -515,15 +500,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#e2e8f0",
   },
   moisLabel: {
     fontSize: 14,
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   moisCA: {
     fontSize: 16,
     fontWeight: "600",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
 });

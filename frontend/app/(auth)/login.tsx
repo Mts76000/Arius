@@ -1,18 +1,11 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Alert,
-  StyleSheet,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Text,
-} from "react-native";
+import { View, ScrollView, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { FormInput } from "@/components/forms/FormInput";
 import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
 import { AppButton } from "@/components/ui/AppButton";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -32,6 +25,20 @@ export default function LoginScreen() {
       router.replace("/(tabs)");
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!error) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      clearError();
+    }, 10000);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [error, clearError]);
 
   const validateFormFields = (): boolean => {
     const errors: FormErrors = {};
@@ -66,9 +73,7 @@ export default function LoginScreen() {
       } else {
         await login(email, password);
       }
-    } catch (err) {
-      Alert.alert("Erreur", error || "Une erreur est survenue");
-    }
+    } catch (err) {}
   };
 
   const toggleMode = () => {
@@ -82,146 +87,92 @@ export default function LoginScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    <ScrollView
+      style={{ flex: 1 }}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{
+        flexGrow: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 24,
+        paddingVertical: 75,
+      }}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.card}>
-          <Text style={styles.title}>
-            {isRegisterMode ? "Créer un compte" : "Connexion"}
+      <View className="w-full max-w-md flex-col items-center gap-8 bg-white p-12 rounded-[20px] shadow-sm">
+        <View className="flex-col items-center gap-4">
+          <View className="bg-primary w-[50px] h-[50px] rounded-xl items-center justify-center">
+            <Ionicons name="cube-outline" size={30} color="white" />
+          </View>
+          <Text className="text-4xl font-bold">Arius CRM</Text>
+          <Text className="text-gray text-lg">
+            {isRegisterMode ? "Créer un compte" : "Connexion à votre compte"}
           </Text>
-          <Text style={styles.subtitle}>
-            Accédez à votre espace en quelques secondes.
-          </Text>
-
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
-
-          <FormInput
-            label="Email"
-            placeholder="Email"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-            error={formErrors.email}
-          />
-
-          <FormInput
-            label="Mot de passe"
-            placeholder="Mot de passe"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-            enableVisibilityToggle
-            error={formErrors.password}
-          />
-
-          {isRegisterMode && (
-            <>
-              <FormInput
-                label="Confirmer le mot de passe"
-                placeholder="Confirmer le mot de passe"
-                value={passwordConfirm}
-                onChangeText={setPasswordConfirm}
-                secureTextEntry
-                enableVisibilityToggle
-                error={formErrors.passwordConfirm}
-              />
-
-              <FormInput
-                label="Prénom"
-                placeholder="Prénom"
-                value={prenom}
-                onChangeText={setPrenom}
-                error={formErrors.prenom}
-              />
-
-              <FormInput
-                label="Nom"
-                placeholder="Nom"
-                value={nom}
-                onChangeText={setNom}
-                error={formErrors.nom}
-              />
-            </>
-          )}
-
-          <AppButton
-            title={isRegisterMode ? "S'inscrire" : "Se connecter"}
-            onPress={handleSubmit}
-            isLoading={isLoading}
-            style={styles.primaryButton}
-          />
-
-          <AppButton
-            title={
-              isRegisterMode
-                ? "Déjà un compte ? Se connecter"
-                : "Pas de compte ? S'inscrire"
-            }
-            onPress={toggleMode}
-            variant="link"
-            style={styles.switchButton}
-          />
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        {error && (
+          <View className="flex items-center w-full p-2 bg-red-100 rounded-xl border border-red-300">
+            <Text className="text-red-500">{error}</Text>
+          </View>
+        )}
+        <FormInput
+          label="Email"
+          placeholder="email@exemple.com"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          error={formErrors.email}
+        />
+        <FormInput
+          label="Mot de passe"
+          placeholder="Mot de passe"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          enableVisibilityToggle
+          error={formErrors.password}
+        />
+        {isRegisterMode && (
+          <>
+            <FormInput
+              label="Confirmer le mot de passe"
+              placeholder="Confirmer le mot de passe"
+              value={passwordConfirm}
+              onChangeText={setPasswordConfirm}
+              secureTextEntry
+              enableVisibilityToggle
+              error={formErrors.passwordConfirm}
+            />
+
+            <FormInput
+              label="Prénom"
+              placeholder="Prénom"
+              value={prenom}
+              onChangeText={setPrenom}
+              error={formErrors.prenom}
+            />
+
+            <FormInput
+              label="Nom"
+              placeholder="Nom"
+              value={nom}
+              onChangeText={setNom}
+              error={formErrors.nom}
+            />
+          </>
+        )}
+        <AppButton
+          title={isRegisterMode ? "S'inscrire" : "Se connecter"}
+          onPress={handleSubmit}
+          isLoading={isLoading}
+        />
+        <Pressable onPress={toggleMode} accessibilityRole="button">
+          <Text className="text-primary font-medium">
+            {isRegisterMode
+              ? "Déjà un compte ? Se connecter"
+              : "Pas de compte ? S'inscrire"}
+          </Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f7fb",
-  },
-  scrollContent: {
-    flexGrow: 1,
-    justifyContent: "center",
-    padding: 16,
-  },
-  card: {
-    padding: 24,
-    borderRadius: 16,
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    boxShadow: "0 6px 10px rgba(30, 41, 59, 0.12)",
-    elevation: 5,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    marginBottom: 8,
-    textAlign: "center",
-    color: "#0f172a",
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#475569",
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  errorContainer: {
-    backgroundColor: "#fef2f2",
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#f87171",
-  },
-  errorText: {
-    color: "#b91c1c",
-  },
-  primaryButton: {
-    marginBottom: 16,
-    marginTop: 8,
-  },
-  switchButton: {
-    marginTop: 8,
-  },
-});

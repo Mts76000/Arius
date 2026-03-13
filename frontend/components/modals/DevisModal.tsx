@@ -149,46 +149,44 @@ export function DevisModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <ScrollView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
+      <ScrollView>
+        <View>
           <AppButton
             title="Annuler"
             onPress={onClose}
             variant="link"
             disabled={isLoading}
           />
-          <Text style={styles.modalTitle}>Nouveau Devis</Text>
+          <Text>Nouveau Devis</Text>
           <AppButton
             title={isLoading ? "..." : "Enregistrer"}
             onPress={handleSubmit}
-            size="sm"
+           
             disabled={isLoading || !selectedFile}
           />
         </View>
 
-        <View style={styles.modalForm}>
+        <View>
           {/* Nom */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Nom du devis</Text>
+          <View>
+            <Text>Nom du devis</Text>
             <TextInput
-              style={[styles.input, errors.nom && { borderColor: "#ef4444" }]}
               placeholder="Ex: Devis Q1 2026"
               value={nom}
               onChangeText={setNom}
               editable={!isLoading}
             />
             {errors.nom && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
+              <Text>
                 {errors.nom}
               </Text>
             )}
           </View>
 
           {/* Notes */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Notes (optionnel)</Text>
+          <View>
+            <Text>Notes (optionnel)</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
               placeholder="Description ou commentaires..."
               value={notes}
               onChangeText={setNotes}
@@ -199,49 +197,30 @@ export function DevisModal({
           </View>
 
           {/* Fichier */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Fichier PDF</Text>
+          <View>
+            <Text>Fichier PDF</Text>
             <TouchableOpacity
               onPress={handleFileSelect}
               disabled={isLoading}
-              style={{
-                borderWidth: 2,
-                borderStyle: "dashed",
-                borderColor: selectedFile
-                  ? "#10b981"
-                  : errors.file
-                    ? "#ef4444"
-                    : "#cbd5e1",
-                paddingVertical: 24,
-                borderRadius: 8,
-                alignItems: "center",
-                backgroundColor: selectedFile ? "#f0fdf4" : "#f8fafc",
-              }}
             >
-              <Text style={{ fontSize: 32, marginBottom: 8 }}>📄</Text>
+              <Text>📄</Text>
               <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  color: "#0f172a",
-                  marginBottom: 4,
-                }}
               >
                 {selectedFile ? selectedFile.name : "Sélectionner un PDF"}
               </Text>
               {selectedFile && (
-                <Text style={{ fontSize: 12, color: "#64748b" }}>
+                <Text>
                   {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                 </Text>
               )}
               {!selectedFile && (
-                <Text style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
+                <Text>
                   PDF uniquement, max 20 MB
                 </Text>
               )}
             </TouchableOpacity>
             {errors.file && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
+              <Text>
                 {errors.file}
               </Text>
             )}

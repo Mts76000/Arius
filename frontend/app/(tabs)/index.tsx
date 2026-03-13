@@ -11,10 +11,18 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/authStore";
-import { Colors } from "@/constants/theme";
 import { useMyRdvs } from "@/hooks/useRdvs";
 import { useEntreprises } from "@/hooks/useEntreprises";
 import { AppButton } from "@/components/ui/AppButton";
+
+const palette = {
+  primary: "#0ea5e9",
+  background: "#f8fafc",
+  card: "#ffffff",
+  text: "#0f172a",
+  muted: "#64748b",
+  border: "#e2e8f0",
+};
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -93,16 +101,15 @@ export default function HomeScreen() {
 
   if (!user) {
     return (
-      <View style={styles.centered}>
+      <View>
         {isLoading ? (
-          <ActivityIndicator size="large" color={Colors.light.tint} />
+          <ActivityIndicator size="large" color={palette.primary} />
         ) : (
           <>
-            <Text style={styles.infoText}>Non connecté</Text>
+            <Text>Non connecté</Text>
             <AppButton
               title="Aller a la connexion"
               onPress={() => router.push("/login")}
-              style={styles.primaryButton}
             />
           </>
         )}
@@ -112,8 +119,6 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -121,98 +126,84 @@ export default function HomeScreen() {
             refetchRdvs();
             refetchReactiver();
           }}
-          tintColor={Colors.light.tint}
+          tintColor={palette.primary}
         />
       }
     >
-      <Text style={styles.dateText}>{formattedDate}</Text>
-      <Text style={styles.title}>Bonjour {greetingName} 👋</Text>
+      <Text>{formattedDate}</Text>
+      <Text>Bonjour {greetingName} 👋</Text>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Actions rapides</Text>
+      <View>
+        <Text>Actions rapides</Text>
       </View>
-      <View style={styles.quickActionsGrid}>
-        <TouchableOpacity
-          style={[styles.quickActionCard, styles.quickActionPrimary]}
-          onPress={() => router.push("/entreprises/create")}
-        >
-          <View style={styles.quickActionIcon}>
+      <View>
+        <TouchableOpacity onPress={() => router.push("/entreprises/create")}>
+          <View>
             <Ionicons name="person-add" size={22} color="#2563eb" />
           </View>
-          <Text style={styles.quickActionText}>Nouvelle entreprise</Text>
+          <Text>Nouvelle entreprise</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.quickActionCard}
-          onPress={() => router.push("/entreprises")}
-        >
-          <View style={styles.quickActionIcon}>
+        <TouchableOpacity onPress={() => router.push("/entreprises")}>
+          <View>
             <Ionicons name="briefcase" size={22} color="#2563eb" />
           </View>
-          <Text style={styles.quickActionText}>Toutes les entreprises</Text>
+          <Text>Toutes les entreprises</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.quickActionCard}
-          onPress={() => router.push("/rdvs")}
-        >
-          <View style={styles.quickActionIcon}>
+        <TouchableOpacity onPress={() => router.push("/rdvs")}>
+          <View>
             <Ionicons name="calendar" size={22} color="#7c3aed" />
           </View>
-          <Text style={styles.quickActionText}>Rendez-vous</Text>
+          <Text>Rendez-vous</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.quickActionCard}
-          onPress={() => router.push("/ca")}
-        >
-          <View style={styles.quickActionIcon}>
+        <TouchableOpacity onPress={() => router.push("/ca")}>
+          <View>
             <Ionicons name="trending-up" size={22} color="#10b981" />
           </View>
-          <Text style={styles.quickActionText}>Objectifs CA</Text>
+          <Text>Objectifs CA</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>À surveiller</Text>
+      <View>
+        <Text>À surveiller</Text>
       </View>
-      <View style={styles.infoCard}>
-        <View style={styles.infoCardHeader}>
-          <Text style={styles.infoCardTitle}>Prochains RDV (7 jours)</Text>
+      <View>
+        <View>
+          <Text>Prochains RDV (7 jours)</Text>
           {isLoadingRdvs && <ActivityIndicator size="small" />}
         </View>
         {upcomingRdvs.length === 0 ? (
-          <Text style={styles.emptyText}>Aucun RDV planifié</Text>
+          <Text>Aucun RDV planifié</Text>
         ) : (
           upcomingRdvs.map((rdv) => (
-            <View key={rdv._id} style={styles.listItem}>
-              <View style={styles.listItemMain}>
-                <Text style={styles.listItemTitle}>{rdv.titre}</Text>
-                <Text style={styles.listItemSubtitle}>
-                  {formatShortDate(rdv.date_prevue)}
-                </Text>
+            <View key={rdv._id}>
+              <View>
+                <Text>{rdv.titre}</Text>
+                <Text>{formatShortDate(rdv.date_prevue)}</Text>
               </View>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{rdv.statut}</Text>
+              <View>
+                <Text>{rdv.statut}</Text>
               </View>
             </View>
           ))
         )}
       </View>
 
-      <View style={styles.infoCard}>
-        <View style={styles.infoCardHeader}>
-          <Text style={styles.infoCardTitle}>Entreprises à réactiver</Text>
+      <View>
+        <View>
+          <Text>Entreprises à réactiver</Text>
           {isLoadingReactiver && <ActivityIndicator size="small" />}
         </View>
         {aReactiver.length === 0 ? (
-          <Text style={styles.emptyText}>Rien à relancer pour l’instant</Text>
+          <Text>Rien à relancer pour l’instant</Text>
         ) : (
           aReactiver.slice(0, 3).map((entreprise) => (
-            <View key={entreprise.id} style={styles.listItem}>
-              <View style={styles.listItemMain}>
-                <Text style={styles.listItemTitle}>{entreprise.nom}</Text>
-                <Text style={styles.listItemSubtitle}>À réactiver</Text>
+            <View key={entreprise.id}>
+              <View>
+                <Text>{entreprise.nom}</Text>
+                <Text>À réactiver</Text>
               </View>
               <Ionicons name="alert-circle" size={18} color="#f59e0b" />
             </View>
@@ -222,7 +213,6 @@ export default function HomeScreen() {
           title="Voir toutes les entreprises"
           onPress={() => router.push("/entreprises")}
           variant="link"
-          style={styles.linkButton}
         />
       </View>
     </ScrollView>
@@ -232,7 +222,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: palette.background,
   },
   content: {
     padding: 20,
@@ -243,18 +233,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-    backgroundColor: Colors.light.background,
+    backgroundColor: palette.background,
   },
   dateText: {
     fontSize: 13,
-    color: Colors.light.muted,
+    color: palette.muted,
     textTransform: "capitalize",
   },
   title: {
     fontSize: 26,
     fontWeight: "800",
     marginBottom: 16,
-    color: Colors.light.text,
+    color: palette.text,
   },
   primaryButton: {
     marginTop: 12,
@@ -262,7 +252,7 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 18,
     marginBottom: 16,
-    color: Colors.light.text,
+    color: palette.text,
     textAlign: "center",
   },
   sectionHeader: {
@@ -275,7 +265,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: Colors.light.text,
+    color: palette.text,
   },
   quickActionsGrid: {
     flexDirection: "row",
@@ -284,11 +274,11 @@ const styles = StyleSheet.create({
   },
   quickActionCard: {
     width: "48%",
-    backgroundColor: Colors.light.card,
+    backgroundColor: palette.card,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: palette.border,
     shadowColor: "#000",
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -311,14 +301,14 @@ const styles = StyleSheet.create({
   quickActionText: {
     fontSize: 14,
     fontWeight: "700",
-    color: Colors.light.text,
+    color: palette.text,
   },
   infoCard: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: palette.card,
     borderRadius: 14,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: palette.border,
     marginBottom: 16,
   },
   infoCardHeader: {
@@ -330,7 +320,7 @@ const styles = StyleSheet.create({
   infoCardTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: Colors.light.text,
+    color: palette.text,
   },
   listItem: {
     flexDirection: "row",
@@ -338,7 +328,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: palette.border,
   },
   listItemMain: {
     flex: 1,
@@ -347,11 +337,11 @@ const styles = StyleSheet.create({
   listItemTitle: {
     fontSize: 14,
     fontWeight: "700",
-    color: Colors.light.text,
+    color: palette.text,
   },
   listItemSubtitle: {
     fontSize: 12,
-    color: Colors.light.muted,
+    color: palette.muted,
     marginTop: 2,
   },
   badge: {
@@ -368,12 +358,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 13,
-    color: Colors.light.muted,
+    color: palette.muted,
     paddingVertical: 8,
-  },
-  linkButton: {
-    marginTop: 12,
-    alignSelf: "flex-start",
   },
   linkButton: {
     marginTop: 12,

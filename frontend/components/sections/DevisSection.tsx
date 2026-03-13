@@ -63,7 +63,7 @@ export function DevisSection({ entrepriseId }: DevisSectionProps) {
 
   if (isLoading) {
     return (
-      <View style={{ paddingVertical: 40 }}>
+      <View>
         <ActivityIndicator size="large" color="#0ea5e9" />
       </View>
     );
@@ -72,50 +72,38 @@ export function DevisSection({ entrepriseId }: DevisSectionProps) {
   if (error) {
     return (
       <View
-        style={{
-          paddingHorizontal: 16,
-          paddingVertical: 16,
-          alignItems: "center",
-        }}
       >
-        <Text style={{ fontSize: 14, color: "#ef4444", marginBottom: 12 }}>
+        <Text>
           Erreur lors du chargement des devis
         </Text>
         <AppButton
           title="Reessayer"
           onPress={() => window.location.reload()}
-          size="sm"
+         
         />
       </View>
     );
   }
 
   return (
-    <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+    <View>
       {/* Header */}
-      <View style={{ marginBottom: 16 }}>
+      <View>
         <Text
-          style={{
-            fontSize: 18,
-            fontWeight: "700",
-            color: "#0f172a",
-            marginBottom: 12,
-          }}
         >
           📄 Devis
         </Text>
         <AppButton
           title="+ Upload devis"
           onPress={() => setShowUploadModal(true)}
-          size="sm"
+         
         />
       </View>
 
       {/* Search */}
       {(devis?.length ?? 0) > 0 && (
-        <View style={{ marginBottom: 12 }}>
+        <View>
           <TextInput
-            style={[styles.input, { height: 40 }]}
             placeholder="Rechercher un devis..."
             value={search}
             onChangeText={setSearch}
@@ -125,69 +113,47 @@ export function DevisSection({ entrepriseId }: DevisSectionProps) {
 
       {/* Liste */}
       {filteredDevis.length > 0 ? (
-        <ScrollView style={{ maxHeight: 400 }}>
+        <ScrollView>
           {filteredDevis.map((devisItem) => (
             <View
               key={devisItem._id}
-              style={{
-                backgroundColor: "#f8fafc",
-                borderRadius: 8,
-                padding: 12,
-                marginBottom: 8,
-                borderLeftWidth: 4,
-                borderLeftColor: "#0ea5e9",
-              }}
             >
               <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  color: "#0f172a",
-                  marginBottom: 4,
-                }}
               >
                 {devisItem.nom}
               </Text>
-              <Text style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
+              <Text>
                 {devisService.formatFileSize(devisItem.taille_octets)} •{" "}
                 {new Date(devisItem.createdAt).toLocaleDateString("fr-FR")}
               </Text>
               {devisItem.notes && (
                 <Text
-                  style={{
-                    fontSize: 12,
-                    color: "#64748b",
-                    marginBottom: 8,
-                    fontStyle: "italic",
-                  }}
                 >
                   {devisItem.notes}
                 </Text>
               )}
-              <View style={{ flexDirection: "row", gap: 8 }}>
+              <View>
                 <AppButton
                   title="Voir"
                   onPress={() => handleDownloadDevis(devisItem)}
                   variant="secondary"
-                  size="sm"
-                  style={{ flex: 1 }}
+                 
                 />
                 <AppButton
                   title="Supprimer"
                   onPress={() => handleDeleteDevis(devisItem._id)}
                   variant="danger"
-                  size="sm"
+                 
                   disabled={deleteMutation.isPending}
-                  style={{ flex: 1 }}
                 />
               </View>
             </View>
           ))}
         </ScrollView>
       ) : (
-        <View style={{ alignItems: "center", paddingVertical: 32 }}>
-          <Text style={{ fontSize: 32, marginBottom: 8 }}>📄</Text>
-          <Text style={{ fontSize: 14, color: "#64748b" }}>
+        <View>
+          <Text>📄</Text>
+          <Text>
             Aucun devis pour cette entreprise
           </Text>
         </View>

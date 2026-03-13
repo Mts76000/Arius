@@ -16,7 +16,7 @@ import { useRouter } from "expo-router";
 import { useEntreprises } from "@/hooks/useEntreprises";
 import type { Entreprise } from "@/services/entreprises";
 import Constants from "expo-constants";
-import { Colors } from "@/constants/theme";
+
 import { AppButton } from "@/components/ui/AppButton";
 
 const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
@@ -35,10 +35,9 @@ export default function EntreprisesScreen() {
 
   const renderItem = ({ item }: { item: Entreprise }) => (
     <TouchableOpacity
-      style={styles.card}
       onPress={() => router.push(`/entreprises/${item.id}` as any)}
     >
-      <View style={styles.cardTop}>
+      <View>
         {item.logo && (
           <Image
             source={{
@@ -46,30 +45,22 @@ export default function EntreprisesScreen() {
                 ? item.logo
                 : `${baseURL}${item.logo}`,
             }}
-            style={styles.cardLogo}
           />
         )}
-        <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.nom} numberOfLines={2}>
+        <View>
+          <View>
+            <Text numberOfLines={2}>
               {item.nom}
             </Text>
             <View
-              style={[
-                styles.badge,
-                item.statut === "client" && styles.badgeClient,
-                item.statut === "prospect" && styles.badgeProspect,
-                item.statut === "fournisseur" && styles.badgeFournisseur,
-                item.statut === "a_reactiver" && styles.badgeReactiver,
-              ]}
             >
-              <Text style={styles.badgeText}>
+              <Text>
                 {item.statut === "a_reactiver" ? "à réactiver" : item.statut}
               </Text>
             </View>
           </View>
           {item.ville && (
-            <Text style={styles.ville} numberOfLines={1}>
+            <Text numberOfLines={1}>
               {item.ville}
               {item.code_postal && ` (${item.code_postal})`}
             </Text>
@@ -78,7 +69,7 @@ export default function EntreprisesScreen() {
       </View>
       <View>
         {item.description && (
-          <Text style={styles.description} numberOfLines={2}>
+          <Text numberOfLines={2}>
             {item.description}
           </Text>
         )}
@@ -88,26 +79,24 @@ export default function EntreprisesScreen() {
 
   if (error) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>
+      <View>
+        <Text>
           Erreur de chargement des entreprises
         </Text>
         <AppButton
           title="Reessayer"
           onPress={() => refetch()}
-          size="sm"
-          style={styles.retryButton}
+         
         />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View>
       <TextInput
-        style={styles.searchInput}
         placeholder="Rechercher..."
-        placeholderTextColor={Colors.light.muted}
+        placeholderTextColor={"#64748b"}
         value={recherche}
         onChangeText={setRecherche}
       />
@@ -115,82 +104,43 @@ export default function EntreprisesScreen() {
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filters}
-        style={styles.filtersScroll}
       >
         <TouchableOpacity
-          style={[styles.filterChip, !statutFilter && styles.filterChipActive]}
           onPress={() => setStatutFilter(undefined)}
         >
           <Text
-            style={[
-              styles.filterChipText,
-              !statutFilter && styles.filterChipTextActive,
-            ]}
           >
             Tous
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.filterChip,
-            statutFilter === "client" && styles.filterChipActive,
-          ]}
           onPress={() => setStatutFilter("client")}
         >
           <Text
-            style={[
-              styles.filterChipText,
-              statutFilter === "client" && styles.filterChipTextActive,
-            ]}
           >
             Clients
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.filterChip,
-            statutFilter === "prospect" && styles.filterChipActive,
-          ]}
           onPress={() => setStatutFilter("prospect")}
         >
           <Text
-            style={[
-              styles.filterChipText,
-              statutFilter === "prospect" && styles.filterChipTextActive,
-            ]}
           >
             Prospects
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.filterChip,
-            statutFilter === "fournisseur" && styles.filterChipActive,
-          ]}
           onPress={() => setStatutFilter("fournisseur")}
         >
           <Text
-            style={[
-              styles.filterChipText,
-              statutFilter === "fournisseur" && styles.filterChipTextActive,
-            ]}
           >
             Fournisseurs
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[
-            styles.filterChip,
-            statutFilter === "a_reactiver" && styles.filterChipActive,
-          ]}
           onPress={() => setStatutFilter("a_reactiver")}
         >
           <Text
-            style={[
-              styles.filterChipText,
-              statutFilter === "a_reactiver" && styles.filterChipTextActive,
-            ]}
           >
             À réactiver
           </Text>
@@ -198,25 +148,24 @@ export default function EntreprisesScreen() {
       </ScrollView>
 
       {isLoading && !data ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.light.tint} />
+        <View>
+          <ActivityIndicator size="large" color={"#0ea5e9"} />
         </View>
       ) : (
         <FlatList
           data={data?.entreprises || []}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
               onRefresh={refetch}
-              tintColor={Colors.light.tint}
+              tintColor={"#0ea5e9"}
             />
           }
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Aucune entreprise trouvée</Text>
+            <View>
+              <Text>Aucune entreprise trouvée</Text>
             </View>
           }
         />
@@ -224,7 +173,6 @@ export default function EntreprisesScreen() {
 
       {/* Bouton flottant */}
       <TouchableOpacity
-        style={styles.fab}
         onPress={() => router.push("/entreprises/create" as any)}
       >
         <Ionicons name="add" size={28} color="#ffffff" />
@@ -236,13 +184,13 @@ export default function EntreprisesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   centered: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   header: {
     padding: 20,
@@ -263,7 +211,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: Colors.light.tint,
+    backgroundColor: "#0ea5e9",
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,
@@ -272,12 +220,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginTop: 16,
     marginBottom: 12,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     padding: 14,
-    color: Colors.light.text,
+    color: "#0f172a",
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     fontSize: 16,
     elevation: 1,
   },
@@ -295,16 +243,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 999,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
   },
   filterChipActive: {
-    backgroundColor: Colors.light.tint,
-    borderColor: Colors.light.tint,
+    backgroundColor: "#0ea5e9",
+    borderColor: "#0ea5e9",
   },
   filterChipText: {
-    color: Colors.light.muted,
+    color: "#64748b",
     fontSize: 13,
     fontWeight: "600",
   },
@@ -316,12 +264,12 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   card: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderRadius: 16,
     padding: 18,
     marginBottom: 14,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     elevation: 2,
     overflow: "hidden",
   },
@@ -329,7 +277,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 8,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   cardHeader: {
     flexDirection: "row",
@@ -348,7 +296,7 @@ const styles = StyleSheet.create({
   nom: {
     fontSize: 18,
     fontWeight: "800",
-    color: Colors.light.text,
+    color: "#0f172a",
     flex: 1,
     marginRight: 12,
   },
@@ -364,7 +312,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fbbf24",
   },
   badgeFournisseur: {
-    backgroundColor: Colors.light.tint,
+    backgroundColor: "#0ea5e9",
   },
   badgeReactiver: {
     backgroundColor: "#22d3ee",
@@ -376,13 +324,13 @@ const styles = StyleSheet.create({
     textTransform: "capitalize",
   },
   ville: {
-    color: Colors.light.muted,
+    color: "#64748b",
     fontSize: 14,
     marginBottom: 8,
     fontWeight: "500",
   },
   description: {
-    color: Colors.light.text,
+    color: "#0f172a",
     fontSize: 14,
     lineHeight: 20,
     opacity: 0.9,
@@ -392,7 +340,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
-    color: Colors.light.muted,
+    color: "#64748b",
     fontSize: 16,
   },
   errorText: {

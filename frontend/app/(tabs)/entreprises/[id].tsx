@@ -438,7 +438,7 @@ export default function EntrepriseDetailScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
+      <View>
         <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
@@ -446,14 +446,14 @@ export default function EntrepriseDetailScreen() {
 
   if (error || !entreprise) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>Entreprise introuvable</Text>
+      <View>
+        <Text>Entreprise introuvable</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView>
       <EntrepriseHeader entreprise={entreprise} />
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
@@ -502,19 +502,17 @@ export default function EntrepriseDetailScreen() {
       {activeTab === "chiffres" && <ChiffresTab entreprise={entreprise} />}
 
       {/* Actions */}
-      <View style={styles.actions}>
+      <View>
         <AppButton
           title="Modifier"
           onPress={() => router.push(`/entreprises/${id}/edit` as any)}
           variant="secondary"
-          style={styles.editButton}
         />
         <AppButton
           title={deleteEntreprise.isPending ? "..." : "Supprimer"}
           onPress={handleDelete}
           variant="danger"
           disabled={deleteEntreprise.isPending}
-          style={styles.deleteButton}
         />
       </View>
 

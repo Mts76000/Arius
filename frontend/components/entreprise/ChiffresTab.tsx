@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
-import { Colors } from "@/constants/theme";
+
 import {
   useCAEntreprise,
   useCreateCA,
@@ -120,26 +120,24 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.light.tint} />
+      <View>
+        <ActivityIndicator size="large" color={"#0ea5e9"} />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
+    <ScrollView>
+      <View>
         <AppButton
           title="Ajouter du CA"
           onPress={handleAddCA}
-          style={styles.addButton}
         />
 
-        <View style={styles.yearSelector}>
+        <View>
           <Picker
             selectedValue={selectedAnnee}
             onValueChange={(value) => setSelectedAnnee(value)}
-            style={styles.picker}
           >
             {annees.map((annee) => (
               <Picker.Item key={annee} label={annee.toString()} value={annee} />
@@ -149,10 +147,10 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
       </View>
 
       {/* KPIs */}
-      <View style={styles.kpisContainer}>
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiLabel}>CA total {selectedAnnee}</Text>
-          <Text style={styles.kpiValue}>
+      <View>
+        <View>
+          <Text>CA total {selectedAnnee}</Text>
+          <Text>
             {(stats?.ca_total || 0).toLocaleString("fr-FR", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -160,9 +158,9 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
             €
           </Text>
         </View>
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiLabel}>Moyenne mensuelle</Text>
-          <Text style={styles.kpiValue}>
+        <View>
+          <Text>Moyenne mensuelle</Text>
+          <Text>
             {(stats?.moyenne_mensuelle || 0).toLocaleString("fr-FR", {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -173,18 +171,18 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
       </View>
 
       {/* CA mensuel */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>CA mensuel</Text>
+      <View>
+        <Text>CA mensuel</Text>
 
         {stats?.ca_mensuel && stats.ca_mensuel.length > 0 ? (
-          <View style={styles.caList}>
+          <View>
             {stats.ca_mensuel.map((ca) => (
-              <View key={ca.id} style={styles.caCard}>
-                <View style={styles.caInfo}>
-                  <Text style={styles.caMonth}>
+              <View key={ca.id}>
+                <View>
+                  <Text>
                     {MOIS_LABELS[ca.mois - 1]} {ca.annee}
                   </Text>
-                  <Text style={styles.caAmount}>
+                  <Text>
                     {ca.ca_ht.toLocaleString("fr-FR", {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2,
@@ -192,19 +190,17 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
                     €
                   </Text>
                 </View>
-                <View style={styles.caActions}>
+                <View>
                   <TouchableOpacity
-                    style={styles.actionIcon}
                     onPress={() => handleEditCA(ca)}
                   >
                     <Ionicons
                       name="pencil"
                       size={20}
-                      color={Colors.light.tint}
+                      color={"#0ea5e9"}
                     />
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.actionIcon}
                     onPress={() => handleDeleteCA(ca)}
                   >
                     <Ionicons name="trash" size={20} color="#FF6B6B" />
@@ -213,9 +209,9 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
               </View>
             ))}
 
-            <View style={styles.totalCard}>
-              <Text style={styles.totalLabel}>Total {selectedAnnee}</Text>
-              <Text style={styles.totalAmount}>
+            <View>
+              <Text>Total {selectedAnnee}</Text>
+              <Text>
                 {(stats?.ca_total || 0).toLocaleString("fr-FR", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
@@ -225,7 +221,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
             </View>
           </View>
         ) : (
-          <Text style={styles.emptyText}>Aucun CA pour {selectedAnnee}</Text>
+          <Text>Aucun CA pour {selectedAnnee}</Text>
         )}
       </View>
 
@@ -250,13 +246,13 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   header: {
     flexDirection: "row",
@@ -271,8 +267,8 @@ const styles = StyleSheet.create({
   yearSelector: {
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: Colors.light.border,
-    backgroundColor: Colors.light.card,
+    borderColor: "#e2e8f0",
+    backgroundColor: "#ffffff",
     overflow: "hidden",
     flex: 1,
   },
@@ -288,21 +284,21 @@ const styles = StyleSheet.create({
   },
   kpiCard: {
     flex: 1,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
   },
   kpiLabel: {
     fontSize: 12,
-    color: Colors.light.muted,
+    color: "#64748b",
     marginBottom: 4,
   },
   kpiValue: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.tint,
+    color: "#0ea5e9",
   },
   section: {
     paddingHorizontal: 16,
@@ -311,7 +307,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.text,
+    color: "#0f172a",
     marginBottom: 12,
   },
   caList: {
@@ -321,24 +317,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
   },
   caInfo: {
     flex: 1,
   },
   caMonth: {
     fontSize: 14,
-    color: Colors.light.muted,
+    color: "#64748b",
     marginBottom: 4,
   },
   caAmount: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   caActions: {
     flexDirection: "row",
@@ -351,7 +347,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: Colors.light.tint,
+    backgroundColor: "#0ea5e9",
     padding: 16,
     borderRadius: 12,
     marginTop: 8,
@@ -368,7 +364,7 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: "center",
-    color: Colors.light.muted,
+    color: "#64748b",
     fontSize: 14,
     padding: 20,
   },

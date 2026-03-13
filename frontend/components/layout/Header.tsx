@@ -1,15 +1,7 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { usePathname, useRouter, useSegments } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery } from "@tanstack/react-query";
-import { Colors } from "@/constants/theme";
 import { api } from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 
@@ -20,29 +12,84 @@ interface UserData {
   nom: string | null;
 }
 
-export const Header: React.FC = () => {
+interface RouteTitleRule {
+  title: string;
+  match: (path: string) => boolean;
+}
+
+const DEFAULT_PAGE_TITLE = "Accueil";
+
+const routeTitleRules: RouteTitleRule[] = [
+  {
+    title: "Mon Profil",
+    match: (path) => path.includes("/profil"),
+  },
+  {
+    title: "Modifier Entreprise",
+    match: (path) => path.includes("/entreprises/") && path.endsWith("/edit"),
+  },
+  {
+    title: "Nouvelle Entreprise",
+    match: (path) => path.endsWith("/entreprises/create"),
+  },
+  {
+    title: "Détail Entreprise",
+    match: (path) => {
+      return (
+        path.includes("/entreprises/") &&
+        !path.endsWith("/entreprises") &&
+        !path.endsWith("/edit")
+      );
+    },
+  },
+  {
+    title: "Entreprises",
+    match: (path) => path.includes("/entreprises"),
+  },
+  {
+    title: "Mes Rendez-vous",
+    match: (path) => path.includes("/rdvs"),
+  },
+  {
+    title: "Chiffre d'affaires",
+    match: (path) => path.includes("/ca"),
+  },
+  {
+    title: DEFAULT_PAGE_TITLE,
+    match: (path) =>
+      path === "/" || path === "/(tabs)" || path === "/(tabs)/index",
+  },
+];
+
+const getPageTitle = (path: string) => {
+  const matchingRule = routeTitleRules.find((rule) => rule.match(path));
+
+  return matchingRule?.title ?? DEFAULT_PAGE_TITLE;
+};
+
+const getInitials = (user?: UserData) => {
+  const firstName = user?.prenom || "Utilisateur";
+  const lastName = user?.nom || "";
+
+  return `${firstName.charAt(0)}${lastName.charAt(0) || ""}`.toUpperCase();
+};
+
+export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const segments = useSegments();
   const token = useAuthStore((state) => state.token);
 
-  // Ne faire la requête que si on a un token
   const { data: user, isLoading } = useQuery({
     queryKey: ["user", token],
     queryFn: async () => {
       const response = await api.get("/v1/auth/me");
       return response.data as UserData;
     },
-    enabled: !!token, // N'exécute la requête que si token existe
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: false, // Pas de retry
+    enabled: !!token,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
   });
-
-  const firstName = user?.prenom || "Utilisateur";
-  const lastName = user?.nom || "";
-  const initials = `${firstName?.charAt(0) || "U"}${
-    lastName?.charAt(0) || "?"
-  }`.toUpperCase();
 
   const handleAvatarPress = () => {
     router.push("/(tabs)/profil");
@@ -52,108 +99,42 @@ export const Header: React.FC = () => {
     router.back();
   };
 
-  const getPageTitle = (path: string) => {
-    if (path.includes("/profil")) return "Mon Profil";
-
-    if (path.includes("/entreprises/") && path.endsWith("/edit")) {
-      return "Modifier Entreprise";
-    }
-    if (path.endsWith("/entreprises/create")) return "Nouvelle Entreprise";
-    if (
-      path.includes("/entreprises/") &&
-      !path.endsWith("/entreprises") &&
-      !path.endsWith("/edit")
-    ) {
-      return "Détail Entreprise";
-    }
-    if (path.includes("/entreprises")) return "Entreprises";
-
-    if (path.includes("/rdvs")) return "Mes Rendez-vous";
-    if (path.includes("/ca")) return "Chiffre d'affaires";
-
-    if (path === "/" || path === "/(tabs)" || path === "/(tabs)/index") {
-      return "Accueil";
-    }
-
-    return "Accueil";
-  };
-
   const pageTitle = getPageTitle(pathname);
+  const initials = getInitials(user);
   const shouldShowBack = segments.length > 2;
 
+  const titleContent = (
+    <>
+      {shouldShowBack && <Ionicons name="chevron-back" size={22} />}
+      <Text className="text-2xl font-bold">{pageTitle}</Text>
+    </>
+  );
+
   return (
-    <View style={styles.container}>
-      <View style={styles.leftSection}>
-        {shouldShowBack && (
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={handleBackPress}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="chevron-back" size={22} color={Colors.light.text} />
-          </TouchableOpacity>
-        )}
-        <Text style={styles.greeting}>{pageTitle}</Text>
-      </View>
+    <View className="flex flex-row justify-between pl-5 pr-5 pt-16 pb-5 items-center bg-white">
+      {shouldShowBack ? (
+        <TouchableOpacity
+          onPress={handleBackPress}
+          activeOpacity={0.7}
+          className="flex flex-row items-center gap-1"
+        >
+          {titleContent}
+        </TouchableOpacity>
+      ) : (
+        <View className="flex flex-row items-center gap-1">{titleContent}</View>
+      )}
 
       <TouchableOpacity
-        style={styles.avatarContainer}
         onPress={handleAvatarPress}
         activeOpacity={0.7}
+        className="h-[50px] w-[50px] items-center justify-center rounded-full bg-primary"
       >
         {isLoading ? (
-          <ActivityIndicator size="small" color={Colors.light.tint} />
+          <ActivityIndicator size="small" />
         ) : (
-          <View style={styles.avatar}>
-            <Text style={styles.initials}>{initials}</Text>
-          </View>
+          <Text className="text-xl font-bold text-white">{initials}</Text>
         )}
       </TouchableOpacity>
     </View>
   );
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: Colors.light.background,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
-  },
-  leftSection: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backButton: {
-    marginRight: 8,
-    padding: 4,
-  },
-  greeting: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: Colors.light.text,
-  },
-  avatarContainer: {
-    marginLeft: 12,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.light.tint,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: Colors.light.tint,
-  },
-  initials: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "white",
-  },
-});
+}

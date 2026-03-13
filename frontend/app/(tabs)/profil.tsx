@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Colors } from "@/constants/theme";
+
 import { FormInput } from "@/components/forms/FormInput";
 import { updateProfil, changerMotdepasse } from "@/services/profil";
 import { useAuthStore } from "@/store/authStore";
@@ -258,32 +258,30 @@ export default function ProfilModal() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.light.tint} />
+      <View>
+        <ActivityIndicator size="large" color={"#0ea5e9"} />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>
+      <View>
+        <Text>
           Erreur lors du chargement du profil
         </Text>
         <AppButton
           title="Reessayer"
           onPress={() => refetch()}
-          size="sm"
-          style={styles.retryButton}
+         
         />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View>
       <ScrollView
-        style={styles.scrollView}
         refreshControl={
           <RefreshControl
             onRefresh={() => refetch()}
@@ -292,37 +290,37 @@ export default function ProfilModal() {
         }
       >
         {/* Header Profil */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarLarge}>
-            <Text style={styles.avatarText}>
+        <View>
+          <View>
+            <Text>
               {profilData?.prenom?.charAt(0) || "M"}
               {profilData?.nom?.charAt(0) || "L"}
             </Text>
           </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>
+          <View>
+            <Text>
               {profilData?.prenom || "Utilisateur"} {profilData?.nom || ""}
             </Text>
-            <Text style={styles.profileEmail}>{profilData?.email}</Text>
+            <Text>{profilData?.email}</Text>
           </View>
         </View>
 
         {/* Informations Personnelles */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Informations Personnelles</Text>
+        <View>
+          <View>
+            <Text>Informations Personnelles</Text>
             {!editMode && (
               <AppButton
                 title="Modifier"
                 onPress={() => setEditMode(true)}
                 variant="link"
-                size="sm"
+               
               />
             )}
           </View>
 
           {editMode ? (
-            <View style={styles.formContainer}>
+            <View>
               <FormInput
                 label="Prénom"
                 value={prenom}
@@ -337,10 +335,9 @@ export default function ProfilModal() {
                 onChangeText={setNom}
                 placeholder="Votre nom"
                 error={errorsProfil.nom}
-                style={{ marginTop: 16 }}
               />
 
-              <View style={styles.buttonGroup}>
+              <View>
                 <AppButton
                   title="Annuler"
                   onPress={() => {
@@ -350,56 +347,54 @@ export default function ProfilModal() {
                     setErrorsProfil({});
                   }}
                   variant="secondary"
-                  style={styles.button}
                 />
                 <AppButton
                   title="Enregistrer"
                   onPress={handleUpdateProfil}
                   isLoading={updateMutation.isPending}
-                  style={styles.button}
                 />
               </View>
             </View>
           ) : (
-            <View style={styles.infoContainer}>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>{profilData?.email}</Text>
+            <View>
+              <View>
+                <Text>Email</Text>
+                <Text>{profilData?.email}</Text>
               </View>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Prénom</Text>
-                <Text style={styles.infoValue}>
+              <View>
+                <Text>Prénom</Text>
+                <Text>
                   {profilData?.prenom || "-"}
                 </Text>
               </View>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Nom</Text>
-                <Text style={styles.infoValue}>{profilData?.nom || "-"}</Text>
+              <View>
+                <Text>Nom</Text>
+                <Text>{profilData?.nom || "-"}</Text>
               </View>
             </View>
           )}
         </View>
 
         {/* Sécurité */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Sécurité</Text>
+        <View>
+          <View>
+            <Text>Sécurité</Text>
             {!passwordMode && (
               <AppButton
                 title="Modifier"
                 onPress={() => setPasswordMode(true)}
                 variant="link"
-                size="sm"
+               
               />
             )}
           </View>
 
           {passwordMessage && (
-            <Text style={styles.successMessage}>{passwordMessage.text}</Text>
+            <Text>{passwordMessage.text}</Text>
           )}
 
           {passwordMode ? (
-            <View style={styles.formContainer}>
+            <View>
               <FormInput
                 label="Ancien mot de passe"
                 value={ancienMotdepasse}
@@ -418,7 +413,6 @@ export default function ProfilModal() {
                 secureTextEntry
                 enableVisibilityToggle
                 error={errorsPassword.nouveauMotdepasse}
-                style={{ marginTop: 16 }}
               />
 
               <FormInput
@@ -429,10 +423,9 @@ export default function ProfilModal() {
                 secureTextEntry
                 enableVisibilityToggle
                 error={errorsPassword.confirmation}
-                style={{ marginTop: 16 }}
               />
 
-              <View style={styles.buttonGroup}>
+              <View>
                 <AppButton
                   title="Annuler"
                   onPress={() => {
@@ -440,63 +433,60 @@ export default function ProfilModal() {
                     resetPasswordFields();
                   }}
                   variant="secondary"
-                  style={styles.button}
                 />
                 <AppButton
                   title="Enregistrer"
                   onPress={handleChangePassword}
                   isLoading={passwordMutation.isPending}
-                  style={styles.button}
                 />
               </View>
             </View>
           ) : (
-            <View style={styles.infoContainer}>
-              <Text style={styles.infoText}>Mot de passe sécurisé</Text>
+            <View>
+              <Text>Mot de passe sécurisé</Text>
             </View>
           )}
         </View>
 
         {/* Export de données */}
-        <View style={styles.exportSection}>
-          <View style={styles.exportHeader}>
-            <View style={styles.exportHeaderIcon}>
-              <Text style={styles.exportHeaderIconText}>⬇️</Text>
+        <View>
+          <View>
+            <View>
+              <Text>⬇️</Text>
             </View>
-            <View style={styles.exportHeaderText}>
-              <Text style={styles.exportTitle}>Export de données</Text>
-              <Text style={styles.exportSubtitle}>
+            <View>
+              <Text>Export de données</Text>
+              <Text>
                 Sauvegardez ou utilisez vos données dans d'autres outils
               </Text>
             </View>
           </View>
 
           <TouchableOpacity
-            style={[styles.exportPrimaryCard, isExporting && { opacity: 0.7 }]}
             onPress={handleExportData}
             disabled={isExporting}
           >
-            <View style={styles.exportPrimaryLeft}>
-              <View style={styles.exportPrimaryIcon}>
-                <Text style={styles.exportPrimaryIconText}>📄</Text>
+            <View>
+              <View>
+                <Text>📄</Text>
               </View>
               <View>
-                <Text style={styles.exportPrimaryTitle}>Export complet</Text>
-                <Text style={styles.exportPrimarySubtitle}>
+                <Text>Export complet</Text>
+                <Text>
                   Tout en un fichier ZIP
                 </Text>
               </View>
             </View>
-            <Text style={styles.exportPrimaryAction}>⬇️</Text>
+            <Text>⬇️</Text>
           </TouchableOpacity>
 
-          <View style={styles.exportDivider}>
-            <View style={styles.exportDividerLine} />
-            <Text style={styles.exportDividerText}>OU PAR CATÉGORIE</Text>
-            <View style={styles.exportDividerLine} />
+          <View>
+            <View />
+            <Text>OU PAR CATÉGORIE</Text>
+            <View />
           </View>
 
-          <View style={styles.exportList}>
+          <View>
             {[
               { label: "Prospects", icon: "🏢", type: "prospects" },
               { label: "Rendez-vous", icon: "📅", type: "rdvs" },
@@ -506,26 +496,25 @@ export default function ProfilModal() {
             ].map((item) => (
               <TouchableOpacity
                 key={item.label}
-                style={styles.exportListItem}
                 onPress={() => handleExportData(item.type as any)}
               >
-                <View style={styles.exportListLeft}>
-                  <View style={styles.exportListIcon}>
-                    <Text style={styles.exportListIconText}>{item.icon}</Text>
+                <View>
+                  <View>
+                    <Text>{item.icon}</Text>
                   </View>
-                  <Text style={styles.exportListLabel}>{item.label}</Text>
+                  <Text>{item.label}</Text>
                 </View>
-                <Text style={styles.exportListAction}>⬇️</Text>
+                <Text>⬇️</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {!!exportError && (
-            <Text style={styles.exportErrorText}>{exportError}</Text>
+            <Text>{exportError}</Text>
           )}
 
-          <View style={styles.exportInfoBox}>
-            <Text style={styles.exportInfoText}>
+          <View>
+            <Text>
               Vos données vous appartiennent. Exportez-les à tout moment en
               toute liberté.
             </Text>
@@ -533,12 +522,11 @@ export default function ProfilModal() {
         </View>
 
         {/* Déconnexion */}
-        <View style={styles.section}>
+        <View>
           <AppButton
             title="Deconnexion"
             onPress={handleLogout}
             variant="danger"
-            style={styles.logoutButton}
           />
         </View>
       </ScrollView>
@@ -549,7 +537,7 @@ export default function ProfilModal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   scrollView: {
     flex: 1,
@@ -559,11 +547,11 @@ const styles = StyleSheet.create({
   profileHeader: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     marginBottom: 20,
     shadowColor: "#000",
     shadowOpacity: 0.08,
@@ -575,7 +563,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.light.tint,
+    backgroundColor: "#0ea5e9",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
@@ -591,29 +579,29 @@ const styles = StyleSheet.create({
   profileName: {
     fontSize: 18,
     fontWeight: "700",
-    color: Colors.light.text,
+    color: "#0f172a",
     marginBottom: 4,
   },
   profileEmail: {
     fontSize: 13,
-    color: Colors.light.muted,
+    color: "#64748b",
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
     paddingHorizontal: 16,
   },
   errorText: {
     fontSize: 16,
-    color: Colors.light.text,
+    color: "#0f172a",
     marginBottom: 16,
     textAlign: "center",
   },
@@ -622,11 +610,11 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 24,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderRadius: 8,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     shadowColor: "#000",
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -642,30 +630,30 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: "700",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   infoContainer: {
     gap: 12,
   },
   infoItem: {
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#e2e8f0",
     paddingBottom: 12,
   },
   infoLabel: {
     fontSize: 12,
-    color: Colors.light.text,
+    color: "#0f172a",
     opacity: 0.6,
     marginBottom: 4,
   },
   infoValue: {
     fontSize: 16,
-    color: Colors.light.text,
+    color: "#0f172a",
     fontWeight: "600",
   },
   infoText: {
     fontSize: 14,
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   formContainer: {
     gap: 8,
@@ -691,11 +679,11 @@ const styles = StyleSheet.create({
   },
   exportSection: {
     marginBottom: 24,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     shadowColor: "#000",
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -725,11 +713,11 @@ const styles = StyleSheet.create({
   exportTitle: {
     fontSize: 16,
     fontWeight: "700",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   exportSubtitle: {
     fontSize: 12,
-    color: Colors.light.muted,
+    color: "#64748b",
     marginTop: 2,
   },
   exportPrimaryCard: {
@@ -780,16 +768,16 @@ const styles = StyleSheet.create({
   exportDividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: Colors.light.border,
+    backgroundColor: "#e2e8f0",
   },
   exportDividerText: {
     fontSize: 11,
-    color: Colors.light.muted,
+    color: "#64748b",
     fontWeight: "600",
   },
   exportList: {
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
     borderRadius: 12,
     overflow: "hidden",
     backgroundColor: "white",
@@ -801,7 +789,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     paddingHorizontal: 14,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#e2e8f0",
   },
   exportListLeft: {
     flexDirection: "row",
@@ -821,7 +809,7 @@ const styles = StyleSheet.create({
   },
   exportListLabel: {
     fontSize: 13,
-    color: Colors.light.text,
+    color: "#0f172a",
     fontWeight: "600",
   },
   exportListAction: {

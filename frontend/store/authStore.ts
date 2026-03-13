@@ -25,6 +25,31 @@ interface AuthState {
 
 const STORAGE_KEY = "auth_token";
 
+function getFrenchAuthError(error: any, fallback: string): string {
+  const apiMessage = (error?.response?.data?.error || "")
+    .toString()
+    .toLowerCase();
+
+  if (
+    apiMessage.includes("invalid") ||
+    apiMessage.includes("credentials") ||
+    apiMessage.includes("unauthorized") ||
+    apiMessage.includes("incorrect")
+  ) {
+    return "Email ou mot de passe incorrect.";
+  }
+
+  if (apiMessage.includes("already") || apiMessage.includes("exists")) {
+    return "Ce compte existe deja.";
+  }
+
+  if (apiMessage.includes("network") || !error?.response) {
+    return "Impossible de contacter le serveur. Verifie ta connexion.";
+  }
+
+  return error?.response?.data?.error || fallback;
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
   user: null,
@@ -40,7 +65,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await storage.setItem(STORAGE_KEY, token);
       await get().loadUser();
     } catch (error: any) {
-      set({ error: error.response?.data?.error || "Login failed" });
+      set({ error: getFrenchAuthError(error, "Echec de la connexion.") });
       throw error;
     } finally {
       set({ isLoading: false });
@@ -65,7 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await storage.setItem(STORAGE_KEY, token);
       await get().loadUser();
     } catch (error: any) {
-      set({ error: error.response?.data?.error || "Registration failed" });
+      set({ error: getFrenchAuthError(error, "Echec de l'inscription.") });
       throw error;
     } finally {
       set({ isLoading: false });

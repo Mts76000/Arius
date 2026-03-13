@@ -30,9 +30,9 @@ export const InfosTab: React.FC<InfosTabProps> = ({
     <View>
       {/* Description Section */}
       {entreprise.description && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.text}>{entreprise.description}</Text>
+        <View>
+          <Text>Description</Text>
+          <Text>{entreprise.description}</Text>
         </View>
       )}
 
@@ -41,36 +41,36 @@ export const InfosTab: React.FC<InfosTabProps> = ({
         entreprise.ville ||
         entreprise.code_postal ||
         entreprise.pays) && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Adresse</Text>
-          <View style={styles.addressCard}>
+        <View>
+          <Text>Adresse</Text>
+          <View>
             {entreprise.rue && (
-              <Text style={styles.addressText}>{entreprise.rue}</Text>
+              <Text>{entreprise.rue}</Text>
             )}
             {(entreprise.code_postal || entreprise.ville) && (
-              <Text style={styles.addressText}>
+              <Text>
                 {entreprise.code_postal && `${entreprise.code_postal} `}
                 {entreprise.ville}
               </Text>
             )}
             {entreprise.pays && (
-              <Text style={styles.addressText}>{entreprise.pays}</Text>
+              <Text>{entreprise.pays}</Text>
             )}
           </View>
         </View>
       )}
 
       {/* Contacts Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Contacts</Text>
-          <AppButton title="+ Ajouter" onPress={onAddContact} size="sm" />
+      <View>
+        <View>
+          <Text>Contacts</Text>
+          <AppButton title="+ Ajouter" onPress={onAddContact} />
         </View>
 
         {contactsLoading ? (
           <ActivityIndicator size="small" color="#2563eb" />
         ) : contacts && contacts.length > 0 ? (
-          <View style={styles.contactsList}>
+          <View>
             {contacts.map((contact) => (
               <ContactCard
                 key={contact.id}
@@ -83,7 +83,7 @@ export const InfosTab: React.FC<InfosTabProps> = ({
             ))}
           </View>
         ) : (
-          <Text style={styles.noContacts}>Aucun contact</Text>
+          <Text>Aucun contact</Text>
         )}
       </View>
     </View>

@@ -82,62 +82,27 @@ export function NoteCard({ note, onPress, onDelete, onEdit }: NoteCardProps) {
   return (
     <Pressable
       onPress={onPress}
-      className="mb-3"
-      style={{
-        backgroundColor: "#ffffff",
-        borderRadius: 16,
-        overflow: "hidden",
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 6 },
-        borderColor: "#e5e7eb",
-        borderWidth: 1,
-      }}
     >
-      <View style={{ flexDirection: "row" }}>
+      <View>
         <View
-          style={{
-            width: 6,
-            backgroundColor: colors.text,
-            opacity: 0.9,
-          }}
         />
-        <View style={{ flex: 1, padding: 14 }}>
+        <View>
           <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 10,
-            }}
           >
             <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
             >
               <View
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 12,
-                  backgroundColor: colors.bg,
-                  borderColor: colors.border,
-                  borderWidth: 1,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
               >
-                <Text style={{ fontSize: 20 }}>
+                <Text>
                   {NOTE_TYPE_ICONS[note.type]}
                 </Text>
               </View>
               <View>
                 <Text
-                  style={{ color: "#0f172a", fontWeight: "800", fontSize: 15 }}
                 >
                   {NOTE_TYPE_LABELS[note.type]}
                 </Text>
                 <Text
-                  style={{ color: "#6b7280", fontSize: 12, fontWeight: "500" }}
                 >
                   {dateWithTime}
                 </Text>
@@ -145,17 +110,8 @@ export function NoteCard({ note, onPress, onDelete, onEdit }: NoteCardProps) {
             </View>
             {note.est_template && (
               <View
-                style={{
-                  backgroundColor: "#eef2ff",
-                  borderColor: "#c7d2fe",
-                  borderWidth: 1,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 10,
-                }}
               >
                 <Text
-                  style={{ color: "#4338ca", fontWeight: "700", fontSize: 12 }}
                 >
                   Template
                 </Text>
@@ -164,52 +120,24 @@ export function NoteCard({ note, onPress, onDelete, onEdit }: NoteCardProps) {
           </View>
 
           <Text
-            style={{
-              color: "#111827",
-              fontSize: 15,
-              lineHeight: 22,
-              marginBottom: 10,
-            }}
           >
             {note.contenu}
           </Text>
 
           <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              gap: 8,
-              paddingTop: 10,
-              borderTopWidth: 1,
-              borderTopColor: "#e5e7eb",
-            }}
           >
             <Pressable
               onPress={onEdit}
-              style={{
-                backgroundColor: "#e0f2fe",
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 10,
-              }}
             >
               <Text
-                style={{ color: "#0369a1", fontWeight: "700", fontSize: 13 }}
               >
                 Éditer
               </Text>
             </Pressable>
             <Pressable
               onPress={onDelete}
-              style={{
-                backgroundColor: "#fee2e2",
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 10,
-              }}
             >
               <Text
-                style={{ color: "#b91c1c", fontWeight: "700", fontSize: 13 }}
               >
                 Supprimer
               </Text>

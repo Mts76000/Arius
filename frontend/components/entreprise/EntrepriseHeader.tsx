@@ -34,12 +34,12 @@ export const EntrepriseHeader: React.FC<EntrepriseHeaderProps> = ({
   return (
     <>
       {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title} numberOfLines={2}>
+      <View>
+        <Text numberOfLines={2}>
           {entreprise.nom}
         </Text>
-        <View style={[styles.badge, getStatutStyle(entreprise.statut)]}>
-          <Text style={styles.badgeText}>
+        <View>
+          <Text>
             {getStatutLabel(entreprise.statut)}
           </Text>
         </View>
@@ -47,14 +47,13 @@ export const EntrepriseHeader: React.FC<EntrepriseHeaderProps> = ({
 
       {/* Logo */}
       {entreprise.logo && (
-        <View style={styles.logoSection}>
+        <View>
           <Image
             source={{
               uri: entreprise.logo.startsWith("http")
                 ? entreprise.logo
                 : `${baseURL}${entreprise.logo}`,
             }}
-            style={styles.logoImage}
           />
         </View>
       )}

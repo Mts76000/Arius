@@ -208,31 +208,24 @@ export default function RdvsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView>
       {/* Header */}
       <View
-        style={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12 }}
       >
-        <Text style={{ fontSize: 28, fontWeight: "800", color: "#0f172a" }}>
+        <Text>
           📅 Rendez-vous
         </Text>
       </View>
 
       {/* Add Button */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+      <View>
         <AppButton title="+ Créer un RDV" onPress={handleAddRdv} />
       </View>
 
       {/* Filters */}
-      <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+      <View>
         {/* Quick Filters */}
         <View
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            flexWrap: "wrap",
-            marginBottom: 12,
-          }}
         >
           {[
             { value: "today", label: "Aujourd'hui" },
@@ -246,25 +239,8 @@ export default function RdvsScreen() {
                 setDateFilter(filter.value as DateFilter);
                 setSelectedDate(null);
               }}
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 8,
-                backgroundColor:
-                  dateFilter === filter.value && !selectedDate
-                    ? "#0ea5e9"
-                    : "#e5e7eb",
-              }}
             >
               <Text
-                style={{
-                  color:
-                    dateFilter === filter.value && !selectedDate
-                      ? "#ffffff"
-                      : "#374151",
-                  fontWeight: "600",
-                  fontSize: 14,
-                }}
               >
                 {filter.label}
               </Text>
@@ -275,12 +251,6 @@ export default function RdvsScreen() {
         {/* Date Input */}
         <View>
           <Text
-            style={{
-              fontSize: 12,
-              color: "#64748b",
-              marginBottom: 4,
-              fontWeight: "600",
-            }}
           >
             Ou sélectionnez une date
           </Text>
@@ -297,29 +267,10 @@ export default function RdvsScreen() {
                   setSelectedDate(null);
                 }
               }}
-              style={{
-                backgroundColor: "#f1f5f9",
-                borderRadius: 10,
-                paddingLeft: 12,
-                paddingRight: 12,
-                paddingTop: 10,
-                paddingBottom: 10,
-                border: selectedDate
-                  ? "1px solid #0ea5e9"
-                  : "1px solid #e5e7eb",
-                fontSize: 14,
-                width: "100%",
-              }}
             />
           ) : (
             <View>
               <Text
-                style={{
-                  fontSize: 12,
-                  color: "#64748b",
-                  marginBottom: 4,
-                  fontWeight: "600",
-                }}
               >
                 Sélectionner une date
               </Text>
@@ -336,8 +287,7 @@ export default function RdvsScreen() {
                   title="Effacer le filtre"
                   onPress={() => setSelectedDate(null)}
                   variant="link"
-                  size="sm"
-                  style={{ marginTop: 12, alignSelf: "center" }}
+                 
                 />
               )}
             </View>
@@ -347,12 +297,12 @@ export default function RdvsScreen() {
 
       {/* RDVs List */}
       {isLoading ? (
-        <View style={{ paddingTop: 40 }}>
+        <View>
           <ActivityIndicator size="large" color="#0ea5e9" />
         </View>
       ) : sortedRdvs.length > 0 ? (
-        <View style={{ paddingHorizontal: 16, paddingBottom: 24 }}>
-          <View style={{ gap: 12 }}>
+        <View>
+          <View>
             {sortedRdvs.map((rdv) => (
               <RdvCard
                 key={rdv._id}
@@ -367,34 +317,17 @@ export default function RdvsScreen() {
         </View>
       ) : (
         <View
-          style={{
-            alignItems: "center",
-            paddingVertical: 60,
-            paddingHorizontal: 16,
-          }}
         >
-          <Text style={{ fontSize: 48, marginBottom: 12 }}>📅</Text>
+          <Text>📅</Text>
           <Text
-            style={{
-              color: "#0f172a",
-              fontWeight: "700",
-              fontSize: 16,
-              marginBottom: 6,
-            }}
           >
             Aucun rendez-vous
           </Text>
           <Text
-            style={{
-              color: "#64748b",
-              fontSize: 14,
-              marginBottom: 16,
-              textAlign: "center",
-            }}
           >
             Planifie un rendez-vous avec tes clients
           </Text>
-          <AppButton title="+ Créer un RDV" onPress={handleAddRdv} size="sm" />
+          <AppButton title="+ Créer un RDV" onPress={handleAddRdv} />
         </View>
       )}
 

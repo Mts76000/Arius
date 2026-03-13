@@ -19,35 +19,35 @@ export function ContactCard({
   onEmail,
 }: Props) {
   return (
-    <View style={styles.contactCard}>
-      <View style={styles.contactHeader}>
-        <View style={styles.contactInfo}>
-          <Text style={styles.contactName}>
+    <View>
+      <View>
+        <View>
+          <Text>
             {contact.prenom} {contact.nom}
           </Text>
           {contact.contact_principal && (
-            <View style={styles.principalBadge}>
-              <Text style={styles.principalBadgeText}>Principal</Text>
+            <View>
+              <Text>Principal</Text>
             </View>
           )}
         </View>
-        <View style={styles.contactActions}>
+        <View>
           <TouchableOpacity onPress={() => onEdit(contact)}>
-            <Text style={styles.contactActionText}>✏️</Text>
+            <Text>✏️</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => onDelete(contact.id)}>
-            <Text style={styles.contactActionText}>🗑️</Text>
+            <Text>🗑️</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {contact.poste && (
-        <Text style={styles.contactDetail}>{contact.poste}</Text>
+        <Text>{contact.poste}</Text>
       )}
 
       {contact.email && (
         <TouchableOpacity onPress={() => onEmail(contact.email!)}>
-          <Text style={[styles.contactDetail, styles.contactLink]}>
+          <Text>
             📧 {contact.email}
           </Text>
         </TouchableOpacity>
@@ -55,7 +55,7 @@ export function ContactCard({
 
       {contact.tel_mobile && (
         <TouchableOpacity onPress={() => onCall(contact.tel_mobile!)}>
-          <Text style={[styles.contactDetail, styles.contactLink]}>
+          <Text>
             📱 {contact.tel_mobile}
           </Text>
         </TouchableOpacity>
@@ -63,14 +63,14 @@ export function ContactCard({
 
       {contact.tel_direct && (
         <TouchableOpacity onPress={() => onCall(contact.tel_direct!)}>
-          <Text style={[styles.contactDetail, styles.contactLink]}>
+          <Text>
             ☎️ {contact.tel_direct}
           </Text>
         </TouchableOpacity>
       )}
 
       {contact.commentaire && (
-        <Text style={styles.contactComment}>{contact.commentaire}</Text>
+        <Text>{contact.commentaire}</Text>
       )}
     </View>
   );

@@ -3,10 +3,10 @@ import {
   View,
   TextInput,
   Text,
-  StyleSheet,
   TextInputProps,
   TouchableOpacity,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface FormInputProps extends TextInputProps {
   label?: string;
@@ -31,11 +31,10 @@ export const FormInput: React.FC<FormInputProps> = ({
   const showToggle = secureTextEntry && enableVisibilityToggle;
 
   return (
-    <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
-      <View style={styles.inputWrapper}>
+    <View className="w-full">
+      {label && <Text className="font-medium pb-2">{label}</Text>}
+      <View>
         <TextInput
-          style={[styles.input, error && styles.inputError]}
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value}
@@ -43,68 +42,33 @@ export const FormInput: React.FC<FormInputProps> = ({
           secureTextEntry={showToggle ? isHidden : secureTextEntry}
           keyboardType={keyboardType}
           {...props}
+          className={`border-[0.3px] border-grayLight rounded-full px-4 py-3 w-full ${
+            showToggle ? "pr-12" : ""
+          }`}
         />
         {showToggle && (
           <TouchableOpacity
             onPress={() => setIsHidden((prev) => !prev)}
-            style={styles.toggleButton}
             accessibilityRole="button"
             accessibilityLabel={
               isHidden ? "Afficher le mot de passe" : "Masquer le mot de passe"
             }
+            style={{
+              position: "absolute",
+              right: 14,
+              top: "50%",
+              transform: [{ translateY: -10 }],
+            }}
           >
-            <Text style={styles.toggleText}>
-              {isHidden ? "Afficher" : "Cacher"}
-            </Text>
+            <Ionicons
+              name={isHidden ? "eye-outline" : "eye-off-outline"}
+              size={20}
+              color="black"
+            />
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && <Text className="text-red-500 pt-2">{error}</Text>}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  inputWrapper: {
-    position: "relative",
-    justifyContent: "center",
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 6,
-    color: "#333",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    paddingRight: 72,
-    fontSize: 16,
-    backgroundColor: "#fff",
-    color: "#000",
-  },
-  toggleButton: {
-    position: "absolute",
-    right: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  toggleText: {
-    color: "#2563eb",
-    fontWeight: "600",
-  },
-  inputError: {
-    borderColor: "#dc2626",
-    backgroundColor: "#fef2f2",
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#dc2626",
-    marginTop: 4,
-  },
-});

@@ -130,47 +130,36 @@ export function RdvModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <ScrollView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
+      <ScrollView>
+        <View>
           <AppButton
             title="Annuler"
             onPress={onClose}
             variant="link"
             disabled={isLoading}
           />
-          <Text style={styles.modalTitle}>
+          <Text>
             {rdv ? "Modifier RDV" : "Nouveau RDV"}
           </Text>
           <AppButton
             title={isLoading ? "..." : "Enregistrer"}
             onPress={handleSubmit}
-            size="sm"
+           
             disabled={isLoading}
           />
         </View>
 
-        <View style={styles.modalForm}>
+        <View>
           {/* Entreprise */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Entreprise</Text>
+          <View>
+            <Text>Entreprise</Text>
             {Platform.OS === "web" ? (
               <View
-                style={[
-                  styles.input,
-                  { paddingVertical: 0, paddingHorizontal: 0 },
-                  errors.entreprise_id && { borderColor: "#ef4444" },
-                ]}
               >
                 <select
                   value={selectedEntrepriseId}
                   onChange={(e: any) => setSelectedEntrepriseId(e.target.value)}
                   disabled={isLoading}
-                  style={{
-                    height: 50,
-                    width: "100%",
-                    border: "none",
-                    outline: "none",
-                  }}
                 >
                   <option key="select-empty" value="">
                     Sélectionner une entreprise
@@ -184,21 +173,11 @@ export function RdvModal({
               </View>
             ) : (
               <View
-                style={[
-                  styles.input,
-                  errors.entreprise_id && { borderColor: "#ef4444" },
-                ]}
               >
                 <Picker
                   selectedValue={selectedEntrepriseId}
                   onValueChange={(value) => setSelectedEntrepriseId(value)}
                   enabled={!isLoading}
-                  style={{
-                    height: 50,
-                    width: "100%",
-                    marginTop: -8,
-                    marginBottom: -8,
-                  }}
                 >
                   <Picker.Item label="Sélectionner une entreprise" value="" />
                   {entreprises?.map((e) => (
@@ -208,7 +187,7 @@ export function RdvModal({
               </View>
             )}
             {errors.entreprise_id && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
+              <Text>
                 {errors.entreprise_id}
               </Text>
             )}
@@ -218,14 +197,10 @@ export function RdvModal({
           {selectedEntrepriseId &&
             contacts?.filter((c) => c.entreprise_id === selectedEntrepriseId)
               .length > 0 && (
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Contact (optionnel)</Text>
+              <View>
+                <Text>Contact (optionnel)</Text>
                 {Platform.OS === "web" ? (
                   <View
-                    style={[
-                      styles.input,
-                      { paddingVertical: 0, paddingHorizontal: 0 },
-                    ]}
                   >
                     <select
                       value={selectedContactId}
@@ -233,12 +208,6 @@ export function RdvModal({
                         setSelectedContactId(e.target.value)
                       }
                       disabled={isLoading}
-                      style={{
-                        height: 50,
-                        width: "100%",
-                        border: "none",
-                        outline: "none",
-                      }}
                     >
                       <option key="select-contact-empty" value="">
                         Sélectionner un contact (optionnel)
@@ -255,17 +224,11 @@ export function RdvModal({
                     </select>
                   </View>
                 ) : (
-                  <View style={styles.input}>
+                  <View>
                     <Picker
                       selectedValue={selectedContactId}
                       onValueChange={(value) => setSelectedContactId(value)}
                       enabled={!isLoading}
-                      style={{
-                        height: 50,
-                        width: "100%",
-                        marginTop: -8,
-                        marginBottom: -8,
-                      }}
                     >
                       <Picker.Item
                         label="Sélectionner un contact (optionnel)"
@@ -291,9 +254,9 @@ export function RdvModal({
             )}
 
           {/* Status */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Statut</Text>
-            <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
+          <View>
+            <Text>Statut</Text>
+            <View>
               {[
                 { value: "planifie" as RdvStatus, label: "📅 Prévu" },
                 { value: "termine" as RdvStatus, label: "✓ Terminé" },
@@ -302,27 +265,8 @@ export function RdvModal({
                 <TouchableOpacity
                   key={status.value}
                   onPress={() => setSelectedStatus(status.value)}
-                  style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    borderRadius: 8,
-                    backgroundColor:
-                      selectedStatus === status.value
-                        ? status.value === "planifie"
-                          ? "#3b82f6"
-                          : status.value === "termine"
-                            ? "#10b981"
-                            : "#ef4444"
-                        : "#e5e7eb",
-                  }}
                 >
                   <Text
-                    style={{
-                      color:
-                        selectedStatus === status.value ? "#ffffff" : "#374151",
-                      fontWeight: "600",
-                      fontSize: 14,
-                    }}
                   >
                     {status.label}
                   </Text>
@@ -332,27 +276,26 @@ export function RdvModal({
           </View>
 
           {/* Titre */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Titre</Text>
+          <View>
+            <Text>Titre</Text>
             <TextInput
-              style={[styles.input, errors.titre && { borderColor: "#ef4444" }]}
               placeholder="Ex: Réunion de présentation"
               value={titre}
               onChangeText={setTitre}
               editable={!isLoading}
             />
             {errors.titre && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
+              <Text>
                 {errors.titre}
               </Text>
             )}
           </View>
 
           {/* Date */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Date et Heure</Text>
+          <View>
+            <Text>Date et Heure</Text>
             {Platform.OS === "web" ? (
-              <View style={{ flexDirection: "row", gap: 8 }}>
+              <View>
                 <input
                   type="date"
                   value={date.toISOString().split("T")[0]}
@@ -365,7 +308,6 @@ export function RdvModal({
                     setDate(newDate);
                   }}
                   disabled={isLoading}
-                  style={{ ...styles.input, flex: 1 }}
                 />
                 <input
                   type="time"
@@ -379,19 +321,12 @@ export function RdvModal({
                     setDate(newDate);
                   }}
                   disabled={isLoading}
-                  style={{ ...styles.input, flex: 1 }}
                 />
               </View>
             ) : (
               <View>
-                <View style={{ marginBottom: 12 }}>
+                <View>
                   <Text
-                    style={{
-                      fontSize: 12,
-                      color: "#64748b",
-                      marginBottom: 4,
-                      fontWeight: "600",
-                    }}
                   >
                     Date
                   </Text>
@@ -406,12 +341,6 @@ export function RdvModal({
                 </View>
                 <View>
                   <Text
-                    style={{
-                      fontSize: 12,
-                      color: "#64748b",
-                      marginBottom: 4,
-                      fontWeight: "600",
-                    }}
                   >
                     Heure
                   </Text>
@@ -429,59 +358,28 @@ export function RdvModal({
           </View>
 
           {/* Duration */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Durée</Text>
+          <View>
+            <Text>Durée</Text>
             <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                gap: 8,
-                marginBottom: 12,
-              }}
             >
               {DURATIONS.map((d) => (
                 <TouchableOpacity
                   key={d}
                   onPress={() => setDuree(d)}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                    backgroundColor: duree === d ? "#2563eb" : "#e5e7eb",
-                  }}
                 >
                   <Text
-                    style={{
-                      color: duree === d ? "#ffffff" : "#374151",
-                      fontWeight: "600",
-                      fontSize: 14,
-                    }}
                   >
                     {d} min
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
-            <View style={{ marginTop: 4 }}>
+            <View>
               <Text
-                style={{
-                  fontSize: 12,
-                  color: "#64748b",
-                  fontWeight: "600",
-                  marginBottom: 8,
-                }}
               >
                 Durée personnalisée (en minutes)
               </Text>
               <TextInput
-                style={[
-                  styles.input,
-                  {
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    fontSize: 14,
-                  },
-                ]}
                 placeholder="Ex: 90"
                 value={!DURATIONS.includes(duree) ? duree.toString() : ""}
                 onChangeText={(value) => {
@@ -501,10 +399,9 @@ export function RdvModal({
           </View>
 
           {/* Description */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Description</Text>
+          <View>
+            <Text>Description</Text>
             <TextInput
-              style={[styles.input, styles.textArea]}
               value={description}
               onChangeText={setDescription}
               placeholder="Notes supplémentaires (optionnel)"

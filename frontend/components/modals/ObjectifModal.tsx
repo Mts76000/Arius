@@ -9,7 +9,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
+
 import { AppButton } from "@/components/ui/AppButton";
 
 const MOIS_LABELS = [
@@ -77,42 +77,40 @@ export function ObjectifModal({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
-        <View style={styles.header}>
+      <View>
+        <View>
           <AppButton title="Annuler" onPress={onClose} variant="link" />
-          <Text style={styles.title}>Objectifs {annee}</Text>
-          <AppButton title="Enregistrer" onPress={handleSave} size="sm" />
+          <Text>Objectifs {annee}</Text>
+          <AppButton title="Enregistrer" onPress={handleSave} />
         </View>
 
-        <ScrollView style={styles.content}>
+        <ScrollView>
           <TouchableOpacity
-            style={styles.quickAction}
             onPress={handleAppliquerATous}
           >
-            <Ionicons name="copy" size={20} color={Colors.light.tint} />
-            <Text style={styles.quickActionText}>
+            <Ionicons name="copy" size={20} color={"#0ea5e9"} />
+            <Text>
               Appliquer janvier à tous les mois
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.grid}>
+          <View>
             {MOIS_LABELS.map((moisLabel, index) => {
               const moisNum = index + 1;
               return (
-                <View key={moisNum} style={styles.moisCard}>
-                  <Text style={styles.moisLabel}>{moisLabel}</Text>
-                  <View style={styles.inputContainer}>
+                <View key={moisNum}>
+                  <Text>{moisLabel}</Text>
+                  <View>
                     <TextInput
-                      style={styles.input}
                       placeholder="0"
-                      placeholderTextColor={Colors.light.muted}
+                      placeholderTextColor={"#64748b"}
                       keyboardType="numeric"
                       value={objectifs[moisNum] || ""}
                       onChangeText={(text) =>
                         setObjectifs({ ...objectifs, [moisNum]: text })
                       }
                     />
-                    <Text style={styles.inputSuffix}>€</Text>
+                    <Text>€</Text>
                   </View>
                 </View>
               );
@@ -127,29 +125,29 @@ export function ObjectifModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    backgroundColor: "#f8fafc",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     padding: 20,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
+    borderBottomColor: "#e2e8f0",
   },
   closeText: {
     fontSize: 16,
-    color: Colors.light.tint,
+    color: "#0ea5e9",
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.text,
+    color: "#0f172a",
   },
   saveText: {
     fontSize: 16,
-    color: Colors.light.tint,
+    color: "#0ea5e9",
     fontWeight: "600",
   },
   content: {
@@ -160,32 +158,32 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.tint,
+    borderColor: "#0ea5e9",
     marginBottom: 20,
   },
   quickActionText: {
     fontSize: 14,
-    color: Colors.light.tint,
+    color: "#0ea5e9",
     fontWeight: "600",
   },
   grid: {
     gap: 12,
   },
   moisCard: {
-    backgroundColor: Colors.light.card,
+    backgroundColor: "#ffffff",
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
   },
   moisLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: Colors.light.text,
+    color: "#0f172a",
     marginBottom: 8,
   },
   inputContainer: {
@@ -197,16 +195,16 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.text,
-    backgroundColor: Colors.light.background,
+    color: "#0f172a",
+    backgroundColor: "#f8fafc",
     padding: 12,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: Colors.light.border,
+    borderColor: "#e2e8f0",
   },
   inputSuffix: {
     fontSize: 18,
     fontWeight: "bold",
-    color: Colors.light.muted,
+    color: "#64748b",
   },
 });

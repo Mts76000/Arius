@@ -22,7 +22,7 @@ export default function EditEntrepriseScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
+      <View>
         <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
@@ -30,7 +30,7 @@ export default function EditEntrepriseScreen() {
 
   if (!entreprise) {
     return (
-      <View style={styles.centered}>
+      <View>
         <Text>Entreprise introuvable</Text>
       </View>
     );

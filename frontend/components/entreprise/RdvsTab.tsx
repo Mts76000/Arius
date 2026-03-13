@@ -24,35 +24,22 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
 }) => {
   return (
     <View
-      style={{
-        backgroundColor: "#ffffff",
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 24,
-      }}
     >
       <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
       >
-        <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
+        <Text>
           Rendez-vous
         </Text>
-        <AppButton title="+ Nouveau RDV" onPress={onAddRdv} size="sm" />
+        <AppButton title="+ Nouveau RDV" onPress={onAddRdv} />
       </View>
 
       {rdvsLoading ? (
         <ActivityIndicator
           size="small"
           color="#0ea5e9"
-          style={{ marginTop: 32 }}
         />
       ) : rdvs && rdvs.length > 0 ? (
-        <View style={{ gap: 12 }}>
+        <View>
           {rdvs.map((rdv) => (
             <RdvCard
               key={rdv._id}
@@ -65,38 +52,17 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
         </View>
       ) : (
         <View
-          style={{
-            backgroundColor: "#f8fafc",
-            borderColor: "#e2e8f0",
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 24,
-            alignItems: "center",
-            marginTop: 32,
-          }}
         >
-          <Text style={{ fontSize: 48, marginBottom: 12 }}>📅</Text>
+          <Text>📅</Text>
           <Text
-            style={{
-              color: "#0f172a",
-              fontWeight: "700",
-              fontSize: 16,
-              marginBottom: 6,
-            }}
           >
             Aucun rendez-vous
           </Text>
           <Text
-            style={{
-              color: "#64748b",
-              fontSize: 14,
-              marginBottom: 16,
-              textAlign: "center",
-            }}
           >
             Planifie un rendez-vous avec ce client
           </Text>
-          <AppButton title="+ Ajouter un RDV" onPress={onAddRdv} size="sm" />
+          <AppButton title="+ Ajouter un RDV" onPress={onAddRdv} />
         </View>
       )}
     </View>
