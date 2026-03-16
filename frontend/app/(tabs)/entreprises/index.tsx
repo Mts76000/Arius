@@ -18,6 +18,7 @@ import type { Entreprise } from "@/services/entreprises";
 import Constants from "expo-constants";
 
 import { AppButton } from "@/components/ui/AppButton";
+import { BtnPlus } from "@/components/ui/BtnPlus";
 
 const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
 
@@ -49,11 +50,8 @@ export default function EntreprisesScreen() {
         )}
         <View>
           <View>
-            <Text numberOfLines={2}>
-              {item.nom}
-            </Text>
-            <View
-            >
+            <Text numberOfLines={2}>{item.nom}</Text>
+            <View>
               <Text>
                 {item.statut === "a_reactiver" ? "à réactiver" : item.statut}
               </Text>
@@ -68,11 +66,7 @@ export default function EntreprisesScreen() {
         </View>
       </View>
       <View>
-        {item.description && (
-          <Text numberOfLines={2}>
-            {item.description}
-          </Text>
-        )}
+        {item.description && <Text numberOfLines={2}>{item.description}</Text>}
       </View>
     </TouchableOpacity>
   );
@@ -80,14 +74,8 @@ export default function EntreprisesScreen() {
   if (error) {
     return (
       <View>
-        <Text>
-          Erreur de chargement des entreprises
-        </Text>
-        <AppButton
-          title="Reessayer"
-          onPress={() => refetch()}
-         
-        />
+        <Text>Erreur de chargement des entreprises</Text>
+        <AppButton title="Reessayer" onPress={() => refetch()} />
       </View>
     );
   }
@@ -101,49 +89,21 @@ export default function EntreprisesScreen() {
         onChangeText={setRecherche}
       />
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-      >
-        <TouchableOpacity
-          onPress={() => setStatutFilter(undefined)}
-        >
-          <Text
-          >
-            Tous
-          </Text>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        <TouchableOpacity onPress={() => setStatutFilter(undefined)}>
+          <Text>Tous</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setStatutFilter("client")}
-        >
-          <Text
-          >
-            Clients
-          </Text>
+        <TouchableOpacity onPress={() => setStatutFilter("client")}>
+          <Text>Clients</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setStatutFilter("prospect")}
-        >
-          <Text
-          >
-            Prospects
-          </Text>
+        <TouchableOpacity onPress={() => setStatutFilter("prospect")}>
+          <Text>Prospects</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setStatutFilter("fournisseur")}
-        >
-          <Text
-          >
-            Fournisseurs
-          </Text>
+        <TouchableOpacity onPress={() => setStatutFilter("fournisseur")}>
+          <Text>Fournisseurs</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => setStatutFilter("a_reactiver")}
-        >
-          <Text
-          >
-            À réactiver
-          </Text>
+        <TouchableOpacity onPress={() => setStatutFilter("a_reactiver")}>
+          <Text>À réactiver</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -171,12 +131,10 @@ export default function EntreprisesScreen() {
         />
       )}
 
-      {/* Bouton flottant */}
-      <TouchableOpacity
-        onPress={() => router.push("/entreprises/create" as any)}
-      >
-        <Ionicons name="add" size={28} color="#ffffff" />
-      </TouchableOpacity>
+      <BtnPlus
+        formType="entreprise"
+        onOpenEntreprise={() => router.push("/entreprises/create" as any)}
+      />
     </View>
   );
 }

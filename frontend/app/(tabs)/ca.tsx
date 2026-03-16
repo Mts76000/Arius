@@ -17,6 +17,7 @@ import { useEntreprises } from "@/hooks/useEntreprises";
 import { ObjectifModal } from "@/components/modals/ObjectifModal";
 import { CAModal } from "@/components/modals/CAModal";
 import { AppButton } from "@/components/ui/AppButton";
+import { BtnPlus } from "@/components/ui/BtnPlus";
 import { useRouter } from "expo-router";
 
 const MOIS_LABELS = [
@@ -143,157 +144,149 @@ export default function CAScreen() {
   }
 
   return (
-    <ScrollView>
-      {/* Header - Sélecteur mois/année */}
-      <View>
-        <TouchableOpacity
-          onPress={handleMoisPrecedent}
-        >
-          <Ionicons name="chevron-back" size={24} color={"#0ea5e9"} />
-        </TouchableOpacity>
-        <Text>
-          {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
-        </Text>
-        <TouchableOpacity onPress={handleMoisSuivant}>
-          <Ionicons
-            name="chevron-forward"
-            size={24}
-            color={"#0ea5e9"}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {/* KPIs du mois */}
-      <View>
+    <View className="flex-1">
+      <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
+        {/* Header - Sélecteur mois/année */}
         <View>
-          <Text>CA du mois</Text>
+          <TouchableOpacity onPress={handleMoisPrecedent}>
+            <Ionicons name="chevron-back" size={24} color={"#0ea5e9"} />
+          </TouchableOpacity>
           <Text>
-            {(stats?.ca_total || 0).toLocaleString("fr-FR", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}{" "}
-            €
+            {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
           </Text>
+          <TouchableOpacity onPress={handleMoisSuivant}>
+            <Ionicons name="chevron-forward" size={24} color={"#0ea5e9"} />
+          </TouchableOpacity>
         </View>
-        <View>
-          <Text>Objectif</Text>
-          <Text>
-            {stats?.objectif
-              ? `${(stats.objectif || 0).toLocaleString("fr-FR", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })} €`
-              : "Non défini"}
-          </Text>
-        </View>
-      </View>
 
-      {/* Barre de progression */}
-      {stats?.progression !== null && (
+        {/* KPIs du mois */}
         <View>
           <View>
-            <Text>Progression</Text>
+            <Text>CA du mois</Text>
             <Text>
-              {getProgressionIcon(stats?.progression ?? null)}{" "}
-              {stats?.progression?.toFixed(1)}%
+              {(stats?.ca_total || 0).toLocaleString("fr-FR", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}{" "}
+              €
             </Text>
           </View>
           <View>
-            <View
+            <Text>Objectif</Text>
+            <Text>
+              {stats?.objectif
+                ? `${(stats.objectif || 0).toLocaleString("fr-FR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })} €`
+                : "Non défini"}
+            </Text>
+          </View>
+        </View>
+
+        {/* Barre de progression */}
+        {stats?.progression !== null && (
+          <View>
+            <View>
+              <Text>Progression</Text>
+              <Text>
+                {getProgressionIcon(stats?.progression ?? null)}{" "}
+                {stats?.progression?.toFixed(1)}%
+              </Text>
+            </View>
+            <View>
+              <View />
+            </View>
+          </View>
+        )}
+
+        {/* Boutons actions */}
+        <View>
+          <AppButton
+            title="Objectif"
+            onPress={() => setShowObjectifModal(true)}
+            variant="secondary"
+          />
+        </View>
+
+        {/* CA par entreprise */}
+        <View>
+          <Text>CA par entreprise</Text>
+          <View>
+            <Ionicons name="search" size={20} color={"#64748b"} />
+            <TextInput
+              placeholder="Rechercher une entreprise..."
+              value={rechercheEntreprise}
+              onChangeText={setRechercheEntreprise}
+              placeholderTextColor={"#64748b"}
             />
           </View>
-        </View>
-      )}
 
-      {/* Boutons actions */}
-      <View>
-        <AppButton
-          title="Ajouter"
-          onPress={() => setShowCAModal(true)}
-        />
-        <AppButton
-          title="Objectif"
-          onPress={() => setShowObjectifModal(true)}
-          variant="secondary"
-        />
-      </View>
-
-      {/* CA par entreprise */}
-      <View>
-        <Text>CA par entreprise</Text>
-        <View>
-          <Ionicons name="search" size={20} color={"#64748b"} />
-          <TextInput
-            placeholder="Rechercher une entreprise..."
-            value={rechercheEntreprise}
-            onChangeText={setRechercheEntreprise}
-            placeholderTextColor={"#64748b"}
-          />
-        </View>
-
-        {entreprisesFiltrees && entreprisesFiltrees.length > 0 ? (
-          entreprisesFiltrees.map((entreprise, index) => (
-            <TouchableOpacity
-              key={entreprise.entreprise_id}
-              onPress={() => handleEntrepriseClick(entreprise.entreprise_id)}
-            >
-              <View>
-                <Text>
-                  {index === 0 && "🏆 "}
-                  {entreprise.entreprise_nom}
-                </Text>
-              </View>
-              <Text>
-                {(entreprise.ca_total || 0).toLocaleString("fr-FR", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
-                €
-              </Text>
-            </TouchableOpacity>
-          ))
-        ) : (
-          <Text>Aucun CA ce mois</Text>
-        )}
-      </View>
-
-      {/* Vue annuelle */}
-      <View>
-        <TouchableOpacity
-          onPress={() => setShowAnnuelle(!showAnnuelle)}
-        >
-          <Text>Vue annuelle {selectedAnnee}</Text>
-          <Ionicons
-            name={showAnnuelle ? "chevron-up" : "chevron-down"}
-            size={24}
-            color={"#0f172a"}
-          />
-        </TouchableOpacity>
-
-        {showAnnuelle && (
-          <View>
-            {MOIS_LABELS.map((mois, index) => {
-              const moisNum = index + 1;
-              const caTotal = caParMois[index];
-
-              return (
-                <View key={moisNum}>
-                  <Text>{mois}</Text>
+          {entreprisesFiltrees && entreprisesFiltrees.length > 0 ? (
+            entreprisesFiltrees.map((entreprise, index) => (
+              <TouchableOpacity
+                key={entreprise.entreprise_id}
+                onPress={() => handleEntrepriseClick(entreprise.entreprise_id)}
+              >
+                <View>
                   <Text>
-                    {(caTotal || 0).toLocaleString("fr-FR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{" "}
-                    €
+                    {index === 0 && "🏆 "}
+                    {entreprise.entreprise_nom}
                   </Text>
                 </View>
-              );
-            })}
-          </View>
-        )}
-      </View>
+                <Text>
+                  {(entreprise.ca_total || 0).toLocaleString("fr-FR", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}{" "}
+                  €
+                </Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text>Aucun CA ce mois</Text>
+          )}
+        </View>
 
-      {/* Modals */}
+        {/* Vue annuelle */}
+        <View>
+          <TouchableOpacity onPress={() => setShowAnnuelle(!showAnnuelle)}>
+            <Text>Vue annuelle {selectedAnnee}</Text>
+            <Ionicons
+              name={showAnnuelle ? "chevron-up" : "chevron-down"}
+              size={24}
+              color={"#0f172a"}
+            />
+          </TouchableOpacity>
+
+          {showAnnuelle && (
+            <View>
+              {MOIS_LABELS.map((mois, index) => {
+                const moisNum = index + 1;
+                const caTotal = caParMois[index];
+
+                return (
+                  <View key={moisNum}>
+                    <Text>{mois}</Text>
+                    <Text>
+                      {(caTotal || 0).toLocaleString("fr-FR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}{" "}
+                      €
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
+        </View>
+
+        {/* Modals */}
+      </ScrollView>
+
+      <BtnPlus formType="ca" onOpenCA={() => setShowCAModal(true)} />
+
       <ObjectifModal
         visible={showObjectifModal}
         onClose={() => setShowObjectifModal(false)}
@@ -313,7 +306,7 @@ export default function CAScreen() {
         moisInitial={selectedMois}
         anneeInitiale={selectedAnnee}
       />
-    </ScrollView>
+    </View>
   );
 }
 

@@ -24,6 +24,7 @@ import { Contact } from "@/services/contacts";
 import { RdvCard } from "@/components/cards/RdvCard";
 import { RdvModal } from "@/components/modals/RdvModal";
 import { AppButton } from "@/components/ui/AppButton";
+import { BtnPlus } from "@/components/ui/BtnPlus";
 import { styles } from "@/styles/entrepriseDetailStyles";
 
 type DateFilter = "today" | "week" | "month" | "all";
@@ -208,128 +209,107 @@ export default function RdvsScreen() {
   };
 
   return (
-    <ScrollView>
-      {/* Header */}
-      <View
-      >
-        <Text>
-          📅 Rendez-vous
-        </Text>
-      </View>
-
-      {/* Add Button */}
-      <View>
-        <AppButton title="+ Créer un RDV" onPress={handleAddRdv} />
-      </View>
-
-      {/* Filters */}
-      <View>
-        {/* Quick Filters */}
-        <View
-        >
-          {[
-            { value: "today", label: "Aujourd'hui" },
-            { value: "week", label: "Cette semaine" },
-            { value: "month", label: "Ce mois" },
-            { value: "all", label: "Tous" },
-          ].map((filter) => (
-            <TouchableOpacity
-              key={filter.value}
-              onPress={() => {
-                setDateFilter(filter.value as DateFilter);
-                setSelectedDate(null);
-              }}
-            >
-              <Text
-              >
-                {filter.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
+    <View className="flex-1">
+      <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
+        {/* Header */}
+        <View>
+          <Text>📅 Rendez-vous</Text>
         </View>
 
-        {/* Date Input */}
+        {/* Filters */}
         <View>
-          <Text
-          >
-            Ou sélectionnez une date
-          </Text>
-          {Platform.OS === "web" ? (
-            <input
-              type="date"
-              value={
-                selectedDate ? selectedDate.toISOString().split("T")[0] : ""
-              }
-              onChange={(e: any) => {
-                if (e.target.value) {
-                  setSelectedDate(new Date(e.target.value));
-                } else {
-                  setSelectedDate(null);
-                }
-              }}
-            />
-          ) : (
-            <View>
-              <Text
-              >
-                Sélectionner une date
-              </Text>
-              <DateTimePicker
-                value={selectedDate || new Date()}
-                mode="date"
-                display="default"
-                onChange={(event, date) => {
-                  if (date) setSelectedDate(date);
-                }}
-              />
-              {selectedDate && (
-                <AppButton
-                  title="Effacer le filtre"
-                  onPress={() => setSelectedDate(null)}
-                  variant="link"
-                 
-                />
-              )}
-            </View>
-          )}
-        </View>
-      </View>
-
-      {/* RDVs List */}
-      {isLoading ? (
-        <View>
-          <ActivityIndicator size="large" color="#0ea5e9" />
-        </View>
-      ) : sortedRdvs.length > 0 ? (
-        <View>
+          {/* Quick Filters */}
           <View>
-            {sortedRdvs.map((rdv) => (
-              <RdvCard
-                key={rdv._id}
-                rdv={rdv}
-                entrepriseName={getEntrepriseNameById(rdv.entreprise_id)}
-                onEdit={() => handleEditRdv(rdv)}
-                onDelete={() => handleDeleteRdv(rdv._id)}
-                onChangeStatus={(status) => handleChangeStatus(rdv._id, status)}
-              />
+            {[
+              { value: "today", label: "Aujourd'hui" },
+              { value: "week", label: "Cette semaine" },
+              { value: "month", label: "Ce mois" },
+              { value: "all", label: "Tous" },
+            ].map((filter) => (
+              <TouchableOpacity
+                key={filter.value}
+                onPress={() => {
+                  setDateFilter(filter.value as DateFilter);
+                  setSelectedDate(null);
+                }}
+              >
+                <Text>{filter.label}</Text>
+              </TouchableOpacity>
             ))}
           </View>
+
+          {/* Date Input */}
+          <View>
+            <Text>Ou sélectionnez une date</Text>
+            {Platform.OS === "web" ? (
+              <input
+                type="date"
+                value={
+                  selectedDate ? selectedDate.toISOString().split("T")[0] : ""
+                }
+                onChange={(e: any) => {
+                  if (e.target.value) {
+                    setSelectedDate(new Date(e.target.value));
+                  } else {
+                    setSelectedDate(null);
+                  }
+                }}
+              />
+            ) : (
+              <View>
+                <Text>Sélectionner une date</Text>
+                <DateTimePicker
+                  value={selectedDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={(event, date) => {
+                    if (date) setSelectedDate(date);
+                  }}
+                />
+                {selectedDate && (
+                  <AppButton
+                    title="Effacer le filtre"
+                    onPress={() => setSelectedDate(null)}
+                  />
+                )}
+              </View>
+            )}
+          </View>
         </View>
-      ) : (
-        <View
-        >
-          <Text>📅</Text>
-          <Text
-          >
-            Aucun rendez-vous
-          </Text>
-          <Text
-          >
-            Planifie un rendez-vous avec tes clients
-          </Text>
-          <AppButton title="+ Créer un RDV" onPress={handleAddRdv} />
-        </View>
-      )}
+
+        {/* RDVs List */}
+        {isLoading ? (
+          <View>
+            <ActivityIndicator size="large" color="#0ea5e9" />
+          </View>
+        ) : sortedRdvs.length > 0 ? (
+          <View>
+            <View>
+              {sortedRdvs.map((rdv) => (
+                <RdvCard
+                  key={rdv._id}
+                  rdv={rdv}
+                  entrepriseName={getEntrepriseNameById(rdv.entreprise_id)}
+                  onEdit={() => handleEditRdv(rdv)}
+                  onDelete={() => handleDeleteRdv(rdv._id)}
+                  onChangeStatus={(status) =>
+                    handleChangeStatus(rdv._id, status)
+                  }
+                />
+              ))}
+            </View>
+          </View>
+        ) : (
+          <View>
+            <Text>📅</Text>
+            <Text>Aucun rendez-vous</Text>
+            <Text>Planifie un rendez-vous avec tes clients</Text>
+            <AppButton title="+ Créer un RDV" onPress={handleAddRdv} />
+          </View>
+        )}
+      </ScrollView>
+
+      <BtnPlus formType="rdv" onOpenRdv={handleAddRdv} />
 
       <RdvModal
         visible={showRdvModal}
@@ -341,6 +321,6 @@ export default function RdvsScreen() {
         onClose={() => setShowRdvModal(false)}
         isLoading={createRdvMutation.isPending || updateRdvMutation.isPending}
       />
-    </ScrollView>
+    </View>
   );
 }
