@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { EntrepriseAvatar } from "@/components/ui/EntrepriseAvatar";
+import { ActionMenu } from "@/components/ui/ActionMenu";
 
 interface EntrepriseHeaderProps {
   entreprise: any;
@@ -50,53 +50,34 @@ export const EntrepriseHeader: React.FC<EntrepriseHeaderProps> = ({
   onDelete,
   isDeleting = false,
 }) => {
-  const [showActions, setShowActions] = useState(false);
-
-  const handleEdit = () => {
-    setShowActions(false);
-    onEdit();
-  };
-
-  const handleDelete = () => {
-    setShowActions(false);
-    onDelete();
-  };
-
   return (
     <>
       {/* Header */}
       <View className="relative border-b border-slate-200 px-5 pb-4 pt-5">
-        <TouchableOpacity
-          className="absolute right-5 top-5 h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white"
-          onPress={() => setShowActions((prev) => !prev)}
-        >
-          <Ionicons name="ellipsis-vertical" size={18} color="#64748B" />
-        </TouchableOpacity>
-
-        {showActions ? (
-          <View className="absolute right-5 top-16 z-10 min-w-44 rounded-2xl border border-slate-200 bg-white p-2 shadow-base">
-            <TouchableOpacity
-              className="flex-row items-center gap-2 rounded-xl px-3 py-2"
-              onPress={handleEdit}
-            >
-              <Ionicons name="pencil-outline" size={18} color="#3B82F6" />
-              <Text className="text-base font-medium text-slate-700">
-                Modifier
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-row items-center gap-2 rounded-xl px-3 py-2"
-              onPress={handleDelete}
-              disabled={isDeleting}
-            >
-              <Ionicons name="trash-outline" size={18} color="#EF4444" />
-              <Text className="text-base font-medium text-red-500">
-                {isDeleting ? "Suppression..." : "Supprimer"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
+        <View className="absolute right-5 top-5 z-10">
+          <ActionMenu
+            menuClassName="min-w-44"
+            buttonClassName="h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white"
+            items={[
+              {
+                key: "edit",
+                label: "Modifier",
+                icon: "pencil-outline",
+                iconColor: "#3B82F6",
+                onPress: onEdit,
+              },
+              {
+                key: "delete",
+                label: isDeleting ? "Suppression..." : "Supprimer",
+                icon: "trash-outline",
+                iconColor: "#EF4444",
+                textClassName: "text-red-500",
+                disabled: isDeleting,
+                onPress: onDelete,
+              },
+            ]}
+          />
+        </View>
 
         {/* Logo */}
         <View className="items-center py-4">

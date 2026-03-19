@@ -310,11 +310,13 @@ export default function RdvsScreen() {
             </View>
           </View>
         ) : (
-          <View>
-            <Text>📅</Text>
-            <Text>Aucun rendez-vous</Text>
-            <Text>Planifie un rendez-vous avec tes clients</Text>
-            <AppButton title="+ Créer un RDV" onPress={handleAddRdv} />
+          <View className="items-center mt-8">
+            <View className="bg-primary rounded-3xl p-4 flex items-center w-1/2 self-center">
+              <Text className="text-white font-bold">Aucun RDV</Text>
+            </View>
+            <View className="w-full mt-4">
+              <AppButton title="+ Créer un RDV" onPress={handleAddRdv} />
+            </View>
           </View>
         )}
       </ScrollView>

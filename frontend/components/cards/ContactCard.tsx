@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Contact } from "@/services/contacts";
+import { ActionMenu } from "@/components/ui/ActionMenu";
 
 type Props = {
   contact: Contact;
@@ -18,8 +19,6 @@ export function ContactCard({
   onCall,
   onEmail,
 }: Props) {
-  const [showActions, setShowActions] = useState(false);
-
   const firstName = contact.prenom?.trim() || "";
   const lastName = contact.nom?.trim() || "";
   const fullName = [firstName, lastName].filter(Boolean).join(" ");
@@ -57,44 +56,25 @@ export function ContactCard({
           </View>
         </View>
 
-        <View className="relative">
-          <TouchableOpacity
-            onPress={() => setShowActions((prev) => !prev)}
-            className="h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white"
-          >
-            <Ionicons name="ellipsis-vertical" size={16} color="#64748B" />
-          </TouchableOpacity>
-
-          {showActions ? (
-            <View className="absolute right-0 top-11 z-10 min-w-36 rounded-2xl border border-slate-200 bg-white p-2 shadow-base">
-              <TouchableOpacity
-                className="flex-row items-center gap-2 rounded-xl px-3 py-2"
-                onPress={() => {
-                  setShowActions(false);
-                  onEdit(contact);
-                }}
-              >
-                <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
-                <Text className="text-sm font-medium text-slate-700">
-                  Modifier
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="flex-row items-center gap-2 rounded-xl px-3 py-2"
-                onPress={() => {
-                  setShowActions(false);
-                  onDelete(contact.id);
-                }}
-              >
-                <Ionicons name="trash-outline" size={16} color="#EF4444" />
-                <Text className="text-sm font-medium text-red-500">
-                  Supprimer
-                </Text>
-              </TouchableOpacity>
-            </View>
-          ) : null}
-        </View>
+        <ActionMenu
+          items={[
+            {
+              key: "edit",
+              label: "Modifier",
+              icon: "pencil-outline",
+              iconColor: "#3B82F6",
+              onPress: () => onEdit(contact),
+            },
+            {
+              key: "delete",
+              label: "Supprimer",
+              icon: "trash-outline",
+              iconColor: "#EF4444",
+              textClassName: "text-red-500",
+              onPress: () => onDelete(contact.id),
+            },
+          ]}
+        />
       </View>
 
       <View className="mt-3 w-full items-start gap-4">

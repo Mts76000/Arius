@@ -5,10 +5,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { Note, NoteType } from "@/services/notes";
 import { NoteCard } from "@/components/cards/NoteCard";
-import { AppButton } from "@/components/ui/AppButton";
 
 interface NotesTabProps {
   notes: Note[] | undefined;
@@ -33,6 +33,16 @@ export const NotesTab: React.FC<NotesTabProps> = ({
   onEditNote,
   onDeleteNote,
 }) => {
+  const noteFilters: Array<{ value: NoteType | "all"; label: string }> = [
+    { value: "all", label: "Tout" },
+    { value: "info", label: "Info" },
+    { value: "appel", label: "Appels" },
+    { value: "reunion", label: "Reunions" },
+    { value: "email", label: "Emails" },
+    { value: "autre", label: "Autre" },
+  ];
+
+  const hasSearchQuery = noteSearchQuery.trim().length > 0;
   const filteredNotes = notes
     ?.filter((note) => noteTypeFilter === "all" || note.type === noteTypeFilter)
     .filter((note) => {
@@ -73,59 +83,65 @@ export const NotesTab: React.FC<NotesTabProps> = ({
         </TouchableOpacity>
       </View>
 
-      <View>
-        <View>
-          <Text>🔍</Text>
+      {(notes?.length ?? 0) > 0 && (
+        <View className="mt-4 rounded-xl border border-slate-200 bg-white px-3">
           <TextInput
-            placeholder="Rechercher par titre, date..."
+            placeholder="Rechercher une note..."
             placeholderTextColor="#94a3b8"
             value={noteSearchQuery}
             onChangeText={onSearchChange}
+            className="py-3 text-slate-900"
           />
         </View>
-      </View>
+      )}
 
-      <View>
-        {[
-          { value: "all", label: "Tout" },
-          { value: "info", label: "Info" },
-          { value: "appel", label: "Appels" },
-          { value: "reunion", label: "Réunions" },
-          { value: "email", label: "Emails" },
-          { value: "autre", label: "Autre" },
-        ].map((filter) => (
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        className="mt-3"
+        contentContainerStyle={{ gap: 8, paddingEnd: 16 }}
+      >
+        {noteFilters.map((filter) => (
           <TouchableOpacity
             key={filter.value}
-            onPress={() => onTypeFilterChange(filter.value as any)}
+            onPress={() => onTypeFilterChange(filter.value)}
+            className={`rounded-full border px-4 py-2 ${noteTypeFilter === filter.value ? "border-primary bg-primary/15" : "border-slate-200 bg-white"}`}
           >
-            <Text>{filter.label}</Text>
+            <Text
+              className={`text-sm font-semibold whitespace-nowrap ${noteTypeFilter === filter.value ? "text-primary" : "text-slate-600"}`}
+            >
+              {filter.label}
+            </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
-      {notesLoading ? (
-        <ActivityIndicator size="small" color="#0ea5e9" />
-      ) : filteredNotes && filteredNotes.length > 0 ? (
-        <View>
-          {filteredNotes.map((note) => (
-            <NoteCard
-              key={note._id}
-              note={note}
-              onEdit={() => onEditNote(note)}
-              onDelete={() => onDeleteNote(note._id)}
-            />
-          ))}
-        </View>
-      ) : (
-        <View>
-          <Text>📝</Text>
-          <Text>Aucune note pour l'instant</Text>
-          <Text>Commence à documenter tes interactions avec ce client</Text>
-          <TouchableOpacity onPress={onAddNote}>
-            <Text>+ Ajouter une note</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      <View className="mt-5">
+        {notesLoading ? (
+          <View className="bg-white rounded-3xl p-5 flex-col gap-4">
+            <ActivityIndicator size="small" color="#0ea5e9" />
+          </View>
+        ) : filteredNotes && filteredNotes.length > 0 ? (
+          <View className="bg-white rounded-3xl p-5 flex-col gap-4">
+            {filteredNotes.map((note) => (
+              <NoteCard
+                key={note._id}
+                note={note}
+                onEdit={() => onEditNote(note)}
+                onDelete={() => onDeleteNote(note._id)}
+              />
+            ))}
+          </View>
+        ) : hasSearchQuery ? (
+          <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
+            <Text className="text-white font-bold">Aucune note trouvée</Text>
+          </View>
+        ) : (
+          <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
+            <Text className="text-white font-bold">Aucune note</Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 };

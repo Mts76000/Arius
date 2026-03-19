@@ -3,7 +3,6 @@ import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Rdv, RdvStatus } from "@/services/rdvs";
 import { Contact } from "@/services/contacts";
 import { RdvCard } from "@/components/cards/RdvCard";
-import { AppButton } from "@/components/ui/AppButton";
 
 interface RdvsTabProps {
   rdvs: Rdv[] | undefined;
@@ -58,11 +57,8 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
           ))}
         </View>
       ) : (
-        <View>
-          <Text>📅</Text>
-          <Text>Aucun rendez-vous</Text>
-          <Text>Planifie un rendez-vous avec ce client</Text>
-          <AppButton title="+ Ajouter un RDV" onPress={onAddRdv} />
+        <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
+          <Text className="text-white font-bold">Aucun RDV</Text>
         </View>
       )}
     </View>

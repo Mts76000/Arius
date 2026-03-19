@@ -387,7 +387,7 @@ export default function EntrepriseDetailScreen() {
       try {
         await deleteNoteMutation.mutateAsync({
           id: noteId,
-          entrepriseId: id as string,
+          entrepriseId,
         });
       } catch (error) {
         Alert.alert("Erreur", "Impossible de supprimer la note");
@@ -420,7 +420,7 @@ export default function EntrepriseDetailScreen() {
     try {
       const noteData = {
         ...data,
-        entreprise_id: id as string,
+        entreprise_id: entrepriseId,
       };
       if (selectedNote) {
         await updateNoteMutation.mutateAsync({

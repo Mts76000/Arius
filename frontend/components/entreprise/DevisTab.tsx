@@ -12,7 +12,6 @@ import { useDevis, useUploadDevis, useDeleteDevis } from "@/hooks/useDevis";
 import { devisService } from "@/services/devis";
 import { DevisModal } from "@/components/modals/DevisModal";
 import { DevisCard } from "@/components/cards/DevisCard";
-import { AppButton } from "@/components/ui/AppButton";
 
 interface DevisTabProps {
   entrepriseId: string;
@@ -25,6 +24,7 @@ export function DevisTab({ entrepriseId }: DevisTabProps) {
 
   const [search, setSearch] = useState("");
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const hasSearchQuery = search.trim().length > 0;
 
   const filteredDevis = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -99,9 +99,11 @@ export function DevisTab({ entrepriseId }: DevisTabProps) {
         </View>
       )}
 
-      <View className="mt-4 gap-3">
+      <View className="mt-5">
         {isLoading ? (
-          <ActivityIndicator size="small" color="#0ea5e9" />
+          <View className="bg-white rounded-3xl p-5 flex-col gap-4">
+            <ActivityIndicator size="small" color="#0ea5e9" />
+          </View>
         ) : error ? (
           <View className="rounded-2xl border border-red-100 bg-red-50 p-4">
             <Text className="font-semibold text-red-700">
@@ -112,30 +114,24 @@ export function DevisTab({ entrepriseId }: DevisTabProps) {
             </Text>
           </View>
         ) : filteredDevis.length > 0 ? (
-          filteredDevis.map((devisItem) => (
-            <DevisCard
-              key={devisItem._id}
-              devis={devisItem}
-              onView={() => handleOpenDevis(devisItem.url_fichier)}
-              onDelete={() => handleDeleteDevis(devisItem._id)}
-              isDeleting={deleteMutation.isPending}
-            />
-          ))
-        ) : (
-          <View className="items-center rounded-2xl border border-slate-200 bg-slate-50 p-6">
-            <Text className="text-3xl">📄</Text>
-            <Text className="mt-2 text-base font-semibold text-slate-900">
-              Aucun devis pour cette entreprise
-            </Text>
-            <Text className="mt-1 text-center text-sm text-slate-500">
-              Upload ton premier devis PDF pour commencer.
-            </Text>
-            <View className="mt-4 w-full">
-              <AppButton
-                title="+ Ajouter un devis"
-                onPress={() => setShowUploadModal(true)}
+          <View className="bg-white rounded-3xl p-5 flex-col gap-4">
+            {filteredDevis.map((devisItem) => (
+              <DevisCard
+                key={devisItem._id}
+                devis={devisItem}
+                onView={() => handleOpenDevis(devisItem.url_fichier)}
+                onDelete={() => handleDeleteDevis(devisItem._id)}
+                isDeleting={deleteMutation.isPending}
               />
-            </View>
+            ))}
+          </View>
+        ) : hasSearchQuery ? (
+          <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
+            <Text className="text-white font-bold">Aucun devis trouvé</Text>
+          </View>
+        ) : (
+          <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
+            <Text className="text-white font-bold">Aucun devis</Text>
           </View>
         )}
       </View>

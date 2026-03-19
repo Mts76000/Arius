@@ -1,15 +1,9 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  Pressable,
-  Modal,
-  Dimensions,
-} from "react-native";
+import React from "react";
+import { View, Text, TouchableOpacity, Pressable } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Rdv, RdvStatus } from "@/services/rdvs";
 import { getNextRdvStatuses, getRdvStatusConfig } from "@/utils/rdvStatus";
+import { ActionMenu } from "@/components/ui/ActionMenu";
 
 interface RdvCardProps {
   rdv: Rdv;
@@ -28,9 +22,6 @@ export const RdvCard: React.FC<RdvCardProps> = ({
   onDelete,
   onChangeStatus,
 }) => {
-  const [showActions, setShowActions] = useState(false);
-  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0 });
-
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -62,23 +53,12 @@ export const RdvCard: React.FC<RdvCardProps> = ({
   const { day, time } = formatDate(rdv.date_prevue);
   const statusConfig = getRdvStatusConfig(rdv.statut);
   const availableTransitions = getNextRdvStatuses(rdv.statut);
-  const windowWidth = Dimensions.get("window").width;
-  const menuWidth = 190;
-  const menuLeft = Math.min(
-    windowWidth - menuWidth - 8,
-    Math.max(8, menuAnchor.x - menuWidth + 24),
-  );
 
   return (
-    <Pressable
-      className="relative rounded-2xl border border-slate-100 bg-slate-50 p-4"
-      onPress={() => {
-        if (showActions) setShowActions(false);
-      }}
-    >
+    <Pressable className="relative rounded-2xl border border-slate-100 bg-slate-50 p-4 flex-col gap-2">
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1 flex-row items-start gap-3">
-          <View className="flex-1 gap-1">
+          <View className="flex-1 gap-2">
             <View className="flex-row items-center gap-2">
               <Text className="text-base font-bold " numberOfLines={1}>
                 {rdv.titre}
@@ -106,10 +86,7 @@ export const RdvCard: React.FC<RdvCardProps> = ({
             {contactName ? (
               <View className="mt-0.5 flex-row items-center gap-1.5">
                 <Ionicons name="person-outline" size={13} color="#64748B" />
-                <Text
-                  className="text-xs font-medium text-slate-500"
-                  numberOfLines={1}
-                >
+                <Text className=" font-medium text-slate-500" numberOfLines={1}>
                   {contactName}
                 </Text>
               </View>
@@ -117,21 +94,79 @@ export const RdvCard: React.FC<RdvCardProps> = ({
           </View>
         </View>
 
-        <View className="relative">
-          <TouchableOpacity
-            onPress={(event) => {
-              event.stopPropagation();
-              setMenuAnchor({
-                x: event.nativeEvent.pageX,
-                y: event.nativeEvent.pageY,
-              });
-              setShowActions((prev) => !prev);
-            }}
-            className="h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white"
-          >
-            <Ionicons name="ellipsis-vertical" size={16} color="#64748B" />
-          </TouchableOpacity>
-        </View>
+        <ActionMenu useModal menuWidth={190}>
+          {({ close }) => (
+            <>
+              {availableTransitions.length > 0 && onChangeStatus ? (
+                <>
+                  <Text className="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Changer le statut
+                  </Text>
+
+                  {availableTransitions.map((nextStatus) => {
+                    const nextConfig = getRdvStatusConfig(nextStatus);
+
+                    return (
+                      <TouchableOpacity
+                        key={nextStatus}
+                        className="flex-row items-center gap-2 rounded-xl px-3 py-2"
+                        onPress={() => {
+                          close();
+                          onChangeStatus(nextStatus);
+                        }}
+                      >
+                        <Ionicons
+                          name={nextConfig.icon as any}
+                          size={16}
+                          color={nextConfig.iconColor}
+                        />
+                        <Text
+                          className={`text-sm font-medium ${nextConfig.badgeTextClass}`}
+                        >
+                          {nextConfig.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+
+                  {onEdit || onDelete ? (
+                    <View className="my-1 h-px bg-slate-200" />
+                  ) : null}
+                </>
+              ) : null}
+
+              {onEdit ? (
+                <TouchableOpacity
+                  className="flex-row items-center gap-2 rounded-xl px-3 py-2"
+                  onPress={() => {
+                    close();
+                    onEdit();
+                  }}
+                >
+                  <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
+                  <Text className="text-sm font-medium text-slate-700">
+                    Modifier
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+
+              {onDelete ? (
+                <TouchableOpacity
+                  className="flex-row items-center gap-2 rounded-xl px-3 py-2"
+                  onPress={() => {
+                    close();
+                    onDelete();
+                  }}
+                >
+                  <Ionicons name="trash-outline" size={16} color="#EF4444" />
+                  <Text className="text-sm font-medium text-red-500">
+                    Supprimer
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
+            </>
+          )}
+        </ActionMenu>
       </View>
 
       <View className="mt-3 w-full gap-2">
@@ -154,94 +189,6 @@ export const RdvCard: React.FC<RdvCardProps> = ({
           </Text>
         )}
       </View>
-
-      <Modal
-        visible={showActions}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowActions(false)}
-      >
-        <Pressable className="flex-1" onPress={() => setShowActions(false)}>
-          <Pressable
-            className="absolute rounded-2xl border border-slate-200 bg-white p-2 shadow-base"
-            style={{
-              top: menuAnchor.y + 10,
-              left: menuLeft,
-              minWidth: menuWidth,
-              elevation: 30,
-            }}
-            onPress={(event) => event.stopPropagation()}
-          >
-            {availableTransitions.length > 0 && onChangeStatus ? (
-              <>
-                <Text className="px-3 pb-1 pt-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Changer le statut
-                </Text>
-
-                {availableTransitions.map((nextStatus) => {
-                  const nextConfig = getRdvStatusConfig(nextStatus);
-
-                  return (
-                    <TouchableOpacity
-                      key={nextStatus}
-                      className="flex-row items-center gap-2 rounded-xl px-3 py-2"
-                      onPress={() => {
-                        setShowActions(false);
-                        onChangeStatus(nextStatus);
-                      }}
-                    >
-                      <Ionicons
-                        name={nextConfig.icon as any}
-                        size={16}
-                        color={nextConfig.iconColor}
-                      />
-                      <Text
-                        className={`text-sm font-medium ${nextConfig.badgeTextClass}`}
-                      >
-                        {nextConfig.label}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-
-                {onEdit || onDelete ? (
-                  <View className="my-1 h-px bg-slate-200" />
-                ) : null}
-              </>
-            ) : null}
-
-            {onEdit ? (
-              <TouchableOpacity
-                className="flex-row items-center gap-2 rounded-xl px-3 py-2"
-                onPress={() => {
-                  setShowActions(false);
-                  onEdit();
-                }}
-              >
-                <Ionicons name="pencil-outline" size={16} color="#3B82F6" />
-                <Text className="text-sm font-medium text-slate-700">
-                  Modifier
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-
-            {onDelete ? (
-              <TouchableOpacity
-                className="flex-row items-center gap-2 rounded-xl px-3 py-2"
-                onPress={() => {
-                  setShowActions(false);
-                  onDelete();
-                }}
-              >
-                <Ionicons name="trash-outline" size={16} color="#EF4444" />
-                <Text className="text-sm font-medium text-red-500">
-                  Supprimer
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-          </Pressable>
-        </Pressable>
-      </Modal>
     </Pressable>
   );
 };

@@ -11,7 +11,7 @@ import {
 } from "../models/ca.js";
 
 const createSchema = z.object({
-  entreprise_id: z.string().uuid(),
+  entreprise_id: z.string().min(1),
   annee: z.number().int().min(2000).max(2100),
   mois: z.number().int().min(1).max(12),
   ca_ht: z.number().nonnegative(),
