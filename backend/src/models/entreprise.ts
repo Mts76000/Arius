@@ -12,6 +12,7 @@ export interface Entreprise {
   pays: string | null;
   description: string | null;
   logo: string | null;
+  contacts_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -52,20 +53,31 @@ export async function getEntreprises(
   const { recherche, statut, page = 1, limite = 20 } = filters;
   const offset = (page - 1) * limite;
 
-  let query = "SELECT * FROM entreprises WHERE user_id = ?";
+  let query = `
+    SELECT
+      e.*,
+      COALESCE(cc.contacts_count, 0) AS contacts_count
+    FROM entreprises e
+    LEFT JOIN (
+      SELECT entreprise_id, COUNT(*) AS contacts_count
+      FROM contacts
+      GROUP BY entreprise_id
+    ) cc ON cc.entreprise_id = e.id
+    WHERE e.user_id = ?
+  `;
   const params: any[] = [userId];
 
   if (recherche) {
-    query += " AND nom LIKE ?";
+    query += " AND e.nom LIKE ?";
     params.push(`%${recherche}%`);
   }
 
   if (statut) {
-    query += " AND statut = ?";
+    query += " AND e.statut = ?";
     params.push(statut);
   }
 
-  query += " ORDER BY nom ASC LIMIT ? OFFSET ?";
+  query += " ORDER BY e.nom ASC LIMIT ? OFFSET ?";
   params.push(limite, offset);
 
   const [rows] = await pool.execute(query, params);

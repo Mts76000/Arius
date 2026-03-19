@@ -2,12 +2,8 @@ import React, { useState, useRef } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
-  TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  Image,
   Alert,
   Platform,
 } from "react-native";
@@ -17,6 +13,10 @@ import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
 import type { CreateEntrepriseInput } from "@/services/entreprises";
 import { useAuthStore } from "@/store/authStore";
 import { AppButton } from "@/components/ui/AppButton";
+import { EntrepriseAvatar } from "@/components/ui/EntrepriseAvatar";
+import { FormInput } from "@/components/forms/FormInput";
+import { Form, FormGroup } from "@/components/forms/Form";
+import { ENTREPRISE_STATUS_OPTIONS } from "@/components/forms/formDefinitions";
 import Constants from "expo-constants";
 
 interface EntrepriseFormProps {
@@ -214,136 +214,149 @@ export function EntrepriseForm({
     await onSubmit(formData);
   };
 
+  const bottomSpacing = Platform.OS === "web" ? 32 : 170;
+
   return (
-    <ScrollView>
-      <View>
-        <Text>Nom de l&apos;entreprise *</Text>
-        <TextInput
-          placeholder="Nom de l'entreprise"
-          placeholderTextColor="#9ca3af"
-          value={formData.nom ?? ""}
-          onChangeText={(t) => setFormData({ ...formData, nom: t ?? "" })}
-        />
-        {formErrors.nom && (
-          <Text>{formErrors.nom}</Text>
-        )}
-      </View>
-      <View>
-        <Text>Statut</Text>
-        <View>
-          {(["client", "prospect", "fournisseur", "a_reactiver"] as const).map(
-            (s) => (
+    <ScrollView
+      className="flex-1 bg-gray-50"
+      contentContainerStyle={{ paddingBottom: bottomSpacing }}
+    >
+      <Form>
+        <FormGroup title="Nom de l'entreprise" required error={formErrors.nom}>
+          <FormInput
+            placeholder="Nom de l'entreprise"
+            label=""
+            value={formData.nom ?? ""}
+            onChangeText={(t) => setFormData({ ...formData, nom: t ?? "" })}
+            error={null}
+          />
+        </FormGroup>
+
+        <FormGroup title="Statut">
+          <View className="flex-row flex-wrap justify-between gap-3">
+            {ENTREPRISE_STATUS_OPTIONS.map((statusOption) => (
               <TouchableOpacity
-                key={s}
-                onPress={() => setFormData({ ...formData, statut: s })}
+                key={statusOption.value}
+                onPress={() =>
+                  setFormData({ ...formData, statut: statusOption.value })
+                }
+                className={`w-[48%] rounded-full border-[0.3px] px-4 py-3 items-center ${formData.statut === statusOption.value ? "bg-primary border-primary" : "bg-white  border-grayLight"}`}
               >
                 <Text
+                  className={
+                    formData.statut === statusOption.value
+                      ? "text-white font-semibold"
+                      : "text-gray-700"
+                  }
                 >
-                  {s === "a_reactiver" ? "À réactiver" : s}
+                  {statusOption.label}
                 </Text>
               </TouchableOpacity>
-            ),
-          )}
-        </View>
-      </View>
-      <View>
-        <Text>Adresse</Text>
-        <View>
-          <Text>Rue</Text>
-          <TextInput
-            placeholder="Numéro et nom de rue"
-            placeholderTextColor="#9ca3af"
-            value={formData.rue ?? ""}
-            onChangeText={(t) => setFormData({ ...formData, rue: t ?? "" })}
+            ))}
+          </View>
+        </FormGroup>
+
+        <FormGroup title="Adresse">
+          <FormGroup title="Rue">
+            <FormInput
+              placeholder="Numéro et nom de rue"
+              label=""
+              value={formData.rue ?? ""}
+              onChangeText={(t) => setFormData({ ...formData, rue: t ?? "" })}
+              error={null}
+            />
+          </FormGroup>
+
+          <View className="gap-3">
+            <FormGroup title="Code postal">
+              <FormInput
+                placeholder="75000"
+                label=""
+                value={formData.code_postal ?? ""}
+                onChangeText={(t) =>
+                  setFormData({ ...formData, code_postal: t ?? "" })
+                }
+                error={null}
+              />
+            </FormGroup>
+            <FormGroup title="Ville">
+              <FormInput
+                placeholder="Ville"
+                label=""
+                value={formData.ville ?? ""}
+                onChangeText={(t) =>
+                  setFormData({ ...formData, ville: t ?? "" })
+                }
+                error={null}
+              />
+            </FormGroup>
+          </View>
+
+          <FormGroup title="Pays">
+            <FormInput
+              placeholder="France"
+              label=""
+              value={formData.pays ?? ""}
+              onChangeText={(t) => setFormData({ ...formData, pays: t ?? "" })}
+              error={null}
+            />
+          </FormGroup>
+        </FormGroup>
+
+        <FormGroup title="Description">
+          <FormInput
+            placeholder="Description de l'entreprise..."
+            label=""
+            value={formData.description ?? ""}
+            onChangeText={(t) =>
+              setFormData({ ...formData, description: t ?? "" })
+            }
+            multiline
+            numberOfLines={4}
+            error={null}
           />
-        </View>
-        <View>
+        </FormGroup>
+
+        <FormGroup title="Logo">
           <View>
-            <Text>Code Postal</Text>
-            <TextInput
-              placeholder="75000"
-              placeholderTextColor="#9ca3af"
-              value={formData.code_postal ?? ""}
-              onChangeText={(t) =>
-                setFormData({ ...formData, code_postal: t ?? "" })
-              }
+            <EntrepriseAvatar
+              name={formData.nom}
+              logo={formData.logo}
+              size={84}
+              rounded="xl"
+              className="mb-3"
+            />
+            <View>
+              <TouchableOpacity onPress={pickImage} disabled={uploading}>
+                <View className="flex-row items-center gap-2 rounded-full border border-primary px-4 py-2 self-start">
+                  <Ionicons name="image" size={18} color="#2563eb" />
+                  <Text className="text-primary font-medium">Galerie</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+            {formData.logo && (
+              <TouchableOpacity
+                onPress={() => setFormData({ ...formData, logo: "" })}
+                className="self-start"
+              >
+                <Ionicons name="close" size={18} color="#dc2626" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </FormGroup>
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <AppButton title="Annuler" onPress={onCancel} variant="secondary" />
+          </View>
+          <View className="flex-1">
+            <AppButton
+              title={isLoading ? "En cours..." : submitLabel}
+              onPress={handleSubmit}
+              isLoading={isLoading}
             />
           </View>
-          <View>
-            <Text>Ville</Text>
-            <TextInput
-              placeholder="Ville"
-              placeholderTextColor="#9ca3af"
-              value={formData.ville ?? ""}
-              onChangeText={(t) => setFormData({ ...formData, ville: t ?? "" })}
-            />
-          </View>
         </View>
-        <View>
-          <Text>Pays</Text>
-          <TextInput
-            placeholder="France"
-            placeholderTextColor="#9ca3af"
-            value={formData.pays ?? ""}
-            onChangeText={(t) => setFormData({ ...formData, pays: t ?? "" })}
-          />
-        </View>
-      </View>
-      <View>
-        <Text>Description</Text>
-        <TextInput
-          placeholder="Description de l'entreprise..."
-          placeholderTextColor="#9ca3af"
-          value={formData.description ?? ""}
-          onChangeText={(t) =>
-            setFormData({ ...formData, description: t ?? "" })
-          }
-          multiline
-          numberOfLines={4}
-        />
-      </View>
-      <View>
-        <Text>Logo</Text>
-        <View>
-          {formData.logo && (
-            <Image
-              source={{
-                uri: formData.logo.startsWith("http")
-                  ? formData.logo
-                  : `${baseURL}${formData.logo}`,
-              }}
-            />
-          )}
-          <View>
-            <TouchableOpacity
-              onPress={pickImage}
-              disabled={uploading}
-            >
-              <Ionicons name="image" size={20} color="#2563eb" />
-              <Text>Galerie</Text>
-            </TouchableOpacity>
-          </View>
-          {formData.logo && (
-            <TouchableOpacity
-              onPress={() => setFormData({ ...formData, logo: "" })}
-            >
-              <Ionicons name="close" size={18} color="#dc2626" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-      <View>
-        <AppButton
-          title="Annuler"
-          onPress={onCancel}
-          variant="secondary"
-        />
-        <AppButton
-          title={isLoading ? "En cours..." : submitLabel}
-          onPress={handleSubmit}
-          isLoading={isLoading}
-        />
-      </View>
+      </Form>
       {Platform.OS === "web" && (
         <input
           key="file-input"
@@ -356,168 +369,3 @@ export function EntrepriseForm({
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb" },
-  content: { padding: 24, paddingBottom: 40 },
-  formGroup: { marginBottom: 20 },
-  label: {
-    color: "#111827",
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 14,
-    color: "#1f2937",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    fontSize: 16,
-  },
-  textarea: {
-    textAlignVertical: "top",
-    minHeight: 100,
-  },
-  buttonGroup: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  statut: {
-    flex: 1,
-    minWidth: "47%",
-    paddingVertical: 14,
-    borderRadius: 10,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e5e7eb",
-  },
-  statutActive: {
-    backgroundColor: "#2563eb",
-    borderColor: "#2563eb",
-  },
-  statutText: {
-    color: "#6b7280",
-    fontSize: 14,
-    fontWeight: "700",
-    textTransform: "capitalize",
-  },
-  statutTextActive: { color: "#fff" },
-  section: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 16,
-  },
-  row: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  flex1: { flex: 1 },
-  flex2: { flex: 2 },
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 32,
-  },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e5e7eb",
-  },
-  cancelText: {
-    color: "#6b7280",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  submitBtn: {
-    flex: 2,
-    paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: "#2563eb",
-    alignItems: "center",
-  },
-  inputError: {
-    borderColor: "#ef4444",
-    borderWidth: 2,
-  },
-  errorText: {
-    color: "#ef4444",
-    fontSize: 13,
-    marginTop: 6,
-    fontWeight: "500",
-  },
-  submitText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  hint: {
-    fontSize: 12,
-    color: "#6b7280",
-    marginTop: 4,
-    fontStyle: "italic",
-  },
-  logoContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    alignItems: "center",
-    gap: 12,
-  },
-  logoPreview: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    backgroundColor: "#f3f4f6",
-  },
-  logoButtons: {
-    flexDirection: "row",
-    gap: 12,
-    width: "100%",
-  },
-  logoBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    backgroundColor: "#f9fafb",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    gap: 8,
-  },
-  logoBtnText: {
-    color: "#2563eb",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  removeLogo: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    backgroundColor: "#fff",
-    borderRadius: 50,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: "#fee2e2",
-  },
-});

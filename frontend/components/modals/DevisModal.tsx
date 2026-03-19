@@ -4,7 +4,6 @@ import {
   ScrollView,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Alert,
   Platform,
@@ -12,8 +11,9 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import { UploadDevisInput } from "@/services/devis";
 import { FormErrors } from "@/utils/validation";
-import { styles } from "@/styles/entrepriseDetailStyles";
-import { AppButton } from "@/components/ui/AppButton";
+import { FormInput } from "@/components/forms/FormInput";
+import { FormHeader } from "@/components/forms/Form";
+import { getFormModalPresentationStyle } from "@/components/forms/formDefinitions";
 
 interface DevisModalProps {
   visible: boolean;
@@ -146,83 +146,74 @@ export function DevisModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle={getFormModalPresentationStyle("devis")}
       onRequestClose={onClose}
     >
-      <ScrollView>
-        <View>
-          <AppButton
-            title="Annuler"
-            onPress={onClose}
-            variant="link"
-            disabled={isLoading}
-          />
-          <Text>Nouveau Devis</Text>
-          <AppButton
-            title={isLoading ? "..." : "Enregistrer"}
-            onPress={handleSubmit}
-           
-            disabled={isLoading || !selectedFile}
-          />
-        </View>
+      <ScrollView
+        className="flex-1 bg-gray-50"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <FormHeader
+          title="Nouveau Devis"
+          onCancel={onClose}
+          onSave={handleSubmit}
+          isSaving={isLoading}
+          cancelDisabled={isLoading}
+          saveDisabled={isLoading || !selectedFile}
+        />
 
-        <View>
+        <View className="mx-5 my-4 rounded-3xl bg-white p-5 shadow-sm gap-4">
           {/* Nom */}
           <View>
-            <Text>Nom du devis</Text>
-            <TextInput
+            <FormInput
+              label="Nom du devis"
               placeholder="Ex: Devis Q1 2026"
               value={nom}
               onChangeText={setNom}
               editable={!isLoading}
+              error={errors.nom}
             />
-            {errors.nom && (
-              <Text>
-                {errors.nom}
-              </Text>
-            )}
           </View>
 
           {/* Notes */}
           <View>
-            <Text>Notes (optionnel)</Text>
-            <TextInput
+            <FormInput
+              label="Notes (optionnel)"
               placeholder="Description ou commentaires..."
               value={notes}
               onChangeText={setNotes}
               multiline
               numberOfLines={4}
               editable={!isLoading}
+              error={null}
             />
           </View>
 
           {/* Fichier */}
-          <View>
-            <Text>Fichier PDF</Text>
+          <View className="gap-2">
+            <Text className="text-sm font-medium text-gray-700">
+              Fichier PDF
+            </Text>
             <TouchableOpacity
               onPress={handleFileSelect}
               disabled={isLoading}
+              className="rounded-2xl border border-dashed border-gray-300 p-4 gap-1"
             >
-              <Text>📄</Text>
-              <Text
-              >
+              <Text className="text-2xl">📄</Text>
+              <Text className="text-gray-800 font-medium">
                 {selectedFile ? selectedFile.name : "Sélectionner un PDF"}
               </Text>
               {selectedFile && (
-                <Text>
+                <Text className="text-gray-500">
                   {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                 </Text>
               )}
               {!selectedFile && (
-                <Text>
-                  PDF uniquement, max 20 MB
-                </Text>
+                <Text className="text-gray-500">PDF uniquement, max 20 MB</Text>
               )}
             </TouchableOpacity>
             {errors.file && (
-              <Text>
-                {errors.file}
-              </Text>
+              <Text className="text-red-500 text-sm">{errors.file}</Text>
             )}
           </View>
         </View>

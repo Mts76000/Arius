@@ -11,9 +11,7 @@ const CreateRdvSchema = z.object({
   duree_minutes: z.number().int().min(1, "Durée invalide"),
   entreprise_id: z.string().min(1, "Entreprise requise"),
   contact_id: z.string().optional(),
-  statut: z
-    .enum(["planifie", "en_cours", "termine", "annule", "reporte"])
-    .optional(),
+  statut: z.enum(["planifie", "termine", "annule"]).optional(),
 });
 
 const UpdateRdvSchema = z.object({
@@ -21,9 +19,7 @@ const UpdateRdvSchema = z.object({
   description: z.string().optional(),
   date_prevue: z.string().datetime().optional(),
   duree_minutes: z.number().int().min(1, "Durée invalide").optional(),
-  statut: z
-    .enum(["planifie", "en_cours", "termine", "annule", "reporte"])
-    .optional(),
+  statut: z.enum(["planifie", "termine", "annule"]).optional(),
 });
 
 type CreateRdvInput = z.infer<typeof CreateRdvSchema>;

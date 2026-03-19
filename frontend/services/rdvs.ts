@@ -1,11 +1,6 @@
 import { api } from "./api";
 
-export type RdvStatus =
-  | "planifie"
-  | "en_cours"
-  | "termine"
-  | "annule"
-  | "reporte";
+export type RdvStatus = "planifie" | "termine" | "annule";
 
 export interface Rdv {
   _id: string;
@@ -45,6 +40,16 @@ export interface GetRdvsResponse {
   pagination?: { page: number; limite: number; total: number };
 }
 
+const normalizeRdvStatus = (status: string | undefined): RdvStatus => {
+  if (status === "termine" || status === "annule") return status;
+  return "planifie";
+};
+
+const normalizeRdv = (rdv: Rdv): Rdv => ({
+  ...rdv,
+  statut: normalizeRdvStatus(rdv.statut as string),
+});
+
 export const rdvsService = {
   async getMyRdvs(
     token: string,
@@ -68,7 +73,10 @@ export const rdvsService = {
     const response = await api.get<GetRdvsResponse>(url, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return response.data;
+    return {
+      ...response.data,
+      rdvs: response.data.rdvs.map(normalizeRdv),
+    };
   },
 
   async getRdvsByEntreprise(
@@ -81,21 +89,24 @@ export const rdvsService = {
         headers: { Authorization: `Bearer ${token}` },
       },
     );
-    return response.data;
+    return {
+      ...response.data,
+      rdvs: response.data.rdvs.map(normalizeRdv),
+    };
   },
 
   async getRdvById(token: string, id: string): Promise<Rdv> {
     const response = await api.get<Rdv>(`/v1/rdvs/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return response.data;
+    return normalizeRdv(response.data);
   },
 
   async createRdv(token: string, rdv: CreateRdvInput): Promise<Rdv> {
     const response = await api.post<Rdv>("/v1/rdvs", rdv, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return response.data;
+    return normalizeRdv(response.data);
   },
 
   async updateRdv(
@@ -106,7 +117,7 @@ export const rdvsService = {
     const response = await api.put<Rdv>(`/v1/rdvs/${id}`, updates, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    return response.data;
+    return normalizeRdv(response.data);
   },
 
   async deleteRdv(token: string, id: string): Promise<void> {

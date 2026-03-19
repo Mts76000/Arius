@@ -11,6 +11,7 @@ export interface Entreprise {
   pays: string | null;
   description: string | null;
   logo: string | null;
+  contacts_count?: number;
   created_at: string;
   updated_at: string;
 }

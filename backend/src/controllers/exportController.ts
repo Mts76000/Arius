@@ -9,7 +9,12 @@ export async function downloadExport(req: Request, res: Response) {
   }
 
   const typeRaw = req.query.type;
-  const type = Array.isArray(typeRaw) ? typeRaw[0] : typeRaw;
+  const type =
+    typeof typeRaw === "string"
+      ? typeRaw
+      : Array.isArray(typeRaw) && typeof typeRaw[0] === "string"
+        ? typeRaw[0]
+        : undefined;
 
   try {
     await streamRgpdExport(userId, res, type);

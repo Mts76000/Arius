@@ -65,20 +65,16 @@ export const NotesTab: React.FC<NotesTabProps> = ({
     });
 
   return (
-    <View
-    >
-      <View
-      >
-        <Text>
-          Notes
-        </Text>
-        <AppButton title="+ Nouvelle note" onPress={onAddNote} />
+    <View className="p-5">
+      <View className="flex flex-row justify-between pt-5">
+        <Text className="text-lg font-bold">Notes</Text>
+        <TouchableOpacity onPress={onAddNote}>
+          <Text className="text-primary font-semibold text-lg">+ Ajouter</Text>
+        </TouchableOpacity>
       </View>
 
-      <View
-      >
-        <View
-        >
+      <View>
+        <View>
           <Text>🔍</Text>
           <TextInput
             placeholder="Rechercher par titre, date..."
@@ -89,8 +85,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
         </View>
       </View>
 
-      <View
-      >
+      <View>
         {[
           { value: "all", label: "Tout" },
           { value: "info", label: "Info" },
@@ -103,19 +98,13 @@ export const NotesTab: React.FC<NotesTabProps> = ({
             key={filter.value}
             onPress={() => onTypeFilterChange(filter.value as any)}
           >
-            <Text
-            >
-              {filter.label}
-            </Text>
+            <Text>{filter.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
       {notesLoading ? (
-        <ActivityIndicator
-          size="small"
-          color="#0ea5e9"
-        />
+        <ActivityIndicator size="small" color="#0ea5e9" />
       ) : filteredNotes && filteredNotes.length > 0 ? (
         <View>
           {filteredNotes.map((note) => (
@@ -128,23 +117,12 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           ))}
         </View>
       ) : (
-        <View
-        >
+        <View>
           <Text>📝</Text>
-          <Text
-          >
-            Aucune note pour l'instant
-          </Text>
-          <Text
-          >
-            Commence à documenter tes interactions avec ce client
-          </Text>
-          <TouchableOpacity
-            onPress={onAddNote}
-          >
-            <Text>
-              + Ajouter une note
-            </Text>
+          <Text>Aucune note pour l'instant</Text>
+          <Text>Commence à documenter tes interactions avec ce client</Text>
+          <TouchableOpacity onPress={onAddNote}>
+            <Text>+ Ajouter une note</Text>
           </TouchableOpacity>
         </View>
       )}

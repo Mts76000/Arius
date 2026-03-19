@@ -25,7 +25,6 @@ import { RdvCard } from "@/components/cards/RdvCard";
 import { RdvModal } from "@/components/modals/RdvModal";
 import { AppButton } from "@/components/ui/AppButton";
 import { BtnPlus } from "@/components/ui/BtnPlus";
-import { styles } from "@/styles/entrepriseDetailStyles";
 
 type DateFilter = "today" | "week" | "month" | "all";
 
@@ -87,6 +86,16 @@ export default function RdvsScreen() {
 
   const getEntrepriseNameById = (id: string) => {
     return entreprises?.find((e: any) => e.id === id)?.nom || "Entreprise";
+  };
+
+  const getContactNameById = (contactId?: string) => {
+    if (!contactId) return undefined;
+
+    const contact = allContacts.find((c) => c.id === contactId);
+    if (!contact) return undefined;
+
+    const fullName = `${contact.prenom || ""} ${contact.nom || ""}`.trim();
+    return fullName || contact.nom || undefined;
   };
 
   const filteredRdvs = useMemo(() => {
@@ -290,6 +299,7 @@ export default function RdvsScreen() {
                   key={rdv._id}
                   rdv={rdv}
                   entrepriseName={getEntrepriseNameById(rdv.entreprise_id)}
+                  contactName={getContactNameById(rdv.contact_id)}
                   onEdit={() => handleEditRdv(rdv)}
                   onDelete={() => handleDeleteRdv(rdv._id)}
                   onChangeStatus={(status) =>

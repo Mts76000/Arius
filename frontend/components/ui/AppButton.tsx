@@ -7,6 +7,9 @@ interface AppButtonProps {
   disabled?: boolean;
   isLoading?: boolean;
   icon?: React.ReactNode;
+  variant?: "primary" | "secondary" | "danger" | "link";
+  fullWidth?: boolean;
+  className?: string;
 }
 
 export function AppButton({
@@ -15,11 +18,37 @@ export function AppButton({
   disabled = false,
   isLoading = false,
   icon,
+  variant = "primary",
+  fullWidth = true,
+  className,
 }: AppButtonProps) {
   const isDisabled = disabled || isLoading;
+  const baseClassName = `${fullWidth ? "w-full" : ""} rounded-full items-center justify-center px-4 py-3 flex-row gap-2`;
+
+  const variantContainerClassName: Record<
+    NonNullable<AppButtonProps["variant"]>,
+    string
+  > = {
+    primary: "bg-primary",
+    secondary: "bg-gray-200",
+    danger: "bg-red-600",
+    link: "bg-transparent",
+  };
+
+  const textClassName: Record<
+    NonNullable<AppButtonProps["variant"]>,
+    string
+  > = {
+    primary: "text-white",
+    secondary: "text-gray-900",
+    danger: "text-white",
+    link: "text-primary",
+  };
+
   const containerClassName =
-    "w-full rounded-full items-center justify-center px-4 py-3 flex-row gap-2 bg-primary  " +
-    (isDisabled ? "opacity-60" : "");
+    `${baseClassName} ${variantContainerClassName[variant]} ` +
+    (isDisabled ? "opacity-60" : "") +
+    ` ${className ?? ""}`;
 
   return (
     <Pressable
@@ -30,7 +59,7 @@ export function AppButton({
     >
       {isLoading ? <ActivityIndicator color="#ffffff" /> : icon}
       {!isLoading && (
-        <Text className="font-semibold text-l" style={{ color: "#ffffff" }}>
+        <Text className={`font-semibold text-l ${textClassName[variant]}`}>
           {title}
         </Text>
       )}

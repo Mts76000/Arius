@@ -1,17 +1,13 @@
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  ScrollView,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-} from "react-native";
+import { Modal, ScrollView, View, Text, TouchableOpacity } from "react-native";
 import { Note, NoteType, CreateNoteInput } from "@/services/notes";
-import { ValidationRules, FormErrors } from "@/utils/validation";
-import { styles } from "@/styles/entrepriseDetailStyles";
-import { AppButton } from "@/components/ui/AppButton";
+import { FormErrors } from "@/utils/validation";
+import { FormInput } from "@/components/forms/FormInput";
+import { FormHeader } from "@/components/forms/Form";
+import {
+  getFormModalPresentationStyle,
+  NOTE_TYPE_OPTIONS,
+} from "@/components/forms/formDefinitions";
 
 interface NoteModalProps {
   visible: boolean;
@@ -23,16 +19,6 @@ interface NoteModalProps {
   onClose: () => void;
   isLoading?: boolean;
 }
-
-const NOTE_TYPES: NoteType[] = ["appel", "reunion", "email", "info", "autre"];
-
-const NOTE_TYPE_LABELS: Record<NoteType, string> = {
-  appel: "Appel",
-  reunion: "Réunion",
-  email: "Email",
-  info: "Info",
-  autre: "Autre",
-};
 
 export function NoteModal({
   visible,
@@ -79,6 +65,10 @@ export function NoteModal({
     onTypeChange?.(value);
   };
 
+  const getNoteTypeLabel = (noteType: NoteType) =>
+    NOTE_TYPE_OPTIONS.find((option) => option.value === noteType)?.label ||
+    noteType;
+
   const handleSubmit = async () => {
     const newErrors: FormErrors = {};
 
@@ -116,41 +106,41 @@ export function NoteModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle={getFormModalPresentationStyle("note")}
       onRequestClose={onClose}
     >
-      <ScrollView>
-        <View>
-          <AppButton
-            title="Annuler"
-            onPress={onClose}
-            variant="link"
-            disabled={isLoading}
-          />
-          <Text>
-            {note ? "Modifier note" : "Nouvelle note"}
-          </Text>
-          <AppButton
-            title={isLoading ? "..." : "Enregistrer"}
-            onPress={handleSubmit}
-           
-            disabled={isLoading}
-          />
-        </View>
+      <ScrollView
+        className="flex-1 bg-gray-50"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <FormHeader
+          title={note ? "Modifier note" : "Nouvelle note"}
+          onCancel={onClose}
+          onSave={handleSubmit}
+          isSaving={isLoading}
+          cancelDisabled={isLoading}
+          saveDisabled={isLoading}
+        />
 
-        <View>
+        <View className="mx-5 my-4 rounded-3xl bg-white p-5 shadow-sm gap-4">
           {/* Type Selector */}
-          <View>
-            <Text>Type</Text>
-            <View>
-              {NOTE_TYPES.map((t) => (
+          <View className="gap-2">
+            <Text className="text-sm font-medium text-gray-700">Type</Text>
+            <View className="flex-row flex-wrap gap-2">
+              {NOTE_TYPE_OPTIONS.map((typeOption) => (
                 <TouchableOpacity
-                  key={t}
-                  onPress={() => handleSelectType(t)}
+                  key={typeOption.value}
+                  onPress={() => handleSelectType(typeOption.value)}
+                  className={`rounded-full px-4 py-2 border ${type === typeOption.value ? "bg-primary border-primary" : "bg-white border-gray-300"}`}
                 >
                   <Text
+                    className={
+                      type === typeOption.value
+                        ? "text-white font-semibold"
+                        : "text-gray-700"
+                    }
                   >
-                    {NOTE_TYPE_LABELS[t]}
+                    {typeOption.label}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -158,43 +148,42 @@ export function NoteModal({
           </View>
 
           {/* Templates suggestions */}
-          <View>
-            <View
-            >
-              <Text>
-                💾 Templates pour {NOTE_TYPE_LABELS[type]}
+          <View className="gap-2">
+            <View className="gap-1">
+              <Text className="text-sm font-medium text-gray-700">
+                Templates pour {getNoteTypeLabel(type)}
               </Text>
               {templates.length > 0 && (
-                <Text>
-                  Tap pour insérer
-                </Text>
+                <Text className="text-xs text-gray-500">Tap pour insérer</Text>
               )}
             </View>
             {templates.length > 0 ? (
-              <View>
+              <View className="gap-2">
                 {templates.map((template) => (
                   <View
                     key={template._id}
+                    className="rounded-2xl border border-gray-200 bg-gray-50 p-3"
                   >
-                    <View
-                    >
-                      <View>
+                    <View className="flex-row items-start justify-between gap-3">
+                      <View className="flex-1 gap-1">
                         <Text
                           numberOfLines={1}
+                          className="font-medium text-gray-800"
                         >
                           {template.nom_template || "Sans titre"}
                         </Text>
                         <Text
                           numberOfLines={2}
+                          className="text-gray-600 text-sm"
                         >
                           {template.contenu}
                         </Text>
                       </View>
                       <TouchableOpacity
                         onPress={() => handleApplyTemplate(template)}
+                        className="rounded-full border border-primary px-3 py-1"
                       >
-                        <Text
-                        >
+                        <Text className="text-primary text-xs font-medium">
                           Insérer
                         </Text>
                       </TouchableOpacity>
@@ -203,13 +192,11 @@ export function NoteModal({
                 ))}
               </View>
             ) : (
-              <View
-              >
-                <Text
-                >
-                  💡 Aucun template pour ce type
+              <View className="rounded-2xl border border-dashed border-gray-300 p-3 gap-1">
+                <Text className="text-gray-700 font-medium">
+                  Aucun template pour ce type
                 </Text>
-                <Text>
+                <Text className="text-gray-500 text-sm">
                   Coche "Enregistrer comme template" en bas pour créer un modèle
                   réutilisable
                 </Text>
@@ -219,49 +206,43 @@ export function NoteModal({
 
           {/* Content */}
           <View>
-            <Text>Contenu</Text>
-            <TextInput
+            <FormInput
+              label="Contenu"
               value={contenu}
               onChangeText={setContenu}
               placeholder="Écrivez votre note..."
               multiline
               numberOfLines={6}
               editable={!isLoading}
+              error={errors.contenu}
             />
-            {errors.contenu && (
-              <Text>
-                {errors.contenu}
-              </Text>
-            )}
           </View>
 
           {/* Template toggle */}
           <TouchableOpacity
             onPress={() => setIsTemplate(!isTemplate)}
             disabled={isLoading}
+            className="flex-row items-center gap-2"
           >
             <View
+              className={`w-5 h-5 rounded border items-center justify-center ${isTemplate ? "bg-primary border-primary" : "border-gray-300"}`}
             >
-              {isTemplate && <Text>✓</Text>}
+              {isTemplate && <Text className="text-white text-xs">✓</Text>}
             </View>
-            <Text>Enregistrer comme template</Text>
+            <Text className="text-gray-700">Enregistrer comme template</Text>
           </TouchableOpacity>
 
           {/* Template name input */}
           {isTemplate && (
             <View>
-              <Text>Nom du template</Text>
-              <TextInput
+              <FormInput
+                label="Nom du template"
                 placeholder="ex: Compte-rendu réunion standard"
                 value={templateName}
                 onChangeText={setTemplateName}
                 editable={!isLoading}
+                error={errors.nom_template}
               />
-              {errors.nom_template && (
-                <Text>
-                  {errors.nom_template}
-                </Text>
-              )}
             </View>
           )}
         </View>

@@ -32,17 +32,19 @@ export const FormInput: React.FC<FormInputProps> = ({
 
   return (
     <View className="w-full">
-      {label && <Text className="font-medium pb-2">{label}</Text>}
+      {label && (
+        <Text className=" font-medium text-gray-700 pb-2 ">{label}</Text>
+      )}
       <View>
         <TextInput
           placeholder={placeholder}
-          placeholderTextColor="#999"
+          placeholderTextColor="#94a3b8"
           value={value}
           onChangeText={onChangeText}
           secureTextEntry={showToggle ? isHidden : secureTextEntry}
           keyboardType={keyboardType}
           {...props}
-          className={`border-[0.3px] border-grayLight rounded-full px-4 py-3 w-full ${
+          className={`border-[0.3px] border-grayLight rounded-full px-4 py-3 w-full bg-white  ${
             showToggle ? "pr-12" : ""
           }`}
         />
@@ -68,7 +70,7 @@ export const FormInput: React.FC<FormInputProps> = ({
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text className="text-red-500 pt-2">{error}</Text>}
+      {error && <Text className="text-red-500 text-sm pt-2">{error}</Text>}
     </View>
   );
 };

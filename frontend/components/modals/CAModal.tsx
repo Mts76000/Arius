@@ -1,34 +1,15 @@
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  StyleSheet,
-  Platform,
-} from "react-native";
+import { Modal, View, Text, ScrollView } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 
 import { Entreprise } from "@/services/entreprises";
-import { AppButton } from "@/components/ui/AppButton";
-
-const MOIS_LABELS = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
+import { FormInput } from "@/components/forms/FormInput";
+import { FormHeader } from "@/components/forms/Form";
+import {
+  getFormModalPresentationStyle,
+  MONTH_LABELS,
+} from "@/components/forms/formDefinitions";
 
 type Props = {
   visible: boolean;
@@ -107,22 +88,22 @@ export function CAModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle={getFormModalPresentationStyle("ca")}
       onRequestClose={onClose}
     >
-      <View>
-        <View>
-          <AppButton title="Annuler" onPress={onClose} variant="link" />
-          <Text>
-            {isEditing ? "Modifier CA" : "Ajouter du CA"}
-          </Text>
-          <AppButton title="Enregistrer" onPress={handleSave} />
-        </View>
+      <View className="flex-1 bg-gray-50">
+        <FormHeader
+          title={isEditing ? "Modifier CA" : "Ajouter du CA"}
+          onCancel={onClose}
+          onSave={handleSave}
+        />
 
-        <ScrollView>
+        <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           {/* Entreprise */}
-          <View>
-            <Text>Entreprise *</Text>
+          <View className="mx-5 mt-4 rounded-3xl bg-white p-5 shadow-sm gap-4">
+            <Text className="text-sm font-medium text-gray-700">
+              Entreprise *
+            </Text>
             <View>
               <Picker
                 selectedValue={entrepriseId}
@@ -138,15 +119,15 @@ export function CAModal({
           </View>
 
           {/* Mois */}
-          <View>
-            <Text>Mois *</Text>
+          <View className="mx-5 my-4 rounded-3xl bg-white p-5 shadow-sm gap-4">
+            <Text className="text-sm font-medium text-gray-700">Mois *</Text>
             <View>
               <Picker
                 selectedValue={mois}
                 onValueChange={(value) => setMois(value)}
                 enabled={!isEditing}
               >
-                {MOIS_LABELS.map((moisLabel, index) => (
+                {MONTH_LABELS.map((moisLabel, index) => (
                   <Picker.Item
                     key={index + 1}
                     label={moisLabel}
@@ -158,8 +139,8 @@ export function CAModal({
           </View>
 
           {/* Année */}
-          <View>
-            <Text>Année *</Text>
+          <View className="mx-5 my-4 rounded-3xl bg-white p-5 shadow-sm gap-4">
+            <Text className="text-sm font-medium text-gray-700">Année *</Text>
             <View>
               <Picker
                 selectedValue={annee}
@@ -174,17 +155,20 @@ export function CAModal({
           </View>
 
           {/* Montant CA */}
-          <View>
-            <Text>Montant (€) *</Text>
-            <View>
-              <TextInput
+          <View className="mx-5 my-4 rounded-3xl bg-white p-5 shadow-sm gap-4">
+            <Text className="text-sm font-medium text-gray-700">
+              Montant (€) *
+            </Text>
+            <View className="flex-row items-center gap-2">
+              <FormInput
+                label=""
                 placeholder="0.00"
-                placeholderTextColor={"#64748b"}
                 keyboardType="numeric"
                 value={ca}
                 onChangeText={setCa}
+                error={null}
               />
-              <Text>€</Text>
+              <Text className="text-gray-500 font-medium">€</Text>
             </View>
           </View>
 
@@ -192,9 +176,9 @@ export function CAModal({
           {annee > currentDate.getFullYear() ||
           (annee === currentDate.getFullYear() &&
             mois > currentDate.getMonth() + 1) ? (
-            <View>
+            <View className="mx-5 rounded-2xl bg-amber-50 border border-amber-200 p-3 flex-row items-center gap-2">
               <Ionicons name="warning" size={20} color="#856404" />
-              <Text>
+              <Text className="text-amber-800">
                 Vous ajoutez du CA pour un mois futur
               </Text>
             </View>
@@ -204,91 +188,3 @@ export function CAModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: "#ffffff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-  },
-  closeText: {
-    fontSize: 16,
-    color: "#0ea5e9",
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#0f172a",
-  },
-  saveText: {
-    fontSize: 16,
-    color: "#0ea5e9",
-    fontWeight: "600",
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  formGroup: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#0f172a",
-    marginBottom: 8,
-  },
-  pickerContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    overflow: "hidden",
-  },
-  picker: {
-    height: Platform.OS === "ios" ? 200 : 50,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#0f172a",
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  inputSuffix: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#64748b",
-  },
-  warningContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#FFF3CD",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 12,
-  },
-  warningText: {
-    fontSize: 14,
-    color: "#856404",
-    flex: 1,
-  },
-});

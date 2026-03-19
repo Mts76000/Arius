@@ -15,6 +15,7 @@ import { useContact } from "@/hooks/useContacts";
 import { useEntreprises } from "@/hooks/useEntreprises";
 import { AppButton } from "@/components/ui/AppButton";
 import { BtnPlus } from "@/components/ui/BtnPlus";
+import { getRdvStatusConfig } from "@/utils/rdvStatus";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -224,43 +225,51 @@ export default function HomeScreen() {
                 </Text>
               </View>
             ) : (
-              upcomingRdvs.map((rdv) => (
-                <View
-                  className="bg-white rounded-3xl p-6 text mt-5 shadow-base"
-                  key={rdv._id}
-                >
-                  <View className="flex flex-col gap-2">
-                    <View>
-                      <View className="flex flex-row justify-between items-center ">
-                        <Text className="font-semibold text-lg text-gray">
-                          {formatShortDate(rdv.date_prevue)}
-                        </Text>
-                        <View className="bg-primary/20 rounded-3xl p-2">
-                          <Text className="text-primary font-bold capitalize">
-                            {rdv.statut}
+              upcomingRdvs.map((rdv) => {
+                const statusConfig = getRdvStatusConfig(rdv.statut);
+
+                return (
+                  <View
+                    className="bg-white rounded-3xl p-6 text mt-5 shadow-base"
+                    key={rdv._id}
+                  >
+                    <View className="flex flex-col gap-4">
+                      <View>
+                        <View className="flex flex-row justify-between items-center ">
+                          <Text className="font-semibold text-lg text-gray">
+                            {formatShortDate(rdv.date_prevue)}
                           </Text>
+                          <View
+                            className={`${statusConfig.badgeBgClass} rounded-3xl px-3 py-2`}
+                          >
+                            <Text
+                              className={`${statusConfig.badgeTextClass} font-bold`}
+                            >
+                              {statusConfig.label}
+                            </Text>
+                          </View>
                         </View>
+                        <Text className="text-lg font-bold">{rdv.titre}</Text>
                       </View>
-                      <Text className="text-lg font-bold">{rdv.titre}</Text>
-                    </View>
-                    <View className="bg-grayLight h-[0.3px]"></View>
-                    <View className="flex flex-row gap-2 items-center ">
-                      <Ionicons
-                        name="business-outline"
-                        size={15}
-                        color="#4B5563"
-                      />
-                      <Text className="text-lg capitalize text-gray">
-                        {getEntrepriseNameById(rdv.entreprise_id)}
-                      </Text>
-                      <Text className="text-lg text-gray">-</Text>
-                      <Text className="text-lg capitalize text-gray">
-                        {getContactDisplayName(rdv.contact_id)}
-                      </Text>
+                      <View className="bg-grayLight h-[0.3px]"></View>
+                      <View className="flex flex-row gap-2 items-center ">
+                        <Ionicons
+                          name="business-outline"
+                          size={15}
+                          color="#4B5563"
+                        />
+                        <Text className="text-lg capitalize text-gray">
+                          {getEntrepriseNameById(rdv.entreprise_id)}
+                        </Text>
+                        <Text className="text-lg text-gray">-</Text>
+                        <Text className="text-lg capitalize text-gray">
+                          {getContactDisplayName(rdv.contact_id)}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-              ))
+                );
+              })
             )}
           </View>
         </View>

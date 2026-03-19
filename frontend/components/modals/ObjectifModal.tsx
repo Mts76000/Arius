@@ -1,31 +1,13 @@
 import React, { useState } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
-  ScrollView,
-  StyleSheet,
-} from "react-native";
+import { Modal, View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { AppButton } from "@/components/ui/AppButton";
-
-const MOIS_LABELS = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-];
+import { FormInput } from "@/components/forms/FormInput";
+import { FormHeader } from "@/components/forms/Form";
+import {
+  getFormModalPresentationStyle,
+  MONTH_LABELS,
+} from "@/components/forms/formDefinitions";
 
 type Props = {
   visible: boolean;
@@ -74,43 +56,47 @@ export function ObjectifModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle={getFormModalPresentationStyle("objectif")}
       onRequestClose={onClose}
     >
-      <View>
-        <View>
-          <AppButton title="Annuler" onPress={onClose} variant="link" />
-          <Text>Objectifs {annee}</Text>
-          <AppButton title="Enregistrer" onPress={handleSave} />
-        </View>
+      <View className="flex-1 bg-gray-50">
+        <FormHeader
+          title={`Objectifs ${annee}`}
+          onCancel={onClose}
+          onSave={handleSave}
+        />
 
-        <ScrollView>
+        <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           <TouchableOpacity
             onPress={handleAppliquerATous}
+            className="mx-5 mt-4 mb-2 rounded-2xl border border-primary/30 bg-primary/10 p-4 flex-row items-center gap-2"
           >
             <Ionicons name="copy" size={20} color={"#0ea5e9"} />
-            <Text>
+            <Text className="text-primary font-medium">
               Appliquer janvier à tous les mois
             </Text>
           </TouchableOpacity>
 
-          <View>
-            {MOIS_LABELS.map((moisLabel, index) => {
+          <View className="mx-5 rounded-3xl bg-white p-5 shadow-sm gap-3">
+            {MONTH_LABELS.map((moisLabel, index) => {
               const moisNum = index + 1;
               return (
-                <View key={moisNum}>
-                  <Text>{moisLabel}</Text>
-                  <View>
-                    <TextInput
+                <View key={moisNum} className="gap-2">
+                  <Text className="text-sm font-medium text-gray-700">
+                    {moisLabel}
+                  </Text>
+                  <View className="flex-row items-center gap-2">
+                    <FormInput
+                      label=""
                       placeholder="0"
-                      placeholderTextColor={"#64748b"}
                       keyboardType="numeric"
                       value={objectifs[moisNum] || ""}
                       onChangeText={(text) =>
                         setObjectifs({ ...objectifs, [moisNum]: text })
                       }
+                      error={null}
                     />
-                    <Text>€</Text>
+                    <Text className="text-gray-500 font-medium">€</Text>
                   </View>
                 </View>
               );
@@ -121,90 +107,3 @@ export function ObjectifModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: "#ffffff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-  },
-  closeText: {
-    fontSize: 16,
-    color: "#0ea5e9",
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#0f172a",
-  },
-  saveText: {
-    fontSize: 16,
-    color: "#0ea5e9",
-    fontWeight: "600",
-  },
-  content: {
-    flex: 1,
-    padding: 20,
-  },
-  quickAction: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#0ea5e9",
-    marginBottom: 20,
-  },
-  quickActionText: {
-    fontSize: 14,
-    color: "#0ea5e9",
-    fontWeight: "600",
-  },
-  grid: {
-    gap: 12,
-  },
-  moisCard: {
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  moisLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#0f172a",
-    marginBottom: 8,
-  },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  input: {
-    flex: 1,
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#0f172a",
-    backgroundColor: "#f8fafc",
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  inputSuffix: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#64748b",
-  },
-});

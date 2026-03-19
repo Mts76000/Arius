@@ -9,6 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import {
   useEntreprise,
   useDeleteEntreprise,
@@ -37,7 +38,6 @@ import {
 } from "@/hooks/useRdvs";
 import { Rdv, CreateRdvInput, RdvStatus } from "@/services/rdvs";
 import { ValidationRules, FormErrors, hasErrors } from "@/utils/validation";
-import { styles } from "@/styles/entrepriseDetailStyles";
 import { ContactModal } from "@/components/modals/ContactModal";
 import { NoteModal } from "@/components/modals/NoteModal";
 import { RdvModal } from "@/components/modals/RdvModal";
@@ -47,12 +47,12 @@ import { InfosTab } from "@/components/entreprise/InfosTab";
 import { NotesTab } from "@/components/entreprise/NotesTab";
 import { RdvsTab } from "@/components/entreprise/RdvsTab";
 import { ChiffresTab } from "@/components/entreprise/ChiffresTab";
-import { DevisSection } from "@/components/sections/DevisSection";
-import { AppButton } from "@/components/ui/AppButton";
+import { DevisTab } from "@/components/entreprise/DevisTab";
 
 export default function EntrepriseDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const tabBarHeight = useBottomTabBarHeight();
 
   // Normalize id to string
   const entrepriseId = Array.isArray(id) ? id[0] : id || "";
@@ -453,8 +453,17 @@ export default function EntrepriseDetailScreen() {
   }
 
   return (
-    <ScrollView>
-      <EntrepriseHeader entreprise={entreprise} />
+    <ScrollView
+      contentContainerStyle={{
+        paddingBottom: Math.max(140, tabBarHeight + 56),
+      }}
+    >
+      <EntrepriseHeader
+        entreprise={entreprise}
+        onEdit={() => router.push(`/entreprises/${id}/edit` as any)}
+        onDelete={handleDelete}
+        isDeleting={deleteEntreprise.isPending}
+      />
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -475,6 +484,7 @@ export default function EntrepriseDetailScreen() {
       {activeTab === "rdv" && (
         <RdvsTab
           rdvs={rdvsData?.rdvs}
+          contacts={contacts || []}
           rdvsLoading={rdvsLoading}
           onAddRdv={handleAddRdv}
           onEditRdv={handleEditRdv}
@@ -483,7 +493,7 @@ export default function EntrepriseDetailScreen() {
         />
       )}
 
-      {activeTab === "devis" && <DevisSection entrepriseId={entrepriseId} />}
+      {activeTab === "devis" && <DevisTab entrepriseId={entrepriseId} />}
 
       {activeTab === "notes" && (
         <NotesTab
@@ -501,20 +511,7 @@ export default function EntrepriseDetailScreen() {
 
       {activeTab === "chiffres" && <ChiffresTab entreprise={entreprise} />}
 
-      {/* Actions */}
-      <View>
-        <AppButton
-          title="Modifier"
-          onPress={() => router.push(`/entreprises/${id}/edit` as any)}
-          variant="secondary"
-        />
-        <AppButton
-          title={deleteEntreprise.isPending ? "..." : "Supprimer"}
-          onPress={handleDelete}
-          variant="danger"
-          disabled={deleteEntreprise.isPending}
-        />
-      </View>
+      <View style={{ height: Math.max(32, tabBarHeight * 0.5) }} />
 
       <ContactModal
         visible={showContactModal}

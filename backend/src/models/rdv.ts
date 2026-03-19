@@ -1,11 +1,6 @@
 import { Schema, model } from "mongoose";
 
-export type RdvStatus =
-  | "planifie"
-  | "en_cours"
-  | "termine"
-  | "annule"
-  | "reporte";
+export type RdvStatus = "planifie" | "termine" | "annule";
 
 export interface RdvDocument {
   _id: string;
@@ -33,7 +28,7 @@ const rdvSchema = new Schema<RdvDocument>(
     duree_minutes: { type: Number, required: true, min: 1 },
     statut: {
       type: String,
-      enum: ["planifie", "en_cours", "termine", "annule", "reporte"],
+      enum: ["planifie", "termine", "annule"],
       default: "planifie",
       index: true,
     },
