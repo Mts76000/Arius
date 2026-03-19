@@ -106,7 +106,10 @@ export const RdvCard: React.FC<RdvCardProps> = ({
             {contactName ? (
               <View className="mt-0.5 flex-row items-center gap-1.5">
                 <Ionicons name="person-outline" size={13} color="#64748B" />
-                <Text className="text-xs font-medium text-slate-500" numberOfLines={1}>
+                <Text
+                  className="text-xs font-medium text-slate-500"
+                  numberOfLines={1}
+                >
                   {contactName}
                 </Text>
               </View>
@@ -158,10 +161,7 @@ export const RdvCard: React.FC<RdvCardProps> = ({
         animationType="fade"
         onRequestClose={() => setShowActions(false)}
       >
-        <Pressable
-          className="flex-1"
-          onPress={() => setShowActions(false)}
-        >
+        <Pressable className="flex-1" onPress={() => setShowActions(false)}>
           <Pressable
             className="absolute rounded-2xl border border-slate-200 bg-white p-2 shadow-base"
             style={{
