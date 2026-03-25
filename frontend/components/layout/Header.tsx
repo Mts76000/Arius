@@ -1,8 +1,6 @@
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { usePathname, useRouter, useSegments } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/services/api";
 import { useAuthStore } from "@/store/authStore";
 
 interface UserData {
@@ -67,7 +65,7 @@ const getPageTitle = (path: string) => {
   return matchingRule?.title ?? DEFAULT_PAGE_TITLE;
 };
 
-const getInitials = (user?: UserData) => {
+const getInitials = (user?: UserData | null) => {
   const firstName = user?.prenom || "Utilisateur";
   const lastName = user?.nom || "";
 
@@ -78,18 +76,7 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const segments = useSegments();
-  const token = useAuthStore((state) => state.token);
-
-  const { data: user, isLoading } = useQuery({
-    queryKey: ["user", token],
-    queryFn: async () => {
-      const response = await api.get("/v1/auth/me");
-      return response.data as UserData;
-    },
-    enabled: !!token,
-    staleTime: 5 * 60 * 1000,
-    retry: false,
-  });
+  const user = useAuthStore((state) => state.user as UserData | null);
 
   const handleAvatarPress = () => {
     router.push("/(tabs)/profil");
@@ -129,7 +116,7 @@ export function Header() {
         activeOpacity={0.7}
         className="h-[50px] w-[50px] items-center justify-center rounded-full bg-primary"
       >
-        {isLoading ? (
+        {!user ? (
           <ActivityIndicator size="small" />
         ) : (
           <Text className="text-xl font-bold text-white">{initials}</Text>

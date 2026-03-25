@@ -27,10 +27,10 @@ export const RDV_STATUS_CONFIG: Record<RdvStatus, RdvStatusConfig> = {
   },
   annule: {
     label: "Annulé",
-    badgeBgClass: "bg-red-100",
-    badgeTextClass: "text-red-500",
+    badgeBgClass: "bg-redLight",
+    badgeTextClass: "text-red-300",
     icon: "close-circle-outline",
-    iconColor: "#b91c1c",
+    iconColor: "#EF4444",
   },
 };
 

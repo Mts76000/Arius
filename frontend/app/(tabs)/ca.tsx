@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -6,10 +6,11 @@ import {
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
-  StyleSheet,
   Alert,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 import { useCAStats, useCA, useCreateCA } from "@/hooks/useCA";
 import { useObjectifs, useCreateObjectif } from "@/hooks/useObjectifs";
@@ -18,85 +19,116 @@ import { ObjectifModal } from "@/components/modals/ObjectifModal";
 import { CAModal } from "@/components/modals/CAModal";
 import { AppButton } from "@/components/ui/AppButton";
 import { BtnPlus } from "@/components/ui/BtnPlus";
-import { useRouter } from "expo-router";
 
 const MOIS_LABELS = [
   "Janvier",
-  "Février",
+  "Fevrier",
   "Mars",
   "Avril",
   "Mai",
   "Juin",
   "Juillet",
-  "Août",
+  "Aout",
   "Septembre",
   "Octobre",
   "Novembre",
-  "Décembre",
+  "Decembre",
 ];
 
+const formatEuro = (value: number) => {
+  return `${value.toLocaleString("fr-FR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} EUR`;
+};
+
+const getProgressionMeta = (progression: number | null) => {
+  if (progression === null) {
+    return { color: "#64748b", icon: "remove-circle-outline" as const };
+  }
+  if (progression >= 100) {
+    return { color: "#10b981", icon: "checkmark-circle" as const };
+  }
+  if (progression >= 90) {
+    return { color: "#0ea5e9", icon: "trending-up" as const };
+  }
+  if (progression >= 50) {
+    return { color: "#f59e0b", icon: "time-outline" as const };
+  }
+  return { color: "#ef4444", icon: "alert-circle-outline" as const };
+};
+
 export default function CAScreen() {
+  const router = useRouter();
   const currentDate = new Date();
+
   const [selectedMois, setSelectedMois] = useState(currentDate.getMonth() + 1);
   const [selectedAnnee, setSelectedAnnee] = useState(currentDate.getFullYear());
   const [rechercheEntreprise, setRechercheEntreprise] = useState("");
   const [showAnnuelle, setShowAnnuelle] = useState(false);
   const [showObjectifModal, setShowObjectifModal] = useState(false);
   const [showCAModal, setShowCAModal] = useState(false);
-  const router = useRouter();
 
-  const { data: stats, isLoading } = useCAStats(selectedAnnee, selectedMois);
+  const {
+    data: stats,
+    isLoading,
+    refetch,
+    isRefetching,
+  } = useCAStats(selectedAnnee, selectedMois);
   const { data: objectifs } = useObjectifs(selectedAnnee);
   const { data: entreprisesData } = useEntreprises();
   const { data: caAnnuel } = useCA({ annee: selectedAnnee });
+
   const createObjectifMutation = useCreateObjectif();
   const createCAMutation = useCreateCA();
 
   const handleMoisPrecedent = () => {
     if (selectedMois === 1) {
       setSelectedMois(12);
-      setSelectedAnnee(selectedAnnee - 1);
-    } else {
-      setSelectedMois(selectedMois - 1);
+      setSelectedAnnee((prev) => prev - 1);
+      return;
     }
+
+    setSelectedMois((prev) => prev - 1);
   };
 
   const handleMoisSuivant = () => {
     if (selectedMois === 12) {
       setSelectedMois(1);
-      setSelectedAnnee(selectedAnnee + 1);
-    } else {
-      setSelectedMois(selectedMois + 1);
+      setSelectedAnnee((prev) => prev + 1);
+      return;
     }
+
+    setSelectedMois((prev) => prev + 1);
   };
 
-  const getProgressionColor = (progression: number | null) => {
-    if (!progression) return "#64748b";
-    if (progression >= 100) return "#10b981";
-    if (progression >= 90) return "#0ea5e9";
-    if (progression >= 50) return "#f59e0b";
-    return "#ef4444";
-  };
+  const entreprisesFiltrees = useMemo(() => {
+    const allEntreprises = stats?.ca_par_entreprise || [];
+    const query = rechercheEntreprise.trim().toLowerCase();
 
-  const getProgressionIcon = (progression: number | null) => {
-    if (!progression) return "⚪";
-    if (progression >= 100) return "⭐";
-    if (progression >= 90) return "🟢";
-    if (progression >= 50) return "🟡";
-    return "🔴";
-  };
+    if (!query) return allEntreprises;
 
-  const entreprisesFiltrees = stats?.ca_par_entreprise.filter((e) =>
-    e.entreprise_nom.toLowerCase().includes(rechercheEntreprise.toLowerCase()),
+    return allEntreprises.filter((e) =>
+      e.entreprise_nom.toLowerCase().includes(query),
+    );
+  }, [stats?.ca_par_entreprise, rechercheEntreprise]);
+
+  const caParMois = useMemo(() => {
+    return Array.from({ length: 12 }, (_, index) => {
+      const moisNum = index + 1;
+      const caMois = caAnnuel?.filter((ca) => ca.mois === moisNum) || [];
+      return caMois.reduce((sum, ca) => sum + ca.ca_ht, 0);
+    });
+  }, [caAnnuel]);
+
+  const totalAnnuel = useMemo(
+    () => caParMois.reduce((sum, value) => sum + value, 0),
+    [caParMois],
   );
 
-  // Calculer CA par mois pour la vue annuelle
-  const caParMois = Array.from({ length: 12 }, (_, index) => {
-    const moisNum = index + 1;
-    const caMois = caAnnuel?.filter((ca) => ca.mois === moisNum) || [];
-    const total = caMois.reduce((sum, ca) => sum + ca.ca_ht, 0);
-    return total;
-  });
+  const progression = stats?.progression ?? null;
+  const progressionMeta = getProgressionMeta(progression);
+  const progressionWidth = Math.max(0, Math.min(progression ?? 0, 100));
 
   const handleSaveObjectifs = async (
     objectifsToSave: { mois: number; objectif_ht: number }[],
@@ -109,7 +141,7 @@ export default function CAScreen() {
           objectif_ht: obj.objectif_ht,
         });
       }
-      Alert.alert("Succès", "Objectifs enregistrés");
+      Alert.alert("Succes", "Objectifs enregistres");
       setShowObjectifModal(false);
     } catch (error) {
       Alert.alert("Erreur", "Impossible d'enregistrer les objectifs");
@@ -124,7 +156,7 @@ export default function CAScreen() {
   }) => {
     try {
       await createCAMutation.mutateAsync(data);
-      Alert.alert("Succès", "CA enregistré");
+      Alert.alert("Succes", "CA enregistre");
       setShowCAModal(false);
     } catch (error) {
       Alert.alert("Erreur", "Impossible d'enregistrer le CA");
@@ -137,152 +169,234 @@ export default function CAScreen() {
 
   if (isLoading) {
     return (
-      <View>
-        <ActivityIndicator size="large" color={"#0ea5e9"} />
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#007aff" />
       </View>
     );
   }
 
   return (
     <View className="flex-1">
-      <ScrollView contentContainerStyle={{ paddingBottom: 180 }}>
-        {/* Header - Sélecteur mois/année */}
-        <View>
-          <TouchableOpacity onPress={handleMoisPrecedent}>
-            <Ionicons name="chevron-back" size={24} color={"#0ea5e9"} />
-          </TouchableOpacity>
-          <Text>
-            {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
-          </Text>
-          <TouchableOpacity onPress={handleMoisSuivant}>
-            <Ionicons name="chevron-forward" size={24} color={"#0ea5e9"} />
-          </TouchableOpacity>
-        </View>
+      <ScrollView
+        className="pt-8"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 180 }}
+        refreshControl={
+          <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
+        }
+      >
+        <View className="gap-5">
+          <View className="bg-white rounded-3xl p-5 shadow-base">
+            <View className="flex-row items-center justify-between">
+              <TouchableOpacity
+                onPress={handleMoisPrecedent}
+                className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10"
+              >
+                <Ionicons name="chevron-back" size={20} color="#007aff" />
+              </TouchableOpacity>
 
-        {/* KPIs du mois */}
-        <View>
-          <View>
-            <Text>CA du mois</Text>
-            <Text>
-              {(stats?.ca_total || 0).toLocaleString("fr-FR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}{" "}
-              €
-            </Text>
-          </View>
-          <View>
-            <Text>Objectif</Text>
-            <Text>
-              {stats?.objectif
-                ? `${(stats.objectif || 0).toLocaleString("fr-FR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })} €`
-                : "Non défini"}
-            </Text>
-          </View>
-        </View>
+              <View className="items-center">
+                <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Suivi du chiffre d'affaires
+                </Text>
+                <Text className="text-2xl font-bold text-slate-900">
+                  {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
+                </Text>
+              </View>
 
-        {/* Barre de progression */}
-        {stats?.progression !== null && (
-          <View>
-            <View>
-              <Text>Progression</Text>
-              <Text>
-                {getProgressionIcon(stats?.progression ?? null)}{" "}
-                {stats?.progression?.toFixed(1)}%
+              <TouchableOpacity
+                onPress={handleMoisSuivant}
+                className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10"
+              >
+                <Ionicons name="chevron-forward" size={20} color="#007aff" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View className="flex-row gap-3">
+            <View className="flex-1 bg-white rounded-3xl p-5 shadow-base">
+              <View className="flex-row items-center gap-2 mb-2">
+                <Ionicons name="cash-outline" size={18} color="#007aff" />
+                <Text className="text-slate-500 text-sm font-semibold">
+                  CA du mois
+                </Text>
+              </View>
+              <Text className="text-xl font-bold text-slate-900">
+                {formatEuro(stats?.ca_total || 0)}
               </Text>
             </View>
-            <View>
-              <View />
+
+            <View className="flex-1 bg-white rounded-3xl p-5 shadow-base">
+              <View className="flex-row items-center gap-2 mb-2">
+                <Ionicons name="flag-outline" size={18} color="#007aff" />
+                <Text className="text-slate-500 text-sm font-semibold">
+                  Objectif
+                </Text>
+              </View>
+              <Text className="text-xl font-bold text-slate-900">
+                {stats?.objectif !== null
+                  ? formatEuro(stats?.objectif || 0)
+                  : "Non defini"}
+              </Text>
             </View>
           </View>
-        )}
 
-        {/* Boutons actions */}
-        <View>
-          <AppButton
-            title="Objectif"
-            onPress={() => setShowObjectifModal(true)}
-            variant="secondary"
-          />
-        </View>
-
-        {/* CA par entreprise */}
-        <View>
-          <Text>CA par entreprise</Text>
-          <View>
-            <Ionicons name="search" size={20} color={"#64748b"} />
-            <TextInput
-              placeholder="Rechercher une entreprise..."
-              value={rechercheEntreprise}
-              onChangeText={setRechercheEntreprise}
-              placeholderTextColor={"#64748b"}
-            />
-          </View>
-
-          {entreprisesFiltrees && entreprisesFiltrees.length > 0 ? (
-            entreprisesFiltrees.map((entreprise, index) => (
-              <TouchableOpacity
-                key={entreprise.entreprise_id}
-                onPress={() => handleEntrepriseClick(entreprise.entreprise_id)}
-              >
-                <View>
-                  <Text>
-                    {index === 0 && "🏆 "}
-                    {entreprise.entreprise_nom}
+          {progression !== null && (
+            <View className="bg-white rounded-3xl p-5 shadow-base">
+              <View className="mb-4 flex-row items-center justify-between">
+                <Text className="text-base font-semibold text-slate-700">
+                  Progression mensuelle
+                </Text>
+                <View className="flex-row items-center gap-1">
+                  <Ionicons
+                    name={progressionMeta.icon}
+                    size={18}
+                    color={progressionMeta.color}
+                  />
+                  <Text
+                    className="text-base font-bold"
+                    style={{ color: progressionMeta.color }}
+                  >
+                    {progression.toFixed(1)}%
                   </Text>
                 </View>
-                <Text>
-                  {(entreprise.ca_total || 0).toLocaleString("fr-FR", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}{" "}
-                  €
-                </Text>
-              </TouchableOpacity>
-            ))
-          ) : (
-            <Text>Aucun CA ce mois</Text>
-          )}
-        </View>
+              </View>
 
-        {/* Vue annuelle */}
-        <View>
-          <TouchableOpacity onPress={() => setShowAnnuelle(!showAnnuelle)}>
-            <Text>Vue annuelle {selectedAnnee}</Text>
-            <Ionicons
-              name={showAnnuelle ? "chevron-up" : "chevron-down"}
-              size={24}
-              color={"#0f172a"}
-            />
-          </TouchableOpacity>
-
-          {showAnnuelle && (
-            <View>
-              {MOIS_LABELS.map((mois, index) => {
-                const moisNum = index + 1;
-                const caTotal = caParMois[index];
-
-                return (
-                  <View key={moisNum}>
-                    <Text>{mois}</Text>
-                    <Text>
-                      {(caTotal || 0).toLocaleString("fr-FR", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}{" "}
-                      €
-                    </Text>
-                  </View>
-                );
-              })}
+              <View className="h-3 w-full rounded-full bg-slate-200 overflow-hidden">
+                <View
+                  className="h-full rounded-full"
+                  style={{
+                    width: `${progressionWidth}%`,
+                    backgroundColor: progressionMeta.color,
+                  }}
+                />
+              </View>
             </View>
           )}
-        </View>
 
-        {/* Modals */}
+          <View className="flex-row gap-3">
+            <View className="flex-1">
+              <AppButton
+                title="Objectifs annuels"
+                onPress={() => setShowObjectifModal(true)}
+                variant="secondary"
+              />
+            </View>
+            <View className="flex-1">
+              <AppButton
+                title="Ajouter du CA"
+                onPress={() => setShowCAModal(true)}
+              />
+            </View>
+          </View>
+
+          <View>
+            <Text className="mb-3 text-base font-bold text-slate-600 uppercase tracking-wide">
+              CA par entreprise
+            </Text>
+
+            <View className="mb-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-base">
+              <View className="flex-row items-center gap-2">
+                <Ionicons name="search" size={18} color="#64748b" />
+                <TextInput
+                  className="flex-1 text-base text-slate-900"
+                  placeholder="Rechercher une entreprise..."
+                  value={rechercheEntreprise}
+                  onChangeText={setRechercheEntreprise}
+                  placeholderTextColor="#64748b"
+                />
+              </View>
+            </View>
+
+            {entreprisesFiltrees.length > 0 ? (
+              <View className="gap-3">
+                {entreprisesFiltrees.map((entreprise, index) => (
+                  <TouchableOpacity
+                    key={entreprise.entreprise_id}
+                    onPress={() =>
+                      handleEntrepriseClick(entreprise.entreprise_id)
+                    }
+                    className="bg-white rounded-3xl p-5 shadow-base"
+                  >
+                    <View className="flex-row items-center justify-between gap-4">
+                      <View className="flex-1">
+                        <View className="flex-row items-center gap-2">
+                          {index === 0 && (
+                            <Ionicons
+                              name="trophy-outline"
+                              size={16}
+                              color="#007aff"
+                            />
+                          )}
+                          <Text
+                            className="text-base font-semibold text-slate-900 flex-1"
+                            numberOfLines={1}
+                          >
+                            {entreprise.entreprise_nom}
+                          </Text>
+                        </View>
+                        <Text className="mt-1 text-sm text-slate-500">
+                          Performance du mois selectionne
+                        </Text>
+                      </View>
+
+                      <Text className="text-base font-bold text-primary">
+                        {formatEuro(entreprise.ca_total || 0)}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            ) : (
+              <View className="items-center justify-center rounded-3xl bg-white px-6 py-10 shadow-base">
+                <Text className="mb-1 text-lg font-semibold text-slate-900">
+                  Aucun resultat
+                </Text>
+                <Text className="text-center text-sm text-slate-600">
+                  Aucun CA trouve pour ce filtre
+                </Text>
+              </View>
+            )}
+          </View>
+
+          <View className="bg-white rounded-3xl p-5 shadow-base">
+            <TouchableOpacity
+              onPress={() => setShowAnnuelle((prev) => !prev)}
+              className="flex-row items-center justify-between"
+            >
+              <View>
+                <Text className="text-base font-semibold text-slate-900">
+                  Vue annuelle {selectedAnnee}
+                </Text>
+                <Text className="text-sm text-slate-500">
+                  Total: {formatEuro(totalAnnuel)}
+                </Text>
+              </View>
+              <Ionicons
+                name={showAnnuelle ? "chevron-up" : "chevron-down"}
+                size={22}
+                color="#0f172a"
+              />
+            </TouchableOpacity>
+
+            {showAnnuelle && (
+              <View className="mt-4 gap-2">
+                {MOIS_LABELS.map((mois, index) => (
+                  <View
+                    key={mois}
+                    className="flex-row items-center justify-between rounded-xl bg-slate-50 px-3 py-2"
+                  >
+                    <Text className="text-sm font-medium text-slate-700">
+                      {mois}
+                    </Text>
+                    <Text className="text-sm font-bold text-slate-900">
+                      {formatEuro(caParMois[index] || 0)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
       </ScrollView>
 
       <BtnPlus formType="ca" onOpenCA={() => setShowCAModal(true)} />
@@ -309,199 +423,3 @@ export default function CAScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8fafc",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f8fafc",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: 20,
-    backgroundColor: "#ffffff",
-  },
-  navButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#0f172a",
-  },
-  kpisContainer: {
-    flexDirection: "row",
-    padding: 20,
-    gap: 12,
-  },
-  kpiCard: {
-    flex: 1,
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  kpiLabel: {
-    fontSize: 12,
-    color: "#64748b",
-    marginBottom: 4,
-  },
-  kpiValue: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  progressionContainer: {
-    marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 16,
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-  },
-  progressionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  progressionLabel: {
-    fontSize: 14,
-    color: "#64748b",
-  },
-  progressionValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#0f172a",
-  },
-  progressBar: {
-    height: 12,
-    backgroundColor: "#e2e8f0",
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    borderRadius: 6,
-  },
-  actionsContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    gap: 12,
-    marginBottom: 20,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: "#0ea5e9",
-    padding: 16,
-    borderRadius: 12,
-  },
-  actionButtonSecondary: {
-    backgroundColor: "#ffffff",
-    borderWidth: 1,
-    borderColor: "#0ea5e9",
-  },
-  actionButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  section: {
-    marginHorizontal: 20,
-    marginBottom: 24,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#0f172a",
-    marginBottom: 12,
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#ffffff",
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    marginBottom: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 16,
-    color: "#0f172a",
-  },
-  entrepriseCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#ffffff",
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    marginBottom: 8,
-  },
-  entrepriseInfo: {
-    flex: 1,
-  },
-  entrepriseNom: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#0f172a",
-  },
-  entrepriseCA: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#0ea5e9",
-  },
-  emptyText: {
-    textAlign: "center",
-    color: "#64748b",
-    fontSize: 14,
-    padding: 20,
-  },
-  annuelleContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    padding: 16,
-  },
-  moisRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#e2e8f0",
-  },
-  moisLabel: {
-    fontSize: 14,
-    color: "#0f172a",
-  },
-  moisCA: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#0f172a",
-  },
-});

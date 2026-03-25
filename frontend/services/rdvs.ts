@@ -82,9 +82,26 @@ export const rdvsService = {
   async getRdvsByEntreprise(
     token: string,
     entrepriseId: string,
+    filters?: {
+      de?: string;
+      a?: string;
+      page?: number;
+      limite?: number;
+    },
   ): Promise<GetRdvsResponse> {
+    const params = new URLSearchParams();
+    if (filters?.de) params.append("de", filters.de);
+    if (filters?.a) params.append("a", filters.a);
+    if (filters?.page) params.append("page", filters.page.toString());
+    if (filters?.limite) params.append("limite", filters.limite.toString());
+
+    const queryStr = params.toString();
+    const url = queryStr
+      ? `/v1/entreprises/${entrepriseId}/rdvs?${queryStr}`
+      : `/v1/entreprises/${entrepriseId}/rdvs`;
+
     const response = await api.get<GetRdvsResponse>(
-      `/v1/entreprises/${entrepriseId}/rdvs`,
+      url,
       {
         headers: { Authorization: `Bearer ${token}` },
       },

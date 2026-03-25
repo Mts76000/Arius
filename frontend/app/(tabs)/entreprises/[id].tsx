@@ -57,12 +57,20 @@ export default function EntrepriseDetailScreen() {
   // Normalize id to string
   const entrepriseId = Array.isArray(id) ? id[0] : id || "";
 
+  const [rdvPage, setRdvPage] = useState(1);
+  const RDV_PAGE_SIZE = 10;
+
   const { data: entreprise, isLoading, error } = useEntreprise(entrepriseId);
   const { data: contacts, isLoading: contactsLoading } =
     useContacts(entrepriseId);
   const { data: notesData, isLoading: notesLoading } = useNotes(entrepriseId);
-  const { data: rdvsData, isLoading: rdvsLoading } =
-    useRdvsByEntreprise(entrepriseId);
+  const { data: rdvsData, isLoading: rdvsLoading } = useRdvsByEntreprise(
+    entrepriseId,
+    {
+      page: rdvPage,
+      limite: RDV_PAGE_SIZE,
+    },
+  );
   const { data: entreprisesData } = useEntreprises();
   const entreprises = entreprisesData?.entreprises || [];
   const deleteEntreprise = useDeleteEntreprise();
@@ -485,11 +493,14 @@ export default function EntrepriseDetailScreen() {
         <RdvsTab
           rdvs={rdvsData?.rdvs}
           contacts={contacts || []}
+          pagination={rdvsData?.pagination}
+          page={rdvPage}
           rdvsLoading={rdvsLoading}
           onAddRdv={handleAddRdv}
           onEditRdv={handleEditRdv}
           onDeleteRdv={handleDeleteRdv}
           onChangeStatus={handleChangeRdvStatus}
+          onPageChange={setRdvPage}
         />
       )}
 

@@ -55,7 +55,7 @@ export const RdvCard: React.FC<RdvCardProps> = ({
   const availableTransitions = getNextRdvStatuses(rdv.statut);
 
   return (
-    <Pressable className="relative rounded-2xl border border-slate-100 bg-slate-50 p-4 flex-col gap-2">
+    <Pressable className="relative rounded-2xl border border-slate-100 bg-slate-50 p-4 flex-col gap-2 ">
       <View className="flex-row items-start justify-between gap-3">
         <View className="flex-1 flex-row items-start gap-3">
           <View className="flex-1 gap-2">
