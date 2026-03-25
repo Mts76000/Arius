@@ -100,12 +100,9 @@ export const rdvsService = {
       ? `/v1/entreprises/${entrepriseId}/rdvs?${queryStr}`
       : `/v1/entreprises/${entrepriseId}/rdvs`;
 
-    const response = await api.get<GetRdvsResponse>(
-      url,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      },
-    );
+    const response = await api.get<GetRdvsResponse>(url, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     return {
       ...response.data,
       rdvs: response.data.rdvs.map(normalizeRdv),

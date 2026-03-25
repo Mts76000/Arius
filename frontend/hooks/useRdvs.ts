@@ -36,7 +36,8 @@ export function useRdvsByEntreprise(
 
   return useQuery({
     queryKey: ["rdvs", "entreprise", entrepriseId, filters],
-    queryFn: () => rdvsService.getRdvsByEntreprise(token!, entrepriseId, filters),
+    queryFn: () =>
+      rdvsService.getRdvsByEntreprise(token!, entrepriseId, filters),
     enabled: !!token && !!entrepriseId,
   });
 }

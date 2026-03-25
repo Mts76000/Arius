@@ -104,7 +104,11 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
       today.getMonth(),
       today.getDate(),
     );
-    const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const dateStart = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+    );
 
     const diffInDays = Math.round(
       (dateStart.getTime() - todayStart.getTime()) / (1000 * 60 * 60 * 24),
@@ -174,7 +178,9 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
                   : "border-grayLight bg-gray-200"
               }`}
             >
-              <Text className={`font-semibold ${canGoPrev ? "text-white" : "text-gray"}`}>
+              <Text
+                className={`font-semibold ${canGoPrev ? "text-white" : "text-gray"}`}
+              >
                 Précédent
               </Text>
             </TouchableOpacity>
@@ -192,7 +198,9 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
                   : "border-grayLight bg-gray-200"
               }`}
             >
-              <Text className={`font-semibold ${canGoNext ? "text-white" : "text-gray"}`}>
+              <Text
+                className={`font-semibold ${canGoNext ? "text-white" : "text-gray"}`}
+              >
                 Suivant
               </Text>
             </TouchableOpacity>
