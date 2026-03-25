@@ -65,9 +65,11 @@ export const RdvCard: React.FC<RdvCardProps> = ({
               </Text>
               <View
                 className={`${statusConfig.badgeBgClass} rounded-full px-2 py-1`}
+                style={{ backgroundColor: statusConfig.badgeBgColor }}
               >
                 <Text
                   className={`text-xs font-bold ${statusConfig.badgeTextClass}`}
+                  style={{ color: statusConfig.badgeTextColor }}
                 >
                   {statusConfig.label}
                 </Text>
@@ -122,6 +124,7 @@ export const RdvCard: React.FC<RdvCardProps> = ({
                         />
                         <Text
                           className={`text-sm font-medium ${nextConfig.badgeTextClass}`}
+                          style={{ color: nextConfig.badgeTextColor }}
                         >
                           {nextConfig.label}
                         </Text>

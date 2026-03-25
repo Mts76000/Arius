@@ -4,6 +4,8 @@ export interface RdvStatusConfig {
   label: string;
   badgeBgClass: string;
   badgeTextClass: string;
+  badgeBgColor: string;
+  badgeTextColor: string;
   icon: string;
   iconColor: string;
 }
@@ -15,6 +17,8 @@ export const RDV_STATUS_CONFIG: Record<RdvStatus, RdvStatusConfig> = {
     label: "Prévu",
     badgeBgClass: "bg-primary/15",
     badgeTextClass: "text-primary",
+    badgeBgColor: "#EAF3FF",
+    badgeTextColor: "#007aff",
     icon: "calendar-outline",
     iconColor: "#007aff",
   },
@@ -22,13 +26,17 @@ export const RDV_STATUS_CONFIG: Record<RdvStatus, RdvStatusConfig> = {
     label: "Terminé",
     badgeBgClass: "bg-greenMedium",
     badgeTextClass: "text-green",
+    badgeBgColor: "#D1FAE5",
+    badgeTextColor: "#34C759",
     icon: "checkmark-circle-outline",
     iconColor: "#34C759",
   },
   annule: {
     label: "Annulé",
     badgeBgClass: "bg-redLight",
-    badgeTextClass: "text-red-300",
+    badgeTextClass: "text-red",
+    badgeBgColor: "#FEE2E2",
+    badgeTextColor: "#EF4444",
     icon: "close-circle-outline",
     iconColor: "#EF4444",
   },

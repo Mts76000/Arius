@@ -241,9 +241,13 @@ export default function HomeScreen() {
                           </Text>
                           <View
                             className={`${statusConfig.badgeBgClass} rounded-3xl px-3 py-2`}
+                            style={{
+                              backgroundColor: statusConfig.badgeBgColor,
+                            }}
                           >
                             <Text
                               className={`${statusConfig.badgeTextClass} font-bold`}
+                              style={{ color: statusConfig.badgeTextColor }}
                             >
                               {statusConfig.label}
                             </Text>

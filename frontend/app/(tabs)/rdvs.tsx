@@ -377,7 +377,7 @@ export default function RdvsScreen() {
   const canGoNext = page < totalPages;
 
   return (
-    <View className="flex-1  p-4">
+    <View className="pt-8">
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 180 }}
       >
@@ -505,7 +505,7 @@ export default function RdvsScreen() {
           <View className="flex-row gap-2">
             {[
               { value: "upcoming", label: "A venir" },
-              { value: "past", label: "Passes" },
+              { value: "past", label: "Passés" },
               { value: "all", label: "Tout" },
             ].map((filter) => {
               const isActive = timelineFilter === filter.value;

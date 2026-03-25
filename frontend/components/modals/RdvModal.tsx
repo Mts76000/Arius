@@ -251,12 +251,22 @@ export function RdvModal({
                     key={status.value}
                     onPress={() => setSelectedStatus(status.value)}
                     className={`rounded-full border px-4 py-2 ${selectedStatus === status.value ? statusConfig.badgeBgClass : "bg-white border-gray-300"}`}
+                    style={
+                      selectedStatus === status.value
+                        ? { backgroundColor: statusConfig.badgeBgColor }
+                        : undefined
+                    }
                   >
                     <Text
                       className={
                         selectedStatus === status.value
                           ? `${statusConfig.badgeTextClass} font-semibold`
                           : "text-gray-700"
+                      }
+                      style={
+                        selectedStatus === status.value
+                          ? { color: statusConfig.badgeTextColor }
+                          : undefined
                       }
                     >
                       {status.label}

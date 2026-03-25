@@ -337,7 +337,7 @@ export default function ProfilModal() {
   }
 
   return (
-    <View className="p-4  ">
+    <View className="pt-8  ">
       <ScrollView
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
         refreshControl={
