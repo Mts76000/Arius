@@ -56,14 +56,6 @@ const TYPE_COLORS: Record<
   },
 };
 
-const TAG_LABELS: Record<string, string> = {
-  relance: "Relance",
-  prioritaire: "Prioritaire",
-  risque: "À risque",
-  suivi: "Suivi",
-  decision: "Décision",
-};
-
 // Format date complète avec heure (ex: "27 jan 14:30")
 function formatDateWithTime(date?: Date | string | null): string {
   if (!date) return "Date inconnue";
@@ -161,7 +153,7 @@ export function NoteCard({ note, onDelete, onEdit }: NoteCardProps) {
         {note.est_template && (
           <View className="rounded-full bg-amber-100 px-2.5 py-1">
             <Text className="text-xs font-semibold text-amber-700">
-              Template
+              Modèle
             </Text>
           </View>
         )}

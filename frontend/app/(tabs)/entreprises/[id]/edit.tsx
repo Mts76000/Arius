@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, ActivityIndicator, View, Text, StyleSheet } from "react-native";
+import { Alert, ActivityIndicator, View, Text } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEntreprise, useUpdateEntreprise } from "@/hooks/useEntreprises";
 import { EntrepriseForm } from "@/components/forms/EntrepriseForm";
@@ -56,12 +56,3 @@ export default function EditEntrepriseScreen() {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f9fafb",
-  },
-});

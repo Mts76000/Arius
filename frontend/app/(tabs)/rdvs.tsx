@@ -9,7 +9,6 @@ import {
   Platform,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { useRouter } from "expo-router";
 import {
   useMyRdvs,
   useCreateRdv,
@@ -36,7 +35,6 @@ interface RdvGroup {
 }
 
 export default function RdvsScreen() {
-  const router = useRouter();
   const [page, setPage] = useState(1);
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [timelineFilter, setTimelineFilter] =
@@ -53,15 +51,6 @@ export default function RdvsScreen() {
       0,
       0,
       0,
-    );
-    const endOfToday = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate(),
-      23,
-      59,
-      59,
-      999,
     );
     const baseFilters: {
       page: number;
@@ -316,7 +305,7 @@ export default function RdvsScreen() {
     const doDelete = async () => {
       try {
         await deleteRdvMutation.mutateAsync(rdvId);
-      } catch (error) {
+      } catch {
         Alert.alert("Erreur", "Impossible de supprimer le RDV");
       }
     };
@@ -347,7 +336,7 @@ export default function RdvsScreen() {
         id: rdvId,
         updates: { statut: status },
       });
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de mettre à jour le RDV");
     }
   };
@@ -363,7 +352,7 @@ export default function RdvsScreen() {
         await createRdvMutation.mutateAsync(data);
       }
       setShowRdvModal(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder le RDV");
     }
   };

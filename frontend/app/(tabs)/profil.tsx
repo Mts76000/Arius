@@ -8,17 +8,23 @@ import {
   Alert,
   RefreshControl,
   Platform,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { FormInput } from "@/components/forms/FormInput";
-import { updateProfil, changerMotdepasse } from "@/services/profil";
+import {
+  anonymiserCompte,
+  changerMotdepasse,
+  updateProfil,
+} from "@/services/profil";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/services/api";
 import { exportService } from "@/services/export";
 import { AppButton } from "@/components/ui/AppButton";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 
 interface ProfilData {
   id: string;
@@ -27,11 +33,14 @@ interface ProfilData {
   nom: string | null;
 }
 
+type ExportType = "prospects" | "rdvs" | "notes" | "ca" | "objectifs";
+
 export default function ProfilModal() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const logout = useAuthStore((state) => state.logout);
   const token = useAuthStore((state) => state.token);
+  const appVersion = Constants.expoConfig?.version ?? "1.0.0";
   const [editMode, setEditMode] = useState(false);
   const [passwordMode, setPasswordMode] = useState(false);
 
@@ -59,14 +68,21 @@ export default function ProfilModal() {
   // Export RGPD
   const [exportError, setExportError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isAnonymizing, setIsAnonymizing] = useState(false);
+  const [deleteAccountModalVisible, setDeleteAccountModalVisible] =
+    useState(false);
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState("");
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(
+    null,
+  );
 
-  const exportItems: Array<{
+  const exportItems: {
     label: string;
-    icon: any;
-    type: "prospects" | "rdvs" | "notes" | "ca" | "objectifs";
+    icon: keyof typeof Ionicons.glyphMap;
+    type: ExportType;
     iconColor: string;
     iconBackgroundClass: string;
-  }> = [
+  }[] = [
     {
       label: "Prospects",
       icon: "people-outline",
@@ -263,9 +279,48 @@ export default function ProfilModal() {
     router.replace("/login");
   };
 
-  const handleExportData = async (
-    type?: "prospects" | "rdvs" | "notes" | "ca" | "objectifs" | any,
-  ) => {
+  const deleteAccountAndLogout = async (motdepasse: string) => {
+    try {
+      setIsAnonymizing(true);
+      await anonymiserCompte({ motdepasse });
+      logout();
+      Alert.alert(
+        "Compte supprimé",
+        "Vos données ont été supprimées et votre compte a été anonymisé.",
+      );
+      router.replace("/login");
+    } catch (error: any) {
+      const apiError = error?.response?.data?.error;
+      const message =
+        apiError === "invalid password"
+          ? "Mot de passe incorrect"
+          : apiError === "password required"
+            ? "Le mot de passe est requis"
+          : apiError === "password unavailable"
+            ? "Ce compte ne peut pas être supprimé avec un mot de passe local."
+            : "Impossible de supprimer le compte pour le moment";
+      setDeleteAccountError(message);
+    } finally {
+      setIsAnonymizing(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    setDeleteAccountPassword("");
+    setDeleteAccountError(null);
+    setDeleteAccountModalVisible(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (!deleteAccountPassword.trim()) {
+      setDeleteAccountError("Le mot de passe est requis");
+      return;
+    }
+    setDeleteAccountError(null);
+    deleteAccountAndLogout(deleteAccountPassword);
+  };
+
+  const handleExportData = async (type?: ExportType) => {
     if (!token) {
       Alert.alert("Erreur", "Vous devez être connecté");
       return;
@@ -283,19 +338,9 @@ export default function ProfilModal() {
         return;
       }
 
-      const exportType:
-        | "prospects"
-        | "rdvs"
-        | "notes"
-        | "ca"
-        | "objectifs"
-        | undefined =
-        typeof type === "string"
-          ? (type as "prospects" | "rdvs" | "notes" | "ca" | "objectifs")
-          : undefined;
       const { data, filename, contentType } = await exportService.download(
         token,
-        exportType,
+        type,
       );
 
       const blob =
@@ -321,7 +366,7 @@ export default function ProfilModal() {
 
   if (isLoading) {
     return (
-      <View>
+      <View className="flex-1 items-center justify-center">
         <ActivityIndicator size="large" color={"#0ea5e9"} />
       </View>
     );
@@ -329,17 +374,20 @@ export default function ProfilModal() {
 
   if (error) {
     return (
-      <View>
+      <View className="flex-1 items-center justify-center px-6">
         <Text>Erreur lors du chargement du profil</Text>
-        <AppButton title="Reessayer" onPress={() => refetch()} />
+        <AppButton title="Réessayer" onPress={() => refetch()} />
       </View>
     );
   }
 
   return (
-    <View className="pt-8  ">
+    <View className="flex-1 pt-8">
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 120 }}
+        className="flex-1"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 190 }}
         refreshControl={
           <RefreshControl
             onRefresh={() => refetch()}
@@ -378,7 +426,7 @@ export default function ProfilModal() {
                     Informations Personnelles
                   </Text>
                   <Text className="text-gray text-sm">
-                    Gérez vos informations de profil visibles dans l'application
+                    {"Gérez vos informations de profil visibles dans l'application"}
                   </Text>
                 </View>
               </View>
@@ -387,7 +435,7 @@ export default function ProfilModal() {
             {editMode ? (
               <View className="bg-[#F8FAFF] border border-[#E2E8F0] rounded-2xl p-4 flex-col gap-4">
                 <Text className="text-gray mb-3">
-                  Mettez a jour vos informations et enregistrez les changements.
+                  Mettez à jour vos informations et enregistrez les changements.
                 </Text>
 
                 <FormInput
@@ -558,6 +606,13 @@ export default function ProfilModal() {
                   }
                   className="rounded-xl border border-grayLight bg-[#F8FAFC]"
                 />
+                <AppButton
+                  title={isAnonymizing ? "Suppression..." : "Supprimer le compte"}
+                  onPress={handleDeleteAccount}
+                  variant="secondary"
+                  isLoading={isAnonymizing}
+                  className="rounded-xl border border-grayLight bg-[#F8FAFC]"
+                />
               </View>
             )}
 
@@ -568,27 +623,57 @@ export default function ProfilModal() {
             )}
           </View>
 
-          {/* Export de données */}
+          {/* Confidentialité et données */}
           <View className="flex-col  bg-white  rounded-3xl p-6 gap-6   shadow-base">
             <View className="flex-row gap-4 items-start ">
               <Ionicons
                 className="bg-[#E8F1FF] p-2 rounded-2xl"
-                name="cloud-download-outline"
+                name="shield-checkmark-outline"
                 size={25}
                 color="#246BFD"
               />
 
               <View className="flex-col gap-2 flex-1">
-                <Text className="font-semibold text-xl">Export de données</Text>
+                <Text className="font-semibold text-xl">
+                  Confidentialité & données
+                </Text>
 
                 <Text className="text-gray">
-                  Sauvegardez ou utilisez vos données dans d'autres outils
+                  Vos informations restent liées à votre compte et peuvent être
+                  exportées ou supprimées à tout moment.
                 </Text>
               </View>
             </View>
 
+            <View className="gap-3">
+              {[
+                {
+                  title: "Données privées",
+                  text: "Chaque utilisateur ne voit que ses propres entreprises, rendez-vous et notes.",
+                },
+                {
+                  title: "Export disponible",
+                  text: "Vous pouvez récupérer vos données en ZIP ou par catégorie.",
+                },
+                {
+                  title: "Suppression maîtrisée",
+                  text: "La suppression efface les données du compte puis anonymise l’utilisateur.",
+                },
+              ].map((item) => (
+                <View
+                  key={item.title}
+                  className="rounded-2xl border border-grayLight bg-[#F8FAFC] p-4"
+                >
+                  <Text className="font-semibold text-slate-900">
+                    {item.title}
+                  </Text>
+                  <Text className="mt-1 text-sm text-gray">{item.text}</Text>
+                </View>
+              ))}
+            </View>
+
             <TouchableOpacity
-              onPress={handleExportData}
+              onPress={() => handleExportData()}
               disabled={isExporting}
               activeOpacity={0.8}
               className="bg-primary rounded-2xl px-4 py-4 flex-row items-center justify-between"
@@ -611,7 +696,7 @@ export default function ProfilModal() {
             <View className="flex-row items-center gap-3">
               <View className="h-[1px] flex-1 bg-grayLight" />
               <Text className="text-xs font-semibold text-gray tracking-widest">
-                PAR CATEGORIE
+                PAR CATÉGORIE
               </Text>
               <View className="h-[1px] flex-1 bg-grayLight" />
             </View>
@@ -620,7 +705,7 @@ export default function ProfilModal() {
               {exportItems.map((item, index) => (
                 <TouchableOpacity
                   key={item.label}
-                  onPress={() => handleExportData(item.type as any)}
+                  onPress={() => handleExportData(item.type)}
                   className={`px-4 py-4 flex-row items-center justify-between ${
                     index !== exportItems.length - 1
                       ? "border-b border-grayLight"
@@ -632,7 +717,7 @@ export default function ProfilModal() {
                       className={`h-10 w-10 items-center justify-center rounded-xl ${item.iconBackgroundClass}`}
                     >
                       <Ionicons
-                        name={item.icon as any}
+                        name={item.icon}
                         size={20}
                         color={item.iconColor}
                       />
@@ -658,10 +743,47 @@ export default function ProfilModal() {
             </View>
           </View>
 
+          {/* Aide */}
+          <View className="flex-col bg-white rounded-3xl p-6 gap-5 shadow-base">
+            <View className="flex-row gap-4 items-start">
+              <Ionicons
+                className="bg-primaryLight p-2 rounded-2xl"
+                name="help-circle-outline"
+                size={25}
+                color="#007aff"
+              />
+              <View className="flex-1 gap-2">
+                <Text className="font-semibold text-xl">Aide</Text>
+                <Text className="text-gray">
+                  En cas de problème, contactez l’administrateur du projet avec
+                  votre email de compte.
+                </Text>
+              </View>
+            </View>
+
+            <View className="rounded-2xl border border-grayLight bg-[#F8FAFC] p-4">
+              <Text className="font-semibold text-slate-900">
+                Parcours conseillé
+              </Text>
+              <Text className="mt-1 text-sm text-gray">
+                Créez une entreprise, ajoutez un contact, planifiez un
+                rendez-vous puis notez le compte-rendu.
+              </Text>
+            </View>
+          </View>
+
+          {/* Version */}
+          <View className="rounded-3xl border border-grayLight bg-white px-5 py-4 shadow-sm">
+            <View className="flex-row items-center justify-between">
+              <Text className="font-semibold text-slate-900">Arius</Text>
+              <Text className="text-gray">Version {appVersion}</Text>
+            </View>
+          </View>
+
           {/* Déconnexion */}
-          <View>
+          <View className="pb-2">
             <AppButton
-              title="Deconnexion"
+              title="Déconnexion"
               onPress={handleLogout}
               variant="danger"
               className="bg-red border border-red"
@@ -669,6 +791,57 @@ export default function ProfilModal() {
           </View>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={deleteAccountModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteAccountModalVisible(false)}
+      >
+        <View className="flex-1 justify-center bg-black/40 px-5">
+          <View className="rounded-3xl bg-white p-5 gap-4">
+            <View className="gap-2">
+              <Text className="text-xl font-bold text-slate-900">
+                Confirmer la suppression
+              </Text>
+              <Text className="text-gray">
+                Cette action est irréversible. Entrez votre mot de passe pour
+                supprimer vos données et anonymiser le compte.
+              </Text>
+            </View>
+
+            <FormInput
+              label="Mot de passe"
+              value={deleteAccountPassword}
+              onChangeText={setDeleteAccountPassword}
+              placeholder="Votre mot de passe"
+              secureTextEntry
+              enableVisibilityToggle
+              error={deleteAccountError}
+            />
+
+            <View className="gap-3">
+              <AppButton
+                title="Supprimer le compte"
+                onPress={confirmDeleteAccount}
+                variant="danger"
+                isLoading={isAnonymizing}
+                className="bg-red border border-red"
+              />
+              <AppButton
+                title="Annuler"
+                onPress={() => {
+                  setDeleteAccountModalVisible(false);
+                  setDeleteAccountPassword("");
+                  setDeleteAccountError(null);
+                }}
+                variant="secondary"
+                disabled={isAnonymizing}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

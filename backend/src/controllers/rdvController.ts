@@ -217,11 +217,6 @@ export async function create(req: Request, res: Response) {
     const validation = CreateRdvSchema.safeParse(req.body);
 
     if (!validation.success) {
-      console.log(
-        "Validation error:",
-        JSON.stringify(validation.error.errors, null, 2),
-      );
-      console.log("Request body:", req.body);
       return res.status(400).json({ errors: validation.error.errors });
     }
 

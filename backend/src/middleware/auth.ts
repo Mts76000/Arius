@@ -1,11 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
-import { verifyJwt } from "../models/user.js";
+import { getUserById, isAnonymizedUser, verifyJwt } from "../models/user.js";
 
 interface AuthenticatedRequest extends Request {
   userId?: string;
 }
 
-export function requireAuth(
+export async function requireAuth(
   req: AuthenticatedRequest,
   res: Response,
   next: NextFunction,
@@ -20,6 +20,10 @@ export function requireAuth(
   }
   try {
     const payload = verifyJwt(token);
+    const user = await getUserById(payload.sub);
+    if (!user || isAnonymizedUser(user)) {
+      return res.status(401).json({ error: "Invalid or expired token" });
+    }
     req.userId = payload.sub;
     next();
   } catch {

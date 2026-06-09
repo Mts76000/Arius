@@ -1,12 +1,12 @@
 import React from "react";
 import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Contact } from "@/services/contacts";
+import type { Entreprise } from "@/services/entreprises";
 import { ContactCard } from "@/components/cards/ContactCard";
 import { Ionicons } from "@expo/vector-icons";
-import { Icon } from "expo-router";
 
 interface InfosTabProps {
-  entreprise: any;
+  entreprise: Entreprise;
   contacts: Contact[] | undefined;
   contactsLoading: boolean;
   onAddContact: () => void;
@@ -28,8 +28,6 @@ export const InfosTab: React.FC<InfosTabProps> = ({
 }) => {
   return (
     <View className="p-5">
-      {/* Address Section */}
-
       {(entreprise.rue ||
         entreprise.ville ||
         entreprise.code_postal ||
@@ -59,7 +57,6 @@ export const InfosTab: React.FC<InfosTabProps> = ({
         </View>
       )}
 
-      {/* Contacts Section */}
       <View>
         <View className="flex flex-row justify-between pt-5">
           <Text className="text-lg font-bold">Contacts</Text>
@@ -86,10 +83,15 @@ export const InfosTab: React.FC<InfosTabProps> = ({
             ))}
           </View>
         ) : (
-          <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
-            <Text className=" text-white font-bold">Aucun Contact</Text>
-          </View>
-        )}
+        <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+          <Text className="text-lg font-bold text-slate-900">
+            Aucun contact
+          </Text>
+          <Text className="mt-1 text-center text-sm text-slate-500">
+            Ajoutez un contact pour appeler ou envoyer un email rapidement.
+          </Text>
+        </View>
+      )}
       </View>
     </View>
   );

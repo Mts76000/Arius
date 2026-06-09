@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -35,15 +35,24 @@ const MOIS_LABELS = [
   "Décembre",
 ];
 
+const formatEuro = (value: number) => {
+  return `${value.toLocaleString("fr-FR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} EUR`;
+};
+
 interface ChiffresTabProps {
   entreprise: Entreprise;
 }
 
 export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
   const currentDate = new Date();
+  const [selectedMois, setSelectedMois] = useState(currentDate.getMonth() + 1);
   const [selectedAnnee, setSelectedAnnee] = useState(currentDate.getFullYear());
   const [showCAModal, setShowCAModal] = useState(false);
   const [selectedCA, setSelectedCA] = useState<CAMensuel | null>(null);
+  const [showAnnuelle, setShowAnnuelle] = useState(false);
 
   const { data: stats, isLoading } = useCAEntreprise(
     entreprise.id,
@@ -53,12 +62,43 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
   const updateCAMutation = useUpdateCA();
   const deleteCAMutation = useDeleteCA();
 
-  const annees = [
-    currentDate.getFullYear() - 2,
-    currentDate.getFullYear() - 1,
-    currentDate.getFullYear(),
-    currentDate.getFullYear() + 1,
-  ];
+  // Filtrer les données par mois
+  const caMensuelFiltre =
+    stats?.ca_mensuel?.filter((ca) => ca.mois === selectedMois) || [];
+
+  // Calculer le CA par mois pour l'année
+  const caParMois = useMemo(() => {
+    return Array.from({ length: 12 }, (_, index) => {
+      const moisNum = index + 1;
+      const caMois =
+        stats?.ca_mensuel?.filter((ca) => ca.mois === moisNum) || [];
+      return caMois.reduce((sum, ca) => sum + ca.ca_ht, 0);
+    });
+  }, [stats?.ca_mensuel]);
+
+  // Calculer le total annuel
+  const totalAnnuel = useMemo(
+    () => caParMois.reduce((sum, value) => sum + value, 0),
+    [caParMois],
+  );
+
+  const handleMoisPrecedent = () => {
+    if (selectedMois === 1) {
+      setSelectedMois(12);
+      setSelectedAnnee((prev) => prev - 1);
+      return;
+    }
+    setSelectedMois((prev) => prev - 1);
+  };
+
+  const handleMoisSuivant = () => {
+    if (selectedMois === 12) {
+      setSelectedMois(1);
+      setSelectedAnnee((prev) => prev + 1);
+      return;
+    }
+    setSelectedMois((prev) => prev + 1);
+  };
 
   const handleAddCA = () => {
     setSelectedCA(null);
@@ -82,7 +122,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
           onPress: async () => {
             try {
               await deleteCAMutation.mutateAsync(ca.id);
-            } catch (error) {
+            } catch {
               Alert.alert("Erreur", "Impossible de supprimer le CA");
             }
           },
@@ -108,7 +148,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
       }
       setShowCAModal(false);
       setSelectedCA(null);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible d'enregistrer le CA");
     }
   };
@@ -123,7 +163,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
 
   return (
     <ScrollView className="flex-1">
-      <View className="p-5">
+      <View className="p-5 flex gap-5">
         {/* Header */}
         <View className="flex flex-row justify-between pt-5 pb-5">
           <Text className="text-lg font-bold">CA</Text>
@@ -134,35 +174,29 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
           </TouchableOpacity>
         </View>
 
-        {/* Année selector */}
-        <View className="flex-row items-center justify-center gap-3 mb-5">
-          <TouchableOpacity
-            onPress={() => {
-              const prevYear = annees.indexOf(selectedAnnee) - 1;
-              if (prevYear >= 0) setSelectedAnnee(annees[prevYear]);
-            }}
-            disabled={annees.indexOf(selectedAnnee) === 0}
-            className="h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white disabled:opacity-50"
-          >
-            <Ionicons name="chevron-back" size={20} color="#64748B" />
-          </TouchableOpacity>
+        {/* Sélecteur de mois */}
+        <View className="bg-white rounded-3xl p-5 shadow-base">
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={handleMoisPrecedent}
+              className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10"
+            >
+              <Ionicons name="chevron-back" size={20} color="#007aff" />
+            </TouchableOpacity>
 
-          <View className="flex-1 items-center rounded-lg border border-slate-200 bg-white py-2 px-3">
-            <Text className="text-base font-semibold text-slate-900">
-              {selectedAnnee}
-            </Text>
+            <View className="items-center flex-1 px-2">
+              <Text className="text-2xl font-bold text-black">
+                {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={handleMoisSuivant}
+              className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10"
+            >
+              <Ionicons name="chevron-forward" size={20} color="#007aff" />
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity
-            onPress={() => {
-              const nextYear = annees.indexOf(selectedAnnee) + 1;
-              if (nextYear < annees.length) setSelectedAnnee(annees[nextYear]);
-            }}
-            disabled={annees.indexOf(selectedAnnee) === annees.length - 1}
-            className="h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white disabled:opacity-50"
-          >
-            <Ionicons name="chevron-forward" size={20} color="#64748B" />
-          </TouchableOpacity>
         </View>
 
         {/* KPI Cards */}
@@ -195,17 +229,17 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
         </View>
 
         {/* CA Mensuel */}
-        <View className="mb-5">
+        <View className="">
           <View className="pb-3">
             <Text className="text-lg font-bold">
               CA Mensuel {selectedAnnee}
             </Text>
           </View>
 
-          {stats?.ca_mensuel && stats.ca_mensuel.length > 0 ? (
+          {caMensuelFiltre.length > 0 ? (
             <>
               <View className="bg-white rounded-3xl p-5 flex-col gap-3 mb-4">
-                {stats.ca_mensuel.map((ca) => (
+                {caMensuelFiltre.map((ca) => (
                   <View
                     key={ca.id}
                     className="flex-row items-center justify-between border-b border-slate-100 pb-3 last:border-b-0"
@@ -247,20 +281,64 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
               </View>
 
               {/* Total */}
-              <View className="rounded-2xl bg-primary p-4 flex-row items-center justify-between">
-                <Text className="text-sm font-semibold text-white">Total</Text>
-                <Text className="text-xl font-bold text-white">
-                  {(stats?.ca_total || 0).toLocaleString("fr-FR", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}{" "}
-                  €
-                </Text>
-              </View>
             </>
           ) : (
-            <View className="bg-primary rounded-3xl p-4 mt-4 flex items-center w-1/2 self-center">
-              <Text className="text-white font-bold">Aucun CA</Text>
+            <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-4 items-center">
+              <Text className="text-lg font-bold text-slate-900">
+                Aucun CA
+              </Text>
+              <Text className="mt-1 text-center text-sm text-slate-500">
+                {"Ajoutez un montant pour suivre l'activité de cette entreprise."}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Vue annuelle */}
+        <View className="bg-white rounded-3xl p-5 shadow-base">
+          <TouchableOpacity
+            onPress={() => setShowAnnuelle((prev) => !prev)}
+            className="flex-row items-center justify-between"
+          >
+            <View className="flex-row items-center gap-3 flex-1">
+              <View className="h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                <Ionicons name="calendar-outline" size={18} color="#007aff" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-slate-900">
+                  Vue annuelle {selectedAnnee}
+                </Text>
+                <Text className="text-sm text-slate-500">
+                  Total: {formatEuro(totalAnnuel)}
+                </Text>
+              </View>
+            </View>
+            <Ionicons
+              name={showAnnuelle ? "chevron-up" : "chevron-down"}
+              size={22}
+              color="#0f172a"
+            />
+          </TouchableOpacity>
+
+          {showAnnuelle && (
+            <View className="mt-4 gap-2">
+              {MOIS_LABELS.map((mois, index) => (
+                <View
+                  key={mois}
+                  className={`flex-row items-center justify-between rounded-xl px-3 py-2 ${
+                    index + 1 === selectedMois
+                      ? "bg-primary/10 border border-primary/20"
+                      : "bg-slate-50"
+                  }`}
+                >
+                  <Text className="text-sm font-medium text-slate-700">
+                    {mois}
+                  </Text>
+                  <Text className="text-sm text-slate-900">
+                    {formatEuro(caParMois[index] || 0)}
+                  </Text>
+                </View>
+              ))}
             </View>
           )}
         </View>
@@ -275,8 +353,8 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
           onSave={handleSaveCA}
           entreprises={[entreprise]}
           entrepriseIdInitial={entreprise.id}
-          moisInitial={selectedCA?.mois}
-          anneeInitiale={selectedCA?.annee || selectedAnnee}
+          moisInitial={selectedMois}
+          anneeInitiale={selectedAnnee}
           caInitial={selectedCA?.ca_ht}
           isEditing={!!selectedCA}
         />

@@ -24,7 +24,7 @@ export default function LoginScreen() {
     if (user) {
       router.replace("/(tabs)");
     }
-  }, [user]);
+  }, [router, user]);
 
   useEffect(() => {
     if (!error) {
@@ -73,7 +73,7 @@ export default function LoginScreen() {
       } else {
         await login(email, password);
       }
-    } catch (err) {}
+    } catch {}
   };
 
   const toggleMode = () => {

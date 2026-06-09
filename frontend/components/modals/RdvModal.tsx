@@ -4,7 +4,6 @@ import {
   ScrollView,
   View,
   Text,
-  TouchableOpacity,
   Alert,
   Platform,
 } from "react-native";
@@ -15,7 +14,13 @@ import { Entreprise } from "@/services/entreprises";
 import { Contact } from "@/services/contacts";
 import { FormErrors } from "@/utils/validation";
 import { FormInput } from "@/components/forms/FormInput";
-import { FormGroup, FormHeader, Form } from "@/components/forms/Form";
+import {
+  ChoiceChip,
+  FormGroup,
+  FormHeader,
+  Form,
+  PickerFrame,
+} from "@/components/forms/Form";
 import {
   getFormModalPresentationStyle,
   RDV_DURATION_OPTIONS,
@@ -119,8 +124,7 @@ export function RdvModal({
       setDuree(30);
       setSelectedStatus("planifie");
       setErrors({});
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder le RDV");
     }
   };
@@ -137,7 +141,7 @@ export function RdvModal({
         contentContainerStyle={{ paddingBottom: 24 }}
       >
         <FormHeader
-          title={rdv ? "Modifier RDV" : "Nouveau RDV"}
+          title={rdv ? "Modifier le rendez-vous" : "Nouveau rendez-vous"}
           onCancel={onClose}
           onSave={handleSubmit}
           isSaving={isLoading}
@@ -149,9 +153,9 @@ export function RdvModal({
           {/* Entreprise */}
           <FormGroup title="Entreprise" error={errors.entreprise_id}>
             {Platform.OS === "web" ? (
-              <View className="rounded-2xl border border-gray-300 bg-gray-50 px-1">
+              <PickerFrame error={!!errors.entreprise_id}>
                 <select
-                  className="w-full bg-transparent outline-none py-3 px-2 text-gray-900"
+                  className="w-full bg-transparent outline-none py-3 px-3 text-gray-900"
                   value={selectedEntrepriseId}
                   onChange={(e: any) => setSelectedEntrepriseId(e.target.value)}
                   disabled={isLoading}
@@ -165,9 +169,9 @@ export function RdvModal({
                     </option>
                   ))}
                 </select>
-              </View>
+              </PickerFrame>
             ) : (
-              <View className="rounded-2xl border border-gray-300 bg-gray-50 overflow-hidden">
+              <PickerFrame error={!!errors.entreprise_id}>
                 <Picker
                   selectedValue={selectedEntrepriseId}
                   onValueChange={(value) => setSelectedEntrepriseId(value)}
@@ -178,7 +182,7 @@ export function RdvModal({
                     <Picker.Item key={e.id} label={e.nom} value={e.id} />
                   ))}
                 </Picker>
-              </View>
+              </PickerFrame>
             )}
           </FormGroup>
 
@@ -188,9 +192,9 @@ export function RdvModal({
               .length > 0 && (
               <FormGroup title="Contact (optionnel)">
                 {Platform.OS === "web" ? (
-                  <View className="rounded-2xl border border-gray-300 bg-gray-50 px-1">
+                  <PickerFrame>
                     <select
-                      className="w-full bg-transparent outline-none py-3 px-2 text-gray-900"
+                      className="w-full bg-transparent outline-none py-3 px-3 text-gray-900"
                       value={selectedContactId}
                       onChange={(e: any) =>
                         setSelectedContactId(e.target.value)
@@ -210,9 +214,9 @@ export function RdvModal({
                           </option>
                         ))}
                     </select>
-                  </View>
+                  </PickerFrame>
                 ) : (
-                  <View className="rounded-2xl border border-gray-300 bg-gray-50 overflow-hidden">
+                  <PickerFrame>
                     <Picker
                       selectedValue={selectedContactId}
                       onValueChange={(value) => setSelectedContactId(value)}
@@ -236,7 +240,7 @@ export function RdvModal({
                           />
                         ))}
                     </Picker>
-                  </View>
+                  </PickerFrame>
                 )}
               </FormGroup>
             )}
@@ -247,31 +251,24 @@ export function RdvModal({
               {[...RDV_STATUS_OPTIONS].map((status) => {
                 const statusConfig = getRdvStatusConfig(status.value);
                 return (
-                  <TouchableOpacity
+                  <ChoiceChip
                     key={status.value}
+                    label={status.label}
+                    selected={selectedStatus === status.value}
                     onPress={() => setSelectedStatus(status.value)}
-                    className={`rounded-full border px-4 py-2 ${selectedStatus === status.value ? statusConfig.badgeBgClass : "bg-white border-gray-300"}`}
+                    selectedClassName={`${statusConfig.badgeBgClass} border-transparent`}
+                    selectedTextClassName={`${statusConfig.badgeTextClass} font-semibold`}
                     style={
                       selectedStatus === status.value
                         ? { backgroundColor: statusConfig.badgeBgColor }
                         : undefined
                     }
-                  >
-                    <Text
-                      className={
-                        selectedStatus === status.value
-                          ? `${statusConfig.badgeTextClass} font-semibold`
-                          : "text-gray-700"
-                      }
-                      style={
-                        selectedStatus === status.value
-                          ? { color: statusConfig.badgeTextColor }
-                          : undefined
-                      }
-                    >
-                      {status.label}
-                    </Text>
-                  </TouchableOpacity>
+                    textStyle={
+                      selectedStatus === status.value
+                        ? { color: statusConfig.badgeTextColor }
+                        : undefined
+                    }
+                  />
                 );
               })}
             </View>
@@ -295,7 +292,7 @@ export function RdvModal({
               <View className="flex-row gap-2">
                 <input
                   type="date"
-                  className="flex-1 rounded-2xl border border-gray-300 bg-gray-50 px-3 py-3 text-gray-900"
+                  className="flex-1 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-gray-900"
                   value={date.toISOString().split("T")[0]}
                   onChange={(e: any) => {
                     const newDate = new Date(date);
@@ -309,7 +306,7 @@ export function RdvModal({
                 />
                 <input
                   type="time"
-                  className="flex-1 rounded-2xl border border-gray-300 bg-gray-50 px-3 py-3 text-gray-900"
+                  className="flex-1 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-gray-900"
                   value={date.toTimeString().slice(0, 5)}
                   onChange={(e: any) => {
                     const newDate = new Date(date);
@@ -324,7 +321,7 @@ export function RdvModal({
               </View>
             ) : (
               <View className="gap-3">
-                <View className="rounded-2xl border border-gray-300 bg-gray-50 px-2">
+                <View className="rounded-2xl border border-gray-200 bg-white px-2">
                   <Text className="text-xs text-gray-500 px-2 pt-2">Date</Text>
                   <DateTimePicker
                     value={date}
@@ -335,7 +332,7 @@ export function RdvModal({
                     }}
                   />
                 </View>
-                <View className="rounded-2xl border border-gray-300 bg-gray-50 px-2">
+                <View className="rounded-2xl border border-gray-200 bg-white px-2">
                   <Text className="text-xs text-gray-500 px-2 pt-2">Heure</Text>
                   <DateTimePicker
                     value={date}
@@ -351,22 +348,15 @@ export function RdvModal({
           </FormGroup>
 
           {/* Duration */}
-          <FormGroup title="Duree">
+          <FormGroup title="Durée">
             <View className="flex-row flex-wrap gap-2">
               {RDV_DURATION_OPTIONS.map((d) => (
-                <TouchableOpacity
+                <ChoiceChip
                   key={d}
+                  label={`${d} min`}
+                  selected={duree === d}
                   onPress={() => setDuree(d)}
-                  className={`rounded-full px-4 py-2 border ${duree === d ? "bg-primary border-primary" : "bg-white border-gray-300"}`}
-                >
-                  <Text
-                    className={
-                      duree === d ? "text-white font-semibold" : "text-gray-700"
-                    }
-                  >
-                    {d} min
-                  </Text>
-                </TouchableOpacity>
+                />
               ))}
             </View>
             <View className="gap-2">

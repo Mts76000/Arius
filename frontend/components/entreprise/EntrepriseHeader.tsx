@@ -1,10 +1,11 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, Text } from "react-native";
 import { EntrepriseAvatar } from "@/components/ui/EntrepriseAvatar";
 import { ActionMenu } from "@/components/ui/ActionMenu";
+import type { Entreprise } from "@/services/entreprises";
 
 interface EntrepriseHeaderProps {
-  entreprise: any;
+  entreprise: Entreprise;
   onEdit: () => void;
   onDelete: () => void;
   isDeleting?: boolean;

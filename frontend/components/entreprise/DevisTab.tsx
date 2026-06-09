@@ -126,12 +126,22 @@ export function DevisTab({ entrepriseId }: DevisTabProps) {
             ))}
           </View>
         ) : hasSearchQuery ? (
-          <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
-            <Text className="text-white font-bold">Aucun devis trouvé</Text>
+          <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+            <Text className="text-lg font-bold text-slate-900">
+              Aucun devis trouvé
+            </Text>
+            <Text className="mt-1 text-center text-sm text-slate-500">
+              Essayez un autre mot-clé.
+            </Text>
           </View>
         ) : (
-          <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
-            <Text className="text-white font-bold">Aucun devis</Text>
+          <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+            <Text className="text-lg font-bold text-slate-900">
+              Aucun devis
+            </Text>
+            <Text className="mt-1 text-center text-sm text-slate-500">
+              Ajoutez un devis pour le retrouver dans la fiche entreprise.
+            </Text>
           </View>
         )}
       </View>

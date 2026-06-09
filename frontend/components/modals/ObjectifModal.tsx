@@ -3,7 +3,7 @@ import { Modal, View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
 import { FormInput } from "@/components/forms/FormInput";
-import { FormHeader } from "@/components/forms/Form";
+import { FormHeader, FormSection } from "@/components/forms/Form";
 import {
   getFormModalPresentationStyle,
   MONTH_LABELS,
@@ -69,7 +69,7 @@ export function ObjectifModal({
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           <TouchableOpacity
             onPress={handleAppliquerATous}
-            className="mx-5 mt-4 mb-2 rounded-2xl border border-primary/30 bg-primary/10 p-4 flex-row items-center gap-2"
+            className="mx-5 mt-4 mb-2 rounded-2xl border border-primary/30 bg-primary/10 p-4 flex-row items-center gap-3"
           >
             <Ionicons name="copy" size={20} color={"#0ea5e9"} />
             <Text className="text-primary font-medium">
@@ -77,7 +77,7 @@ export function ObjectifModal({
             </Text>
           </TouchableOpacity>
 
-          <View className="mx-5 rounded-3xl bg-white p-5 shadow-sm gap-3">
+          <FormSection className="my-2">
             {MONTH_LABELS.map((moisLabel, index) => {
               const moisNum = index + 1;
               return (
@@ -101,7 +101,7 @@ export function ObjectifModal({
                 </View>
               );
             })}
-          </View>
+          </FormSection>
         </ScrollView>
       </View>
     </Modal>

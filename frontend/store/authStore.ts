@@ -129,8 +129,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ token: savedToken });
         await get().loadUser();
       }
-    } catch (error) {
-      console.error("Failed to initialize auth:", error);
+    } catch {
       await storage.removeItem(STORAGE_KEY);
     } finally {
       set({ isLoading: false, isInitialized: true });

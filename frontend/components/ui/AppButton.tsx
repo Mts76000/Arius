@@ -10,6 +10,7 @@ interface AppButtonProps {
   variant?: "primary" | "secondary" | "danger" | "link";
   fullWidth?: boolean;
   className?: string;
+  textClassName?: string;
 }
 
 export function AppButton({
@@ -21,6 +22,7 @@ export function AppButton({
   variant = "primary",
   fullWidth = true,
   className,
+  textClassName: customTextClassName,
 }: AppButtonProps) {
   const isDisabled = disabled || isLoading;
   const baseClassName = `${fullWidth ? "w-full" : ""} rounded-full items-center justify-center px-4 py-3 flex-row gap-2`;
@@ -59,7 +61,9 @@ export function AppButton({
     >
       {isLoading ? <ActivityIndicator color="#ffffff" /> : icon}
       {!isLoading && (
-        <Text className={`font-semibold text-l ${textClassName[variant]}`}>
+        <Text
+          className={`font-semibold text-l ${customTextClassName ?? textClassName[variant]}`}
+        >
           {title}
         </Text>
       )}

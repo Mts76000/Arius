@@ -207,8 +207,13 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
           </View>
         </View>
       ) : (
-        <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center w-1/2 self-center">
-          <Text className="text-white font-bold">Aucun RDV</Text>
+        <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+          <Text className="text-lg font-bold text-slate-900">
+            Aucun rendez-vous
+          </Text>
+          <Text className="mt-1 text-center text-sm text-slate-500">
+            Planifiez un rendez-vous pour garder une trace des échanges.
+          </Text>
         </View>
       )}
     </View>

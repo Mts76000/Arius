@@ -34,27 +34,27 @@ export const getFormModalPresentationStyle = (formKey: FormKey) =>
 
 export type EntrepriseStatus = CreateEntrepriseInput["statut"];
 
-export const ENTREPRISE_STATUS_OPTIONS: Array<{
+export const ENTREPRISE_STATUS_OPTIONS: {
   value: EntrepriseStatus;
   label: string;
-}> = [
+}[] = [
   { value: "client", label: "Client" },
   { value: "prospect", label: "Prospect" },
   { value: "fournisseur", label: "Fournisseur" },
-  { value: "a_reactiver", label: "A reactiver" },
+  { value: "a_reactiver", label: "À réactiver" },
 ];
 
-export const RDV_STATUS_OPTIONS: Array<{ value: RdvStatus; label: string }> = [
-  { value: "planifie", label: "Prevu" },
-  { value: "termine", label: "Termine" },
-  { value: "annule", label: "Annule" },
+export const RDV_STATUS_OPTIONS: { value: RdvStatus; label: string }[] = [
+  { value: "planifie", label: "Prévu" },
+  { value: "termine", label: "Terminé" },
+  { value: "annule", label: "Annulé" },
 ];
 
 export const RDV_DURATION_OPTIONS = [15, 30, 45, 60] as const;
 
-export const NOTE_TYPE_OPTIONS: Array<{ value: NoteType; label: string }> = [
+export const NOTE_TYPE_OPTIONS: { value: NoteType; label: string }[] = [
   { value: "appel", label: "Appel" },
-  { value: "reunion", label: "Reunion" },
+  { value: "reunion", label: "Réunion" },
   { value: "email", label: "Email" },
   { value: "info", label: "Info" },
   { value: "autre", label: "Autre" },
@@ -62,15 +62,15 @@ export const NOTE_TYPE_OPTIONS: Array<{ value: NoteType; label: string }> = [
 
 export const MONTH_LABELS = [
   "Janvier",
-  "Fevrier",
+  "Février",
   "Mars",
   "Avril",
   "Mai",
   "Juin",
   "Juillet",
-  "Aout",
+  "Août",
   "Septembre",
   "Octobre",
   "Novembre",
-  "Decembre",
+  "Décembre",
 ] as const;

@@ -17,9 +17,13 @@ interface FooterTabConfig {
 const createTabIcon = (
   iconName: keyof typeof Ionicons.glyphMap,
 ): NonNullable<BottomTabNavigationOptions["tabBarIcon"]> => {
-  return ({ color, size }) => (
-    <Ionicons name={iconName} size={size} color={color} />
-  );
+  function TabBarIcon({ color, size }: { color: string; size: number }) {
+    return (
+      <Ionicons name={iconName} size={size} color={color} />
+    );
+  }
+
+  return TabBarIcon;
 };
 
 const iconByRoute: Record<FooterTabName, keyof typeof Ionicons.glyphMap> = {

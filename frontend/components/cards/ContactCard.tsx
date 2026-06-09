@@ -86,7 +86,7 @@ export function ContactCard({
             {contact.poste}
           </Text>
         ) : (
-          <Text className="text-sm text-slate-400">Poste non renseigne</Text>
+          <Text className="text-sm text-slate-400">Poste non renseigné</Text>
         )}
 
         {contact.tel_mobile ? (
@@ -131,7 +131,7 @@ export function ContactCard({
 
         {!contact.tel_mobile && !contact.tel_direct && !contact.email ? (
           <Text className="text-sm text-slate-400">
-            Aucun moyen de contact renseigne
+            Aucun moyen de contact renseigné
           </Text>
         ) : null}
       </View>

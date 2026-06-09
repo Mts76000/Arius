@@ -22,17 +22,17 @@ import { BtnPlus } from "@/components/ui/BtnPlus";
 
 const MOIS_LABELS = [
   "Janvier",
-  "Fevrier",
+  "Février",
   "Mars",
   "Avril",
   "Mai",
   "Juin",
   "Juillet",
-  "Aout",
+  "Août",
   "Septembre",
   "Octobre",
   "Novembre",
-  "Decembre",
+  "Décembre",
 ];
 
 const formatEuro = (value: number) => {
@@ -50,7 +50,7 @@ const getProgressionMeta = (progression: number | null) => {
     return { color: "#10b981", icon: "checkmark-circle" as const };
   }
   if (progression >= 90) {
-    return { color: "#0ea5e9", icon: "trending-up" as const };
+    return { color: "#007aff", icon: "trending-up" as const };
   }
   if (progression >= 50) {
     return { color: "#f59e0b", icon: "time-outline" as const };
@@ -141,9 +141,9 @@ export default function CAScreen() {
           objectif_ht: obj.objectif_ht,
         });
       }
-      Alert.alert("Succes", "Objectifs enregistres");
+      Alert.alert("Succès", "Objectifs enregistrés");
       setShowObjectifModal(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible d'enregistrer les objectifs");
     }
   };
@@ -156,9 +156,9 @@ export default function CAScreen() {
   }) => {
     try {
       await createCAMutation.mutateAsync(data);
-      Alert.alert("Succes", "CA enregistre");
+      Alert.alert("Succès", "CA enregistré");
       setShowCAModal(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible d'enregistrer le CA");
     }
   };
@@ -176,15 +176,15 @@ export default function CAScreen() {
   }
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 p-4">
       <ScrollView
-        className="pt-8"
+        className="pt-4"
         contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 180 }}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
       >
-        <View className="gap-5">
+        <View className="gap-6">
           <View className="bg-white rounded-3xl p-5 shadow-base">
             <View className="flex-row items-center justify-between">
               <TouchableOpacity
@@ -194,11 +194,8 @@ export default function CAScreen() {
                 <Ionicons name="chevron-back" size={20} color="#007aff" />
               </TouchableOpacity>
 
-              <View className="items-center">
-                <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Suivi du chiffre d'affaires
-                </Text>
-                <Text className="text-2xl font-bold text-slate-900">
+              <View className="items-center flex-1 px-2">
+                <Text className="text-2xl font-bold text-black">
                   {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
                 </Text>
               </View>
@@ -213,29 +210,27 @@ export default function CAScreen() {
           </View>
 
           <View className="flex-row gap-3">
-            <View className="flex-1 bg-white rounded-3xl p-5 shadow-base">
+            <View className="flex-1 bg-white rounded-3xl p-5 shadow-base ">
               <View className="flex-row items-center gap-2 mb-2">
-                <Ionicons name="cash-outline" size={18} color="#007aff" />
                 <Text className="text-slate-500 text-sm font-semibold">
                   CA du mois
                 </Text>
               </View>
-              <Text className="text-xl font-bold text-slate-900">
+              <Text className="text-2xl font-bold text-slate-900">
                 {formatEuro(stats?.ca_total || 0)}
               </Text>
             </View>
 
             <View className="flex-1 bg-white rounded-3xl p-5 shadow-base">
               <View className="flex-row items-center gap-2 mb-2">
-                <Ionicons name="flag-outline" size={18} color="#007aff" />
                 <Text className="text-slate-500 text-sm font-semibold">
                   Objectif
                 </Text>
               </View>
-              <Text className="text-xl font-bold text-slate-900">
+              <Text className="text-2xl font-bold text-slate-900">
                 {stats?.objectif !== null
                   ? formatEuro(stats?.objectif || 0)
-                  : "Non defini"}
+                  : "Non défini"}
               </Text>
             </View>
           </View>
@@ -243,7 +238,7 @@ export default function CAScreen() {
           {progression !== null && (
             <View className="bg-white rounded-3xl p-5 shadow-base">
               <View className="mb-4 flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-slate-700">
+                <Text className="text-base font-semibold text-black">
                   Progression mensuelle
                 </Text>
                 <View className="flex-row items-center gap-1">
@@ -279,23 +274,30 @@ export default function CAScreen() {
                 title="Objectifs annuels"
                 onPress={() => setShowObjectifModal(true)}
                 variant="secondary"
+                className="rounded-xl border border-grayLight bg-gray-100 text-gray-700"
               />
             </View>
             <View className="flex-1">
               <AppButton
                 title="Ajouter du CA"
                 onPress={() => setShowCAModal(true)}
+                variant="primary"
+                className="rounded-xl bg-primary"
               />
             </View>
           </View>
 
           <View>
-            <Text className="mb-3 text-base font-bold text-slate-600 uppercase tracking-wide">
-              CA par entreprise
-            </Text>
+            <View className="mb-3 flex-row items-center mt-3 gap-3">
+              <View>
+                <Text className="text-xl font-semibold text-black  tracking-wide">
+                  CA par entreprise
+                </Text>
+              </View>
+            </View>
 
-            <View className="mb-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-base">
-              <View className="flex-row items-center gap-2">
+            <View className="mb-3 rounded-2xl  bg-white px-4 py-3 shadow-base">
+              <View className="flex-row items-center  gap-2">
                 <Ionicons name="search" size={18} color="#64748b" />
                 <TextInput
                   className="flex-1 text-base text-slate-900"
@@ -319,14 +321,7 @@ export default function CAScreen() {
                   >
                     <View className="flex-row items-center justify-between gap-4">
                       <View className="flex-1">
-                        <View className="flex-row items-center gap-2">
-                          {index === 0 && (
-                            <Ionicons
-                              name="trophy-outline"
-                              size={16}
-                              color="#007aff"
-                            />
-                          )}
+                        <View className="flex-row items-center gap-2 mb-1">
                           <Text
                             className="text-base font-semibold text-slate-900 flex-1"
                             numberOfLines={1}
@@ -334,9 +329,6 @@ export default function CAScreen() {
                             {entreprise.entreprise_nom}
                           </Text>
                         </View>
-                        <Text className="mt-1 text-sm text-slate-500">
-                          Performance du mois selectionne
-                        </Text>
                       </View>
 
                       <Text className="text-base font-bold text-primary">
@@ -349,10 +341,10 @@ export default function CAScreen() {
             ) : (
               <View className="items-center justify-center rounded-3xl bg-white px-6 py-10 shadow-base">
                 <Text className="mb-1 text-lg font-semibold text-slate-900">
-                  Aucun resultat
+                  Aucun résultat
                 </Text>
                 <Text className="text-center text-sm text-slate-600">
-                  Aucun CA trouve pour ce filtre
+                  Aucun CA trouvé pour ce filtre.
                 </Text>
               </View>
             )}
@@ -363,13 +355,18 @@ export default function CAScreen() {
               onPress={() => setShowAnnuelle((prev) => !prev)}
               className="flex-row items-center justify-between"
             >
-              <View>
-                <Text className="text-base font-semibold text-slate-900">
-                  Vue annuelle {selectedAnnee}
-                </Text>
-                <Text className="text-sm text-slate-500">
-                  Total: {formatEuro(totalAnnuel)}
-                </Text>
+              <View className="flex-row items-center gap-3 flex-1">
+                <View className="h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                  <Ionicons name="calendar-outline" size={18} color="#007aff" />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-base font-semibold text-slate-900">
+                    Vue annuelle {selectedAnnee}
+                  </Text>
+                  <Text className="text-sm text-slate-500">
+                    Total: {formatEuro(totalAnnuel)}
+                  </Text>
+                </View>
               </View>
               <Ionicons
                 name={showAnnuelle ? "chevron-up" : "chevron-down"}
@@ -383,12 +380,16 @@ export default function CAScreen() {
                 {MOIS_LABELS.map((mois, index) => (
                   <View
                     key={mois}
-                    className="flex-row items-center justify-between rounded-xl bg-slate-50 px-3 py-2"
+                    className={`flex-row items-center justify-between rounded-xl px-3 py-2 ${
+                      index + 1 === selectedMois
+                        ? "bg-primary/10 border border-primary/20"
+                        : "bg-slate-50"
+                    }`}
                   >
                     <Text className="text-sm font-medium text-slate-700">
                       {mois}
                     </Text>
-                    <Text className="text-sm font-bold text-slate-900">
+                    <Text className="text-sm  text-slate-900">
                       {formatEuro(caParMois[index] || 0)}
                     </Text>
                   </View>

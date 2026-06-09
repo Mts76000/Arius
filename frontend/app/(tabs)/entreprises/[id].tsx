@@ -131,7 +131,7 @@ export default function EntrepriseDetailScreen() {
     try {
       await deleteEntreprise.mutateAsync(id as string);
       router.back();
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de supprimer l'entreprise");
     }
   };
@@ -269,7 +269,7 @@ export default function EntrepriseDetailScreen() {
           id: contactId,
           entrepriseId: id as string,
         });
-      } catch (error) {
+      } catch {
         Alert.alert("Erreur", "Impossible de supprimer le contact");
       }
     };
@@ -319,7 +319,7 @@ export default function EntrepriseDetailScreen() {
     const doDelete = async () => {
       try {
         await deleteRdvMutation.mutateAsync(rdvId);
-      } catch (error) {
+      } catch {
         Alert.alert("Erreur", "Impossible de supprimer le RDV");
       }
     };
@@ -356,7 +356,7 @@ export default function EntrepriseDetailScreen() {
           { text: "Oui", onPress: handleAddNote },
         ]);
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de mettre à jour le RDV");
     }
   };
@@ -372,7 +372,7 @@ export default function EntrepriseDetailScreen() {
         await createRdvMutation.mutateAsync(data);
       }
       setShowRdvModal(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder le RDV");
     }
   };
@@ -397,7 +397,7 @@ export default function EntrepriseDetailScreen() {
           id: noteId,
           entrepriseId,
         });
-      } catch (error) {
+      } catch {
         Alert.alert("Erreur", "Impossible de supprimer la note");
       }
     };
@@ -439,7 +439,7 @@ export default function EntrepriseDetailScreen() {
         await createNoteMutation.mutateAsync(noteData);
       }
       setShowNoteModal(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder la note");
     }
   };

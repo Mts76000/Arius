@@ -158,14 +158,8 @@ export async function updateContactHandler(req: Request, res: Response) {
       return res.status(400).json({ error: "ID contact invalide" });
     }
 
-    console.log("Update contact body:", JSON.stringify(req.body, null, 2));
-
     const parsed = updateSchema.safeParse(req.body);
     if (!parsed.success) {
-      console.error(
-        "Zod validation error:",
-        JSON.stringify(parsed.error, null, 2),
-      );
       return res.status(400).json({ error: parsed.error.flatten() });
     }
 

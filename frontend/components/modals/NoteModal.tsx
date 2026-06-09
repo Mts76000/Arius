@@ -1,9 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Modal, ScrollView, View, Text, TouchableOpacity } from "react-native";
+import {
+  Alert,
+  Modal,
+  ScrollView,
+  View,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import { Note, NoteType, CreateNoteInput } from "@/services/notes";
 import { FormErrors } from "@/utils/validation";
 import { FormInput } from "@/components/forms/FormInput";
-import { FormHeader } from "@/components/forms/Form";
+import {
+  CheckboxRow,
+  ChoiceChip,
+  FormHeader,
+  FormSection,
+} from "@/components/forms/Form";
 import {
   getFormModalPresentationStyle,
   NOTE_TYPE_OPTIONS,
@@ -77,7 +89,7 @@ export function NoteModal({
     }
 
     if (isTemplate && !templateName.trim()) {
-      newErrors.nom_template = "Nom du template requis";
+      newErrors.nom_template = "Nom du modèle requis";
     }
 
     setErrors(newErrors);
@@ -97,8 +109,8 @@ export function NoteModal({
     try {
       await onSubmit(data);
       setErrors({});
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
+    } catch {
+      Alert.alert("Erreur", "Impossible de sauvegarder la note");
     }
   };
 
@@ -122,39 +134,32 @@ export function NoteModal({
           saveDisabled={isLoading}
         />
 
-        <View className="mx-5 my-4 rounded-3xl bg-white p-5 shadow-sm gap-4">
+        <FormSection>
           {/* Type Selector */}
           <View className="gap-2">
-            <Text className="text-sm font-medium text-gray-700">Type</Text>
+            <Text className="text-sm font-semibold text-gray-800">Type</Text>
             <View className="flex-row flex-wrap gap-2">
               {NOTE_TYPE_OPTIONS.map((typeOption) => (
-                <TouchableOpacity
+                <ChoiceChip
                   key={typeOption.value}
+                  label={typeOption.label}
+                  selected={type === typeOption.value}
                   onPress={() => handleSelectType(typeOption.value)}
-                  className={`rounded-full px-4 py-2 border ${type === typeOption.value ? "bg-primary border-primary" : "bg-white border-gray-300"}`}
-                >
-                  <Text
-                    className={
-                      type === typeOption.value
-                        ? "text-white font-semibold"
-                        : "text-gray-700"
-                    }
-                  >
-                    {typeOption.label}
-                  </Text>
-                </TouchableOpacity>
+                />
               ))}
             </View>
           </View>
 
-          {/* Templates suggestions */}
+          {/* Suggestions de modèles */}
           <View className="gap-2">
             <View className="gap-1">
-              <Text className="text-sm font-medium text-gray-700">
-                Templates pour {getNoteTypeLabel(type)}
+              <Text className="text-sm font-semibold text-gray-800">
+                Modèles pour {getNoteTypeLabel(type)}
               </Text>
               {templates.length > 0 && (
-                <Text className="text-xs text-gray-500">Tap pour insérer</Text>
+                <Text className="text-xs text-gray-500">
+                  Touchez un modèle pour l’insérer
+                </Text>
               )}
             </View>
             {templates.length > 0 ? (
@@ -162,7 +167,7 @@ export function NoteModal({
                 {templates.map((template) => (
                   <View
                     key={template._id}
-                    className="rounded-2xl border border-gray-200 bg-gray-50 p-3"
+                    className="rounded-2xl border border-gray-100 bg-gray-50 p-3"
                   >
                     <View className="flex-row items-start justify-between gap-3">
                       <View className="flex-1 gap-1">
@@ -181,7 +186,7 @@ export function NoteModal({
                       </View>
                       <TouchableOpacity
                         onPress={() => handleApplyTemplate(template)}
-                        className="rounded-full border border-primary px-3 py-1"
+                        className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-2"
                       >
                         <Text className="text-primary text-xs font-medium">
                           Insérer
@@ -192,13 +197,12 @@ export function NoteModal({
                 ))}
               </View>
             ) : (
-              <View className="rounded-2xl border border-dashed border-gray-300 p-3 gap-1">
+              <View className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4 gap-1">
                 <Text className="text-gray-700 font-medium">
-                  Aucun template pour ce type
+                  Aucun modèle pour ce type
                 </Text>
                 <Text className="text-gray-500 text-sm">
-                  Coche "Enregistrer comme template" en bas pour créer un modèle
-                  réutilisable
+                  {'Cochez "Enregistrer comme modèle" en bas pour créer un texte réutilisable.'}
                 </Text>
               </View>
             )}
@@ -218,25 +222,19 @@ export function NoteModal({
             />
           </View>
 
-          {/* Template toggle */}
-          <TouchableOpacity
+          {/* Bascule modèle */}
+          <CheckboxRow
+            label="Enregistrer comme modèle"
+            checked={isTemplate}
             onPress={() => setIsTemplate(!isTemplate)}
             disabled={isLoading}
-            className="flex-row items-center gap-2"
-          >
-            <View
-              className={`w-5 h-5 rounded border items-center justify-center ${isTemplate ? "bg-primary border-primary" : "border-gray-300"}`}
-            >
-              {isTemplate && <Text className="text-white text-xs">✓</Text>}
-            </View>
-            <Text className="text-gray-700">Enregistrer comme template</Text>
-          </TouchableOpacity>
+          />
 
-          {/* Template name input */}
+          {/* Nom du modèle */}
           {isTemplate && (
             <View>
               <FormInput
-                label="Nom du template"
+                label="Nom du modèle"
                 placeholder="ex: Compte-rendu réunion standard"
                 value={templateName}
                 onChangeText={setTemplateName}
@@ -245,7 +243,7 @@ export function NoteModal({
               />
             </View>
           )}
-        </View>
+        </FormSection>
       </ScrollView>
     </Modal>
   );

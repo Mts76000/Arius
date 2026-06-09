@@ -23,7 +23,7 @@ const STATUS_OPTIONS = [
   { label: "Clients", value: "client" as const },
   { label: "Prospects", value: "prospect" as const },
   { label: "Fournisseurs", value: "fournisseur" as const },
-  { label: "A reactiver", value: "a_reactiver" as const },
+  { label: "À réactiver", value: "a_reactiver" as const },
 ];
 
 type EntrepriseStatut = Exclude<Entreprise["statut"], undefined>;
@@ -71,9 +71,9 @@ export default function EntreprisesScreen() {
   const { data: allEntreprisesData } = useEntreprises();
 
   const entreprises = data?.entreprises || [];
-  const allEntreprises = allEntreprisesData?.entreprises || [];
-
   const filterCounts = useMemo(() => {
+    const allEntreprises = allEntreprisesData?.entreprises || [];
+
     return allEntreprises.reduce(
       (acc, entreprise) => {
         acc.all += 1;
@@ -92,7 +92,7 @@ export default function EntreprisesScreen() {
         a_reactiver: 0,
       },
     );
-  }, [allEntreprises]);
+  }, [allEntreprisesData?.entreprises]);
 
   const getCountByFilter = (filter: EntrepriseStatut | undefined) => {
     if (!filter) return filterCounts.all;
@@ -174,7 +174,7 @@ export default function EntreprisesScreen() {
           <Ionicons name="navigate-outline" size={18} color="#9ca3af" />
           <Text className="text-base text-gray" numberOfLines={1}>
             {item.code_postal ? `${item.code_postal} ` : ""}
-            {item.ville || "Ville non renseignee"}
+            {item.ville || "Ville non renseignée"}
           </Text>
         </View>
       </TouchableOpacity>
@@ -187,7 +187,7 @@ export default function EntreprisesScreen() {
         <Text className="mb-4 text-center text-base text-red-600">
           Erreur de chargement des entreprises
         </Text>
-        <AppButton title="Reessayer" onPress={() => refetch()} />
+        <AppButton title="Réessayer" onPress={() => refetch()} />
       </View>
     );
   }
@@ -270,7 +270,7 @@ export default function EntreprisesScreen() {
           ListEmptyComponent={
             <View className="items-center px-8 pt-10">
               <Text className="text-base font-semibold text-slate-800">
-                Aucune entreprise trouvee
+                Aucune entreprise trouvée
               </Text>
               <Text className="mt-1 text-center text-sm text-gray">
                 Essaie une autre recherche ou change les filtres.

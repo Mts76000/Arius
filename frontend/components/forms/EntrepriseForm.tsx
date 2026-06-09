@@ -8,14 +8,13 @@ import {
   Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Ionicons } from "@expo/vector-icons";
 import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
 import type { CreateEntrepriseInput } from "@/services/entreprises";
 import { useAuthStore } from "@/store/authStore";
 import { AppButton } from "@/components/ui/AppButton";
 import { EntrepriseAvatar } from "@/components/ui/EntrepriseAvatar";
 import { FormInput } from "@/components/forms/FormInput";
-import { Form, FormGroup } from "@/components/forms/Form";
+import { ChoiceChip, Form, FormGroup } from "@/components/forms/Form";
 import { ENTREPRISE_STATUS_OPTIONS } from "@/components/forms/formDefinitions";
 import Constants from "expo-constants";
 
@@ -79,8 +78,7 @@ export function EntrepriseForm({
         const uri = result.assets[0].uri;
         await uploadImage(uri);
       }
-    } catch (error) {
-      console.error("pickImage error:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible de sélectionner l'image");
     }
   };
@@ -179,8 +177,9 @@ export function EntrepriseForm({
       });
 
       if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json().catch(() => ({}));
-        console.error("Upload response error:", errorData);
+        const errorData = await uploadResponse
+          .json()
+          .catch(() => ({ error: null }));
         throw new Error(
           errorData.error ||
             `Upload failed with status ${uploadResponse.status}`,
@@ -192,8 +191,7 @@ export function EntrepriseForm({
       // Stocker le chemin retourné (souvent relatif), on résout en absolu au rendu
       setFormData((prevData) => ({ ...prevData, logo: data.url }));
       Alert.alert("Succès", "Logo uploadé avec succès");
-    } catch (error) {
-      console.error("Upload error:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible d'uploader l'image");
     } finally {
       setUploading(false);
@@ -235,23 +233,15 @@ export function EntrepriseForm({
         <FormGroup title="Statut">
           <View className="flex-row flex-wrap justify-between gap-3">
             {ENTREPRISE_STATUS_OPTIONS.map((statusOption) => (
-              <TouchableOpacity
+              <ChoiceChip
                 key={statusOption.value}
+                label={statusOption.label}
+                selected={formData.statut === statusOption.value}
                 onPress={() =>
                   setFormData({ ...formData, statut: statusOption.value })
                 }
-                className={`w-[48%] rounded-full border-[0.3px] px-4 py-3 items-center ${formData.statut === statusOption.value ? "bg-primary border-primary" : "bg-white  border-grayLight"}`}
-              >
-                <Text
-                  className={
-                    formData.statut === statusOption.value
-                      ? "text-white font-semibold"
-                      : "text-gray-700"
-                  }
-                >
-                  {statusOption.label}
-                </Text>
-              </TouchableOpacity>
+                className="w-[48%]"
+              />
             ))}
           </View>
         </FormGroup>
@@ -318,30 +308,34 @@ export function EntrepriseForm({
         </FormGroup>
 
         <FormGroup title="Logo">
-          <View>
-            <EntrepriseAvatar
-              name={formData.nom}
-              logo={formData.logo}
-              size={84}
-              rounded="xl"
-              className="mb-3"
-            />
-            <View>
-              <TouchableOpacity onPress={pickImage} disabled={uploading}>
-                <View className="flex-row items-center gap-2 rounded-full border border-primary px-4 py-2 self-start">
-                  <Ionicons name="image" size={18} color="#2563eb" />
-                  <Text className="text-primary font-medium">Galerie</Text>
+          <View className="rounded-2xl border border-gray-200 bg-white p-4">
+            <View className="flex-row items-center gap-4">
+              <EntrepriseAvatar
+                name={formData.nom}
+                logo={formData.logo}
+                size={84}
+                rounded="xl"
+              />
+              <View className="flex-1 gap-2">
+                <View className="flex-row items-center gap-3 pt-1">
+                  <TouchableOpacity onPress={pickImage} disabled={uploading}>
+                    <View className="rounded-2xl border border-primary px-4 py-3 self-start">
+                      <Text className="text-primary font-semibold">
+                        {uploading ? "Upload..." : "Galerie"}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                  {formData.logo && (
+                    <TouchableOpacity
+                      onPress={() => setFormData({ ...formData, logo: "" })}
+                      className="rounded-2xl border border-red-200 px-4 py-3"
+                    >
+                      <Text className="text-red-600 font-semibold">Retirer</Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
-              </TouchableOpacity>
+              </View>
             </View>
-            {formData.logo && (
-              <TouchableOpacity
-                onPress={() => setFormData({ ...formData, logo: "" })}
-                className="self-start"
-              >
-                <Ionicons name="close" size={18} color="#dc2626" />
-              </TouchableOpacity>
-            )}
           </View>
         </FormGroup>
         <View className="flex-row gap-3">

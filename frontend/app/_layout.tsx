@@ -22,7 +22,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     initializeAuth();
-  }, []);
+  }, [initializeAuth]);
 
   return (
     <QueryClientProvider client={queryClient}>

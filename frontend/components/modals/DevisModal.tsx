@@ -12,7 +12,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { UploadDevisInput } from "@/services/devis";
 import { FormErrors } from "@/utils/validation";
 import { FormInput } from "@/components/forms/FormInput";
-import { FormHeader } from "@/components/forms/Form";
+import { FormHeader, FormSection } from "@/components/forms/Form";
 import { getFormModalPresentationStyle } from "@/components/forms/formDefinitions";
 
 interface DevisModalProps {
@@ -102,8 +102,7 @@ export function DevisModal({
 
         setSelectedFile(file);
       }
-    } catch (error) {
-      console.error("Error picking document:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible de sélectionner le fichier");
     }
   };
@@ -136,8 +135,7 @@ export function DevisModal({
       setSelectedFile(null);
       setErrors({});
       onClose();
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder le devis");
     }
   };
@@ -154,7 +152,7 @@ export function DevisModal({
         contentContainerStyle={{ paddingBottom: 24 }}
       >
         <FormHeader
-          title="Nouveau Devis"
+          title="Nouveau devis"
           onCancel={onClose}
           onSave={handleSubmit}
           isSaving={isLoading}
@@ -162,61 +160,63 @@ export function DevisModal({
           saveDisabled={isLoading || !selectedFile}
         />
 
-        <View className="mx-5 my-4 rounded-3xl bg-white p-5 shadow-sm gap-4">
+        <FormSection>
           {/* Nom */}
-          <View>
-            <FormInput
-              label="Nom du devis"
-              placeholder="Ex: Devis Q1 2026"
-              value={nom}
-              onChangeText={setNom}
-              editable={!isLoading}
-              error={errors.nom}
-            />
-          </View>
+          <FormInput
+            label="Nom du devis"
+            placeholder="Ex: Devis Q1 2026"
+            value={nom}
+            onChangeText={setNom}
+            editable={!isLoading}
+            error={errors.nom}
+          />
 
           {/* Notes */}
-          <View>
-            <FormInput
-              label="Notes (optionnel)"
-              placeholder="Description ou commentaires..."
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-              numberOfLines={4}
-              editable={!isLoading}
-              error={null}
-            />
-          </View>
+          <FormInput
+            label="Notes (optionnel)"
+            placeholder="Description ou commentaires..."
+            value={notes}
+            onChangeText={setNotes}
+            multiline
+            numberOfLines={4}
+            editable={!isLoading}
+            error={null}
+          />
 
           {/* Fichier */}
           <View className="gap-2">
-            <Text className="text-sm font-medium text-gray-700">
+            <Text className="text-sm font-semibold text-gray-800">
               Fichier PDF
             </Text>
             <TouchableOpacity
               onPress={handleFileSelect}
               disabled={isLoading}
-              className="rounded-2xl border border-dashed border-gray-300 p-4 gap-1"
+              className={`rounded-2xl border border-dashed p-4 ${
+                errors.file
+                  ? "border-red-300 bg-red-50"
+                  : selectedFile
+                    ? "border-primary bg-primaryLight"
+                    : "border-gray-200 bg-gray-50"
+              }`}
             >
-              <Text className="text-2xl">📄</Text>
-              <Text className="text-gray-800 font-medium">
-                {selectedFile ? selectedFile.name : "Sélectionner un PDF"}
-              </Text>
-              {selectedFile && (
-                <Text className="text-gray-500">
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </Text>
-              )}
-              {!selectedFile && (
-                <Text className="text-gray-500">PDF uniquement, max 20 MB</Text>
-              )}
+              <View className="gap-1">
+                <View>
+                  <Text className="text-gray-900 font-semibold">
+                    {selectedFile ? selectedFile.name : "Sélectionner un PDF"}
+                  </Text>
+                  <Text className="text-gray-500 text-sm">
+                    {selectedFile
+                      ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`
+                      : "PDF uniquement, max 20 MB"}
+                  </Text>
+                </View>
+              </View>
             </TouchableOpacity>
             {errors.file && (
-              <Text className="text-red-500 text-sm">{errors.file}</Text>
+              <Text className="text-red-600 text-sm">{errors.file}</Text>
             )}
           </View>
-        </View>
+        </FormSection>
       </ScrollView>
     </Modal>
   );

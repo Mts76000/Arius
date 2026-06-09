@@ -219,9 +219,12 @@ export default function HomeScreen() {
               {isLoadingRdvs && <ActivityIndicator size="small" />}
             </View>
             {upcomingRdvs.length === 0 ? (
-              <View className="bg-primary rounded-3xl p-4 mt-8 flex items-center">
-                <Text className=" text-white font-bold">
+              <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+                <Text className="text-lg font-bold text-slate-900">
                   Aucun RDV planifié
+                </Text>
+                <Text className="mt-1 text-center text-sm text-slate-500">
+                  Les prochains rendez-vous apparaîtront ici.
                 </Text>
               </View>
             ) : (

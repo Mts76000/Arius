@@ -17,6 +17,14 @@ export interface User {
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
+export function isAnonymizedUser(user: Pick<User, "id" | "email">): boolean {
+  return user.email === getAnonymizedEmail(user.id);
+}
+
+export function getAnonymizedEmail(userId: string): string {
+  return `anonymized-${userId}@deleted.local`;
+}
+
 export async function getUserByEmail(email: string): Promise<User | null> {
   const [rows] = await pool.execute(
     "SELECT * FROM users WHERE email = ? LIMIT 1",
@@ -78,6 +86,16 @@ export async function updateGoogleSubForEmail(
     sub,
     email,
   ]);
+}
+
+export async function anonymizeUser(userId: string): Promise<void> {
+  const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+  await pool.execute(
+    `UPDATE users
+     SET email = ?, password = NULL, google_sub = NULL, prenom = NULL, nom = NULL, updated_at = ?
+     WHERE id = ?`,
+    [getAnonymizedEmail(userId), now, userId],
+  );
 }
 
 export async function hashPassword(password: string): Promise<string> {
