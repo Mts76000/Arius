@@ -3,10 +3,10 @@ import {
   View,
   TextInput,
   Text,
-  StyleSheet,
   TextInputProps,
   TouchableOpacity,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 interface FormInputProps extends TextInputProps {
   label?: string;
@@ -29,82 +29,53 @@ export const FormInput: React.FC<FormInputProps> = ({
 }) => {
   const [isHidden, setIsHidden] = useState<boolean>(!!secureTextEntry);
   const showToggle = secureTextEntry && enableVisibilityToggle;
+  const isMultiline = !!props.multiline;
+  const isEditable = props.editable !== false;
 
   return (
-    <View style={styles.container}>
-      {label && <Text style={styles.label}>{label}</Text>}
-      <View style={styles.inputWrapper}>
+    <View className="w-full gap-2">
+      {label && (
+        <Text className="text-sm font-semibold text-gray-700">{label}</Text>
+      )}
+      <View>
         <TextInput
-          style={[styles.input, error && styles.inputError]}
           placeholder={placeholder}
-          placeholderTextColor="#999"
+          placeholderTextColor="#9ca3af"
           value={value}
           onChangeText={onChangeText}
           secureTextEntry={showToggle ? isHidden : secureTextEntry}
           keyboardType={keyboardType}
           {...props}
+          textAlignVertical={isMultiline ? "top" : props.textAlignVertical}
+          className={`w-full border bg-white px-4 text-gray-900 ${
+            isMultiline ? "min-h-28 py-3" : "min-h-12 py-3"
+          } rounded-2xl ${error ? "border-red-400 bg-red-50" : "border-gray-200"} ${
+            showToggle ? "pr-12" : ""
+          } ${!isEditable ? "opacity-60" : ""}`}
         />
         {showToggle && (
           <TouchableOpacity
             onPress={() => setIsHidden((prev) => !prev)}
-            style={styles.toggleButton}
             accessibilityRole="button"
             accessibilityLabel={
               isHidden ? "Afficher le mot de passe" : "Masquer le mot de passe"
             }
+            style={{
+              position: "absolute",
+              right: 14,
+              top: isMultiline ? 16 : "50%",
+              transform: isMultiline ? [] : [{ translateY: -10 }],
+            }}
           >
-            <Text style={styles.toggleText}>
-              {isHidden ? "Afficher" : "Cacher"}
-            </Text>
+            <Ionicons
+              name={isHidden ? "eye-outline" : "eye-off-outline"}
+              size={20}
+              color="#4b5563"
+            />
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text style={styles.errorText}>{error}</Text>}
+      {error && <Text className="text-red-600 text-sm">{error}</Text>}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  inputWrapper: {
-    position: "relative",
-    justifyContent: "center",
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 6,
-    color: "#333",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    paddingRight: 72,
-    fontSize: 16,
-    backgroundColor: "#fff",
-    color: "#000",
-  },
-  toggleButton: {
-    position: "absolute",
-    right: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  toggleText: {
-    color: "#2563eb",
-    fontWeight: "600",
-  },
-  inputError: {
-    borderColor: "#dc2626",
-    backgroundColor: "#fef2f2",
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#dc2626",
-    marginTop: 4,
-  },
-});

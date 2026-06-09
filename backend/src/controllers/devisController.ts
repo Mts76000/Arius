@@ -60,13 +60,6 @@ export async function upload(req: Request, res: Response) {
     const { id } = req.params;
     const userId = (req as any).userId;
 
-    console.log("Upload devis:", {
-      id,
-      userId,
-      file: req.file?.filename,
-      body: req.body,
-    });
-
     if (!userId) {
       return res.status(401).json({ error: "Non authentifié" });
     }
@@ -78,7 +71,7 @@ export async function upload(req: Request, res: Response) {
     const { nom, notes } = req.body;
 
     if (!nom || (typeof nom === "string" && nom.trim().length < 3)) {
-      if (req.file) fs.unlinkSync(req.file.path);
+      if (req.file) fs.rmSync(req.file.path, { force: true });
       return res
         .status(400)
         .json({
@@ -104,9 +97,7 @@ export async function upload(req: Request, res: Response) {
   } catch (error) {
     console.error("Erreur upload:", error);
     if (req.file) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (e) {}
+      fs.rmSync(req.file.path, { force: true });
     }
     res.status(500).json({ error: "Erreur serveur" });
   }

@@ -9,6 +9,7 @@ import {
   Platform,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import {
   useEntreprise,
   useDeleteEntreprise,
@@ -37,7 +38,6 @@ import {
 } from "@/hooks/useRdvs";
 import { Rdv, CreateRdvInput, RdvStatus } from "@/services/rdvs";
 import { ValidationRules, FormErrors, hasErrors } from "@/utils/validation";
-import { styles } from "@/styles/entrepriseDetailStyles";
 import { ContactModal } from "@/components/modals/ContactModal";
 import { NoteModal } from "@/components/modals/NoteModal";
 import { RdvModal } from "@/components/modals/RdvModal";
@@ -47,22 +47,30 @@ import { InfosTab } from "@/components/entreprise/InfosTab";
 import { NotesTab } from "@/components/entreprise/NotesTab";
 import { RdvsTab } from "@/components/entreprise/RdvsTab";
 import { ChiffresTab } from "@/components/entreprise/ChiffresTab";
-import { DevisSection } from "@/components/sections/DevisSection";
-import { AppButton } from "@/components/ui/AppButton";
+import { DevisTab } from "@/components/entreprise/DevisTab";
 
 export default function EntrepriseDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const tabBarHeight = useBottomTabBarHeight();
 
   // Normalize id to string
   const entrepriseId = Array.isArray(id) ? id[0] : id || "";
+
+  const [rdvPage, setRdvPage] = useState(1);
+  const RDV_PAGE_SIZE = 10;
 
   const { data: entreprise, isLoading, error } = useEntreprise(entrepriseId);
   const { data: contacts, isLoading: contactsLoading } =
     useContacts(entrepriseId);
   const { data: notesData, isLoading: notesLoading } = useNotes(entrepriseId);
-  const { data: rdvsData, isLoading: rdvsLoading } =
-    useRdvsByEntreprise(entrepriseId);
+  const { data: rdvsData, isLoading: rdvsLoading } = useRdvsByEntreprise(
+    entrepriseId,
+    {
+      page: rdvPage,
+      limite: RDV_PAGE_SIZE,
+    },
+  );
   const { data: entreprisesData } = useEntreprises();
   const entreprises = entreprisesData?.entreprises || [];
   const deleteEntreprise = useDeleteEntreprise();
@@ -123,7 +131,7 @@ export default function EntrepriseDetailScreen() {
     try {
       await deleteEntreprise.mutateAsync(id as string);
       router.back();
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de supprimer l'entreprise");
     }
   };
@@ -261,7 +269,7 @@ export default function EntrepriseDetailScreen() {
           id: contactId,
           entrepriseId: id as string,
         });
-      } catch (error) {
+      } catch {
         Alert.alert("Erreur", "Impossible de supprimer le contact");
       }
     };
@@ -311,7 +319,7 @@ export default function EntrepriseDetailScreen() {
     const doDelete = async () => {
       try {
         await deleteRdvMutation.mutateAsync(rdvId);
-      } catch (error) {
+      } catch {
         Alert.alert("Erreur", "Impossible de supprimer le RDV");
       }
     };
@@ -348,7 +356,7 @@ export default function EntrepriseDetailScreen() {
           { text: "Oui", onPress: handleAddNote },
         ]);
       }
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de mettre à jour le RDV");
     }
   };
@@ -364,7 +372,7 @@ export default function EntrepriseDetailScreen() {
         await createRdvMutation.mutateAsync(data);
       }
       setShowRdvModal(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder le RDV");
     }
   };
@@ -387,9 +395,9 @@ export default function EntrepriseDetailScreen() {
       try {
         await deleteNoteMutation.mutateAsync({
           id: noteId,
-          entrepriseId: id as string,
+          entrepriseId,
         });
-      } catch (error) {
+      } catch {
         Alert.alert("Erreur", "Impossible de supprimer la note");
       }
     };
@@ -420,7 +428,7 @@ export default function EntrepriseDetailScreen() {
     try {
       const noteData = {
         ...data,
-        entreprise_id: id as string,
+        entreprise_id: entrepriseId,
       };
       if (selectedNote) {
         await updateNoteMutation.mutateAsync({
@@ -431,14 +439,14 @@ export default function EntrepriseDetailScreen() {
         await createNoteMutation.mutateAsync(noteData);
       }
       setShowNoteModal(false);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder la note");
     }
   };
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
+      <View>
         <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
@@ -446,15 +454,24 @@ export default function EntrepriseDetailScreen() {
 
   if (error || !entreprise) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>Entreprise introuvable</Text>
+      <View>
+        <Text>Entreprise introuvable</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <EntrepriseHeader entreprise={entreprise} />
+    <ScrollView
+      contentContainerStyle={{
+        paddingBottom: Math.max(140, tabBarHeight + 56),
+      }}
+    >
+      <EntrepriseHeader
+        entreprise={entreprise}
+        onEdit={() => router.push(`/entreprises/${id}/edit` as any)}
+        onDelete={handleDelete}
+        isDeleting={deleteEntreprise.isPending}
+      />
 
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -475,15 +492,19 @@ export default function EntrepriseDetailScreen() {
       {activeTab === "rdv" && (
         <RdvsTab
           rdvs={rdvsData?.rdvs}
+          contacts={contacts || []}
+          pagination={rdvsData?.pagination}
+          page={rdvPage}
           rdvsLoading={rdvsLoading}
           onAddRdv={handleAddRdv}
           onEditRdv={handleEditRdv}
           onDeleteRdv={handleDeleteRdv}
           onChangeStatus={handleChangeRdvStatus}
+          onPageChange={setRdvPage}
         />
       )}
 
-      {activeTab === "devis" && <DevisSection entrepriseId={entrepriseId} />}
+      {activeTab === "devis" && <DevisTab entrepriseId={entrepriseId} />}
 
       {activeTab === "notes" && (
         <NotesTab
@@ -501,22 +522,7 @@ export default function EntrepriseDetailScreen() {
 
       {activeTab === "chiffres" && <ChiffresTab entreprise={entreprise} />}
 
-      {/* Actions */}
-      <View style={styles.actions}>
-        <AppButton
-          title="Modifier"
-          onPress={() => router.push(`/entreprises/${id}/edit` as any)}
-          variant="secondary"
-          style={styles.editButton}
-        />
-        <AppButton
-          title={deleteEntreprise.isPending ? "..." : "Supprimer"}
-          onPress={handleDelete}
-          variant="danger"
-          disabled={deleteEntreprise.isPending}
-          style={styles.deleteButton}
-        />
-      </View>
+      <View style={{ height: Math.max(32, tabBarHeight * 0.5) }} />
 
       <ContactModal
         visible={showContactModal}

@@ -1,408 +1,289 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
   RefreshControl,
   ScrollView,
-  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEntreprises } from "@/hooks/useEntreprises";
 import type { Entreprise } from "@/services/entreprises";
-import Constants from "expo-constants";
-import { Colors } from "@/constants/theme";
-import { AppButton } from "@/components/ui/AppButton";
 
-const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
+import { AppButton } from "@/components/ui/AppButton";
+import { BtnPlus } from "@/components/ui/BtnPlus";
+import { EntrepriseAvatar } from "@/components/ui/EntrepriseAvatar";
+
+const STATUS_OPTIONS = [
+  { label: "Tous", value: undefined },
+  { label: "Clients", value: "client" as const },
+  { label: "Prospects", value: "prospect" as const },
+  { label: "Fournisseurs", value: "fournisseur" as const },
+  { label: "À réactiver", value: "a_reactiver" as const },
+];
+
+type EntrepriseStatut = Exclude<Entreprise["statut"], undefined>;
+
+const defaultStatusBadgeClassName = {
+  bg: "bg-slate-100",
+  text: "text-slate-700",
+};
+
+const statusBadgeClassName: Record<
+  EntrepriseStatut,
+  { bg: string; text: string }
+> = {
+  client: { bg: "bg-greenMedium", text: "text-green" },
+  prospect: { bg: "bg-primary/20", text: "text-primary" },
+  fournisseur: { bg: "bg-purple/20", text: "text-purple" },
+  a_reactiver: { bg: "bg-orange/20", text: "text-orange" },
+};
 
 export default function EntreprisesScreen() {
   const router = useRouter();
+  const [rechercheInput, setRechercheInput] = useState("");
   const [recherche, setRecherche] = useState("");
   const [statutFilter, setStatutFilter] = useState<
-    "client" | "prospect" | "fournisseur" | "a_reactiver" | undefined
+    EntrepriseStatut | undefined
   >();
 
-  const { data, isLoading, error, refetch } = useEntreprises({
-    recherche: recherche || undefined,
-    statut: statutFilter,
-  });
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setRecherche(rechercheInput.trim());
+    }, 350);
 
-  const renderItem = ({ item }: { item: Entreprise }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => router.push(`/entreprises/${item.id}` as any)}
-    >
-      <View style={styles.cardTop}>
-        {item.logo && (
-          <Image
-            source={{
-              uri: item.logo.startsWith("http")
-                ? item.logo
-                : `${baseURL}${item.logo}`,
-            }}
-            style={styles.cardLogo}
-          />
-        )}
-        <View style={styles.cardContent}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.nom} numberOfLines={2}>
-              {item.nom}
-            </Text>
-            <View
-              style={[
-                styles.badge,
-                item.statut === "client" && styles.badgeClient,
-                item.statut === "prospect" && styles.badgeProspect,
-                item.statut === "fournisseur" && styles.badgeFournisseur,
-                item.statut === "a_reactiver" && styles.badgeReactiver,
-              ]}
-            >
-              <Text style={styles.badgeText}>
-                {item.statut === "a_reactiver" ? "à réactiver" : item.statut}
-              </Text>
+    return () => clearTimeout(timeoutId);
+  }, [rechercheInput]);
+
+  const queryParams = useMemo(
+    () => ({
+      recherche: recherche || undefined,
+      statut: statutFilter,
+    }),
+    [recherche, statutFilter],
+  );
+
+  const { data, isLoading, error, refetch } = useEntreprises(queryParams);
+  const { data: allEntreprisesData } = useEntreprises();
+
+  const entreprises = data?.entreprises || [];
+  const filterCounts = useMemo(() => {
+    const allEntreprises = allEntreprisesData?.entreprises || [];
+
+    return allEntreprises.reduce(
+      (acc, entreprise) => {
+        acc.all += 1;
+
+        if (entreprise.statut) {
+          acc[entreprise.statut] += 1;
+        }
+
+        return acc;
+      },
+      {
+        all: 0,
+        client: 0,
+        prospect: 0,
+        fournisseur: 0,
+        a_reactiver: 0,
+      },
+    );
+  }, [allEntreprisesData?.entreprises]);
+
+  const getCountByFilter = (filter: EntrepriseStatut | undefined) => {
+    if (!filter) return filterCounts.all;
+    return filterCounts[filter];
+  };
+
+  const getContactCount = (entreprise: Entreprise) => {
+    type EntrepriseWithOptionalContactCount = Entreprise & {
+      contacts_count?: unknown;
+      nb_contacts?: unknown;
+      contactsCount?: unknown;
+      contacts?: unknown;
+    };
+
+    const company = entreprise as EntrepriseWithOptionalContactCount;
+    const rawCount =
+      company.contacts_count ?? company.nb_contacts ?? company.contactsCount;
+
+    if (typeof rawCount === "number" && rawCount >= 0) return rawCount;
+    if (typeof rawCount === "bigint" && rawCount >= 0n) {
+      return Number(rawCount);
+    }
+    if (typeof rawCount === "string") {
+      const parsed = Number(rawCount);
+      if (!Number.isNaN(parsed) && parsed >= 0) return parsed;
+    }
+
+    if (Array.isArray(company.contacts)) return company.contacts.length;
+    return 0;
+  };
+
+  const renderItem = ({ item }: { item: Entreprise }) => {
+    const contactCount = getContactCount(item);
+    const statusBadge =
+      item.statut && statusBadgeClassName[item.statut]
+        ? statusBadgeClassName[item.statut]
+        : defaultStatusBadgeClassName;
+
+    return (
+      <TouchableOpacity
+        onPress={() => router.push(`/entreprises/${item.id}` as any)}
+        className="mx-5 mb-3 rounded-3xl bg-white p-4 shadow-base"
+        activeOpacity={0.85}
+      >
+        <View className="flex-row gap-4">
+          <EntrepriseAvatar name={item.nom} logo={item.logo} size={50} />
+
+          <View className="flex-1 justify-between">
+            <View className="flex-row items-start justify-between gap-3">
+              <View className="flex-1">
+                <Text
+                  className="text-xl font-bold leading-6 text-slate-900"
+                  numberOfLines={2}
+                >
+                  {item.nom}
+                </Text>
+                <View className="mt-2 flex-row items-center gap-2">
+                  <Ionicons name="person-outline" size={18} color="#6b7280" />
+                  <Text className="text-base text-gray">
+                    {contactCount} {contactCount > 1 ? "contacts" : "contact"}
+                  </Text>
+                </View>
+              </View>
+
+              <View className={`rounded-full px-3 py-1.5 ${statusBadge.bg}`}>
+                <Text
+                  className={`text-xs font-bold uppercase tracking-wide ${statusBadge.text}`}
+                >
+                  {item.statut === "a_reactiver" ? "A REACTIVER" : item.statut}
+                </Text>
+              </View>
             </View>
           </View>
-          {item.ville && (
-            <Text style={styles.ville} numberOfLines={1}>
-              {item.ville}
-              {item.code_postal && ` (${item.code_postal})`}
-            </Text>
-          )}
         </View>
-      </View>
-      <View>
-        {item.description && (
-          <Text style={styles.description} numberOfLines={2}>
-            {item.description}
+
+        <View className="mt-4 h-[0.6px] bg-grayLight" />
+
+        <View className="mt-4 flex-row items-center gap-2">
+          <Ionicons name="navigate-outline" size={18} color="#9ca3af" />
+          <Text className="text-base text-gray" numberOfLines={1}>
+            {item.code_postal ? `${item.code_postal} ` : ""}
+            {item.ville || "Ville non renseignée"}
           </Text>
-        )}
-      </View>
-    </TouchableOpacity>
-  );
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (error) {
     return (
-      <View style={styles.centered}>
-        <Text style={styles.errorText}>
+      <View className="flex-1 items-center justify-center px-6">
+        <Text className="mb-4 text-center text-base text-red-600">
           Erreur de chargement des entreprises
         </Text>
-        <AppButton
-          title="Reessayer"
-          onPress={() => refetch()}
-          size="sm"
-          style={styles.retryButton}
-        />
+        <AppButton title="Réessayer" onPress={() => refetch()} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.searchInput}
-        placeholder="Rechercher..."
-        placeholderTextColor={Colors.light.muted}
-        value={recherche}
-        onChangeText={setRecherche}
-      />
+    <View className="flex-1">
+      <View className="gap-3 px-5 pb-5 pt-5">
+        <View className="flex-row items-center gap-2 rounded-2xl bg-white px-4 py-1 shadow-base">
+          <Ionicons name="search-outline" size={20} color="#64748b" />
+          <TextInput
+            placeholder="Rechercher une entreprise..."
+            placeholderTextColor={"#64748b"}
+            value={rechercheInput}
+            onChangeText={setRechercheInput}
+            className="flex-1 py-3 text-slate-900"
+          />
+        </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filters}
-        style={styles.filtersScroll}
-      >
-        <TouchableOpacity
-          style={[styles.filterChip, !statutFilter && styles.filterChipActive]}
-          onPress={() => setStatutFilter(undefined)}
-        >
-          <Text
-            style={[
-              styles.filterChipText,
-              !statutFilter && styles.filterChipTextActive,
-            ]}
-          >
-            Tous
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.filterChip,
-            statutFilter === "client" && styles.filterChipActive,
-          ]}
-          onPress={() => setStatutFilter("client")}
-        >
-          <Text
-            style={[
-              styles.filterChipText,
-              statutFilter === "client" && styles.filterChipTextActive,
-            ]}
-          >
-            Clients
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.filterChip,
-            statutFilter === "prospect" && styles.filterChipActive,
-          ]}
-          onPress={() => setStatutFilter("prospect")}
-        >
-          <Text
-            style={[
-              styles.filterChipText,
-              statutFilter === "prospect" && styles.filterChipTextActive,
-            ]}
-          >
-            Prospects
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.filterChip,
-            statutFilter === "fournisseur" && styles.filterChipActive,
-          ]}
-          onPress={() => setStatutFilter("fournisseur")}
-        >
-          <Text
-            style={[
-              styles.filterChipText,
-              statutFilter === "fournisseur" && styles.filterChipTextActive,
-            ]}
-          >
-            Fournisseurs
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.filterChip,
-            statutFilter === "a_reactiver" && styles.filterChipActive,
-          ]}
-          onPress={() => setStatutFilter("a_reactiver")}
-        >
-          <Text
-            style={[
-              styles.filterChipText,
-              statutFilter === "a_reactiver" && styles.filterChipTextActive,
-            ]}
-          >
-            À réactiver
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-2 pt-3">
+            {STATUS_OPTIONS.map((option) => {
+              const isActive = statutFilter === option.value;
+              const count = getCountByFilter(option.value);
+
+              return (
+                <TouchableOpacity
+                  key={option.label}
+                  onPress={() => setStatutFilter(option.value)}
+                  className={`rounded-full border px-4 py-3 ${
+                    isActive
+                      ? "border-primary bg-sky-100"
+                      : "border-transparent bg-white"
+                  }`}
+                >
+                  <View className="flex-row items-center gap-1.5">
+                    <Text
+                      className={`  ${isActive ? "text-sky-700" : "text-gray"}`}
+                    >
+                      {option.label}
+                    </Text>
+                    <View
+                      className={`min-w-6 rounded-full px-2 py-[2px] items-center  ${
+                        isActive ? "bg-sky-200" : "bg-slate-100"
+                      }`}
+                    >
+                      <Text
+                        className={` ${
+                          isActive ? "text-sky-700" : "text-slate-600"
+                        }`}
+                      >
+                        {count}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
+      </View>
 
       {isLoading && !data ? (
-        <View style={styles.centered}>
-          <ActivityIndicator size="large" color={Colors.light.tint} />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color={"#0ea5e9"} />
         </View>
       ) : (
         <FlatList
-          data={data?.entreprises || []}
+          data={entreprises}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={{ paddingTop: 8, paddingBottom: 180 }}
+          keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl
               refreshing={isLoading}
               onRefresh={refetch}
-              tintColor={Colors.light.tint}
+              tintColor={"#0ea5e9"}
             />
           }
           ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>Aucune entreprise trouvée</Text>
+            <View className="items-center px-8 pt-10">
+              <Text className="text-base font-semibold text-slate-800">
+                Aucune entreprise trouvée
+              </Text>
+              <Text className="mt-1 text-center text-sm text-gray">
+                Essaie une autre recherche ou change les filtres.
+              </Text>
             </View>
           }
         />
       )}
 
-      {/* Bouton flottant */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push("/entreprises/create" as any)}
-      >
-        <Ionicons name="add" size={28} color="#ffffff" />
-      </TouchableOpacity>
+      <BtnPlus
+        formType="entreprise"
+        onOpenEntreprise={() => router.push("/entreprises/create" as any)}
+      />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.light.background,
-  },
-  header: {
-    padding: 20,
-    paddingTop: 60,
-    backgroundColor: "#ffffff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#e5e7eb",
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: "#1f2937",
-  },
-  fab: {
-    position: "absolute",
-    right: 20,
-    bottom: 20,
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.light.tint,
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 8,
-  },
-  searchInput: {
-    marginHorizontal: 20,
-    marginTop: 16,
-    marginBottom: 12,
-    backgroundColor: Colors.light.card,
-    borderRadius: 12,
-    padding: 14,
-    color: Colors.light.text,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    fontSize: 16,
-    elevation: 1,
-  },
-  filtersScroll: {
-    maxHeight: 50,
-    flexGrow: 0,
-  },
-  filters: {
-    flexDirection: "row",
-    gap: 8,
-    paddingHorizontal: 20,
-    marginBottom: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: Colors.light.card,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-  },
-  filterChipActive: {
-    backgroundColor: Colors.light.tint,
-    borderColor: Colors.light.tint,
-  },
-  filterChipText: {
-    color: Colors.light.muted,
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  filterChipTextActive: {
-    color: "#0b1222",
-  },
-  list: {
-    padding: 20,
-    paddingTop: 0,
-  },
-  card: {
-    backgroundColor: Colors.light.card,
-    borderRadius: 16,
-    padding: 18,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    elevation: 2,
-    overflow: "hidden",
-  },
-  cardLogo: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-    backgroundColor: Colors.light.background,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 10,
-  },
-  cardTop: {
-    flexDirection: "row",
-    gap: 12,
-    marginBottom: 10,
-  },
-  cardContent: {
-    flex: 1,
-  },
-  nom: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: Colors.light.text,
-    flex: 1,
-    marginRight: 12,
-  },
-  badge: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 999,
-  },
-  badgeClient: {
-    backgroundColor: "#34d399",
-  },
-  badgeProspect: {
-    backgroundColor: "#fbbf24",
-  },
-  badgeFournisseur: {
-    backgroundColor: Colors.light.tint,
-  },
-  badgeReactiver: {
-    backgroundColor: "#22d3ee",
-  },
-  badgeText: {
-    color: "#0b1222",
-    fontSize: 11,
-    fontWeight: "700",
-    textTransform: "capitalize",
-  },
-  ville: {
-    color: Colors.light.muted,
-    fontSize: 14,
-    marginBottom: 8,
-    fontWeight: "500",
-  },
-  description: {
-    color: Colors.light.text,
-    fontSize: 14,
-    lineHeight: 20,
-    opacity: 0.9,
-  },
-  emptyContainer: {
-    padding: 40,
-    alignItems: "center",
-  },
-  emptyText: {
-    color: Colors.light.muted,
-    fontSize: 16,
-  },
-  errorText: {
-    color: "#dc2626",
-    fontSize: 16,
-    marginBottom: 16,
-  },
-  retryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 10,
-  },
-});

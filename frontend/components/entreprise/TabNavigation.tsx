@@ -21,38 +21,31 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   ];
 
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        backgroundColor: "#f8fafc",
-        paddingHorizontal: 16,
-        paddingTop: 12,
-        gap: 8,
-      }}
-    >
-      {tabs.map((tab) => (
-        <TouchableOpacity
-          key={tab.key}
-          onPress={() => onTabChange(tab.key)}
-          style={{
-            paddingVertical: 12,
-            paddingHorizontal: 16,
-            borderBottomWidth: 3,
-            borderBottomColor:
-              activeTab === tab.key ? "#0ea5e9" : "transparent",
-          }}
-        >
-          <Text
-            style={{
-              fontWeight: activeTab === tab.key ? "800" : "600",
-              color: activeTab === tab.key ? "#0ea5e9" : "#64748b",
-              fontSize: 15,
-            }}
+    <View className="flex-row justify-between border-b border-slate-200 px-5 pb-2 pt-4">
+      {tabs.map((tab) => {
+        const isActive = activeTab === tab.key;
+
+        return (
+          <TouchableOpacity
+            key={tab.key}
+            onPress={() => onTabChange(tab.key)}
+            className="items-center"
           >
-            {tab.label}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <Text
+              className={`text-base font-semibold ${
+                isActive ? "text-primary" : "text-slate-500"
+              }`}
+            >
+              {tab.label}
+            </Text>
+            <View
+              className={`mt-2 h-0.5 w-10 rounded-full ${
+                isActive ? "bg-primary" : "bg-transparent"
+              }`}
+            />
+          </TouchableOpacity>
+        );
+      })}
     </View>
   );
 };

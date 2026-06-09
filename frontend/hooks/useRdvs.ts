@@ -23,12 +23,21 @@ export function useMyRdvs(filters?: {
   });
 }
 
-export function useRdvsByEntreprise(entrepriseId: string) {
+export function useRdvsByEntreprise(
+  entrepriseId: string,
+  filters?: {
+    de?: string;
+    a?: string;
+    page?: number;
+    limite?: number;
+  },
+) {
   const token = useAuthStore((state) => state.token);
 
   return useQuery({
-    queryKey: ["rdvs", "entreprise", entrepriseId],
-    queryFn: () => rdvsService.getRdvsByEntreprise(token!, entrepriseId),
+    queryKey: ["rdvs", "entreprise", entrepriseId, filters],
+    queryFn: () =>
+      rdvsService.getRdvsByEntreprise(token!, entrepriseId, filters),
     enabled: !!token && !!entrepriseId,
   });
 }

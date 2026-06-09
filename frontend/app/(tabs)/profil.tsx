@@ -3,22 +3,28 @@ import {
   ScrollView,
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
   RefreshControl,
   Platform,
+  Modal,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Colors } from "@/constants/theme";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import { FormInput } from "@/components/forms/FormInput";
-import { updateProfil, changerMotdepasse } from "@/services/profil";
+import {
+  anonymiserCompte,
+  changerMotdepasse,
+  updateProfil,
+} from "@/services/profil";
 import { useAuthStore } from "@/store/authStore";
 import { api } from "@/services/api";
 import { exportService } from "@/services/export";
 import { AppButton } from "@/components/ui/AppButton";
+import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 
 interface ProfilData {
   id: string;
@@ -27,10 +33,14 @@ interface ProfilData {
   nom: string | null;
 }
 
+type ExportType = "prospects" | "rdvs" | "notes" | "ca" | "objectifs";
+
 export default function ProfilModal() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const logout = useAuthStore((state) => state.logout);
   const token = useAuthStore((state) => state.token);
+  const appVersion = Constants.expoConfig?.version ?? "1.0.0";
   const [editMode, setEditMode] = useState(false);
   const [passwordMode, setPasswordMode] = useState(false);
 
@@ -58,6 +68,57 @@ export default function ProfilModal() {
   // Export RGPD
   const [exportError, setExportError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [isAnonymizing, setIsAnonymizing] = useState(false);
+  const [deleteAccountModalVisible, setDeleteAccountModalVisible] =
+    useState(false);
+  const [deleteAccountPassword, setDeleteAccountPassword] = useState("");
+  const [deleteAccountError, setDeleteAccountError] = useState<string | null>(
+    null,
+  );
+
+  const exportItems: {
+    label: string;
+    icon: keyof typeof Ionicons.glyphMap;
+    type: ExportType;
+    iconColor: string;
+    iconBackgroundClass: string;
+  }[] = [
+    {
+      label: "Prospects",
+      icon: "people-outline",
+      type: "prospects",
+      iconColor: "#007aff",
+      iconBackgroundClass: "bg-primaryLight",
+    },
+    {
+      label: "Rendez-vous",
+      icon: "calendar-outline",
+      type: "rdvs",
+      iconColor: "#A855F7",
+      iconBackgroundClass: "bg-purpleLight",
+    },
+    {
+      label: "Notes",
+      icon: "document-outline",
+      type: "notes",
+      iconColor: "#FF9502",
+      iconBackgroundClass: "bg-orangeLight",
+    },
+    {
+      label: "Chiffre d'affaires",
+      icon: "bar-chart-outline",
+      type: "ca",
+      iconColor: "#34C759",
+      iconBackgroundClass: "bg-greenMedium",
+    },
+    {
+      label: "Objectifs",
+      icon: "checkmark-circle-outline",
+      type: "objectifs",
+      iconColor: "#EF4444",
+      iconBackgroundClass: "bg-redLight",
+    },
+  ];
 
   const {
     data: profilData,
@@ -75,10 +136,28 @@ export default function ProfilModal() {
 
   const updateMutation = useMutation({
     mutationFn: updateProfil,
-    onSuccess: (data) => {
+    onSuccess: async () => {
+      queryClient.setQueryData(["profil"], (oldData: ProfilData | undefined) =>
+        oldData ? { ...oldData, prenom, nom } : oldData,
+      );
+
+      useAuthStore.setState((state) => ({
+        user: state.user ? { ...state.user, prenom, nom } : state.user,
+      }));
+
+      queryClient.setQueriesData(
+        { queryKey: ["user"] },
+        (oldData: ProfilData | undefined) =>
+          oldData ? { ...oldData, prenom, nom } : oldData,
+      );
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["profil"] }),
+        queryClient.invalidateQueries({ queryKey: ["user"] }),
+      ]);
+
       Alert.alert("Succès", "Profil mis à jour avec succès");
       setEditMode(false);
-      refetch();
     },
     onError: (error: any) => {
       const message =
@@ -200,9 +279,48 @@ export default function ProfilModal() {
     router.replace("/login");
   };
 
-  const handleExportData = async (
-    type?: "prospects" | "rdvs" | "notes" | "ca" | "objectifs" | any,
-  ) => {
+  const deleteAccountAndLogout = async (motdepasse: string) => {
+    try {
+      setIsAnonymizing(true);
+      await anonymiserCompte({ motdepasse });
+      logout();
+      Alert.alert(
+        "Compte supprimé",
+        "Vos données ont été supprimées et votre compte a été anonymisé.",
+      );
+      router.replace("/login");
+    } catch (error: any) {
+      const apiError = error?.response?.data?.error;
+      const message =
+        apiError === "invalid password"
+          ? "Mot de passe incorrect"
+          : apiError === "password required"
+            ? "Le mot de passe est requis"
+          : apiError === "password unavailable"
+            ? "Ce compte ne peut pas être supprimé avec un mot de passe local."
+            : "Impossible de supprimer le compte pour le moment";
+      setDeleteAccountError(message);
+    } finally {
+      setIsAnonymizing(false);
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    setDeleteAccountPassword("");
+    setDeleteAccountError(null);
+    setDeleteAccountModalVisible(true);
+  };
+
+  const confirmDeleteAccount = () => {
+    if (!deleteAccountPassword.trim()) {
+      setDeleteAccountError("Le mot de passe est requis");
+      return;
+    }
+    setDeleteAccountError(null);
+    deleteAccountAndLogout(deleteAccountPassword);
+  };
+
+  const handleExportData = async (type?: ExportType) => {
     if (!token) {
       Alert.alert("Erreur", "Vous devez être connecté");
       return;
@@ -220,19 +338,9 @@ export default function ProfilModal() {
         return;
       }
 
-      const exportType:
-        | "prospects"
-        | "rdvs"
-        | "notes"
-        | "ca"
-        | "objectifs"
-        | undefined =
-        typeof type === "string"
-          ? (type as "prospects" | "rdvs" | "notes" | "ca" | "objectifs")
-          : undefined;
       const { data, filename, contentType } = await exportService.download(
         token,
-        exportType,
+        type,
       );
 
       const blob =
@@ -258,32 +366,28 @@ export default function ProfilModal() {
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.light.tint} />
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color={"#0ea5e9"} />
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>
-          Erreur lors du chargement du profil
-        </Text>
-        <AppButton
-          title="Reessayer"
-          onPress={() => refetch()}
-          size="sm"
-          style={styles.retryButton}
-        />
+      <View className="flex-1 items-center justify-center px-6">
+        <Text>Erreur lors du chargement du profil</Text>
+        <AppButton title="Réessayer" onPress={() => refetch()} />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 pt-8">
       <ScrollView
-        style={styles.scrollView}
+        className="flex-1"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 190 }}
         refreshControl={
           <RefreshControl
             onRefresh={() => refetch()}
@@ -291,560 +395,453 @@ export default function ProfilModal() {
           />
         }
       >
-        {/* Header Profil */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarLarge}>
-            <Text style={styles.avatarText}>
-              {profilData?.prenom?.charAt(0) || "M"}
-              {profilData?.nom?.charAt(0) || "L"}
-            </Text>
+        <View className="flex-col gap-6 mt-4">
+          <View className="flex-row  bg-white  rounded-3xl p-6 gap-6   shadow-base">
+            <View className="h-[60px] w-[60px] items-center justify-center rounded-xl bg-primary">
+              <Text className="text-2xl font-bold text-white uppercase">
+                {profilData?.prenom?.charAt(0)}
+                {profilData?.nom?.charAt(0)}
+              </Text>
+            </View>
+            <View className="flex-col gap-2">
+              <Text className="text-xl font-semibold capitalize">
+                {profilData?.prenom || "Utilisateur"} {profilData?.nom || ""}
+              </Text>
+              <Text className="text-lg text-gray">{profilData?.email}</Text>
+            </View>
           </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>
-              {profilData?.prenom || "Utilisateur"} {profilData?.nom || ""}
-            </Text>
-            <Text style={styles.profileEmail}>{profilData?.email}</Text>
-          </View>
-        </View>
 
-        {/* Informations Personnelles */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Informations Personnelles</Text>
+          {/* Informations Personnelles */}
+          <View className="flex-col  bg-white rounded-3xl p-6 gap-6 shadow-base">
+            <View className="flex-row items-center">
+              <View className="flex-row gap-4 items-center">
+                <Ionicons
+                  className="bg-[#E6F9EE] p-2 rounded-2xl"
+                  name="document-text-outline"
+                  size={25}
+                  color="#34C759"
+                />
+                <View className="flex-1">
+                  <Text className="font-semibold text-xl">
+                    Informations Personnelles
+                  </Text>
+                  <Text className="text-gray text-sm">
+                    {"Gérez vos informations de profil visibles dans l'application"}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {editMode ? (
+              <View className="bg-[#F8FAFF] border border-[#E2E8F0] rounded-2xl p-4 flex-col gap-4">
+                <Text className="text-gray mb-3">
+                  Mettez à jour vos informations et enregistrez les changements.
+                </Text>
+
+                <FormInput
+                  label="Prénom"
+                  value={prenom}
+                  onChangeText={setPrenom}
+                  placeholder="Votre prénom"
+                  error={errorsProfil.prenom}
+                />
+
+                <FormInput
+                  label="Nom"
+                  value={nom}
+                  onChangeText={setNom}
+                  placeholder="Votre nom"
+                  error={errorsProfil.nom}
+                />
+
+                <View className="flex-row gap-3 mt-4">
+                  <View className="flex-1">
+                    <AppButton
+                      title="Annuler"
+                      onPress={() => {
+                        setEditMode(false);
+                        setPrenom(profilData?.prenom || "");
+                        setNom(profilData?.nom || "");
+                        setErrorsProfil({});
+                      }}
+                      variant="secondary"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <AppButton
+                      title="Enregistrer"
+                      onPress={handleUpdateProfil}
+                      isLoading={updateMutation.isPending}
+                    />
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View className="flex-col gap-3">
+                <View className="rounded-2xl border border-grayLight bg-[#F8FAFC] p-4 flex-row items-center justify-between">
+                  <View className="flex-col gap-1">
+                    <Text className="text-gray">Prénom</Text>
+                    <Text className="font-semibold text-base">
+                      {profilData?.prenom || "-"}
+                    </Text>
+                  </View>
+                </View>
+
+                <View className="rounded-2xl border border-grayLight bg-[#F8FAFC] p-4 flex-row items-center justify-between">
+                  <View className="flex-col gap-1">
+                    <Text className="text-gray">Nom</Text>
+                    <Text className="font-semibold text-base">
+                      {profilData?.nom || "-"}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
             {!editMode && (
               <AppButton
                 title="Modifier"
                 onPress={() => setEditMode(true)}
-                variant="link"
-                size="sm"
+                variant="secondary"
+                icon={
+                  <Ionicons name="create-outline" size={15} color="#334155" />
+                }
+                className="rounded-xl border border-grayLight bg-[#F8FAFC]"
               />
             )}
           </View>
 
-          {editMode ? (
-            <View style={styles.formContainer}>
-              <FormInput
-                label="Prénom"
-                value={prenom}
-                onChangeText={setPrenom}
-                placeholder="Votre prénom"
-                error={errorsProfil.prenom}
+          {/* Sécurité */}
+          <View className="flex-col  bg-white  rounded-3xl p-6 gap-6   shadow-base">
+            <View className="flex-row gap-4 items-start">
+              <Ionicons
+                className="bg-red/20 p-2 rounded-2xl"
+                name="lock-closed-outline"
+                size={25}
+                color="#fb2c36"
               />
 
-              <FormInput
-                label="Nom"
-                value={nom}
-                onChangeText={setNom}
-                placeholder="Votre nom"
-                error={errorsProfil.nom}
-                style={{ marginTop: 16 }}
-              />
+              <View className="flex-col gap-2 flex-1">
+                <Text className="font-semibold text-xl">Sécurité</Text>
 
-              <View style={styles.buttonGroup}>
-                <AppButton
-                  title="Annuler"
-                  onPress={() => {
-                    setEditMode(false);
-                    setPrenom(profilData?.prenom || "");
-                    setNom(profilData?.nom || "");
-                    setErrorsProfil({});
-                  }}
-                  variant="secondary"
-                  style={styles.button}
-                />
-                <AppButton
-                  title="Enregistrer"
-                  onPress={handleUpdateProfil}
-                  isLoading={updateMutation.isPending}
-                  style={styles.button}
-                />
-              </View>
-            </View>
-          ) : (
-            <View style={styles.infoContainer}>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Email</Text>
-                <Text style={styles.infoValue}>{profilData?.email}</Text>
-              </View>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Prénom</Text>
-                <Text style={styles.infoValue}>
-                  {profilData?.prenom || "-"}
+                <Text className="text-gray">
+                  Gérer votre mot de passe et la sécurité du compte
                 </Text>
               </View>
-              <View style={styles.infoItem}>
-                <Text style={styles.infoLabel}>Nom</Text>
-                <Text style={styles.infoValue}>{profilData?.nom || "-"}</Text>
-              </View>
             </View>
-          )}
-        </View>
 
-        {/* Sécurité */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Sécurité</Text>
-            {!passwordMode && (
-              <AppButton
-                title="Modifier"
-                onPress={() => setPasswordMode(true)}
-                variant="link"
-                size="sm"
-              />
+            {passwordMode ? (
+              <View className="bg-[#FFF8F8] border border-[#FAD4D7] rounded-2xl p-4 flex-col gap-4">
+                <Text className="text-gray">
+                  Modifiez votre mot de passe pour garder votre compte sécurisé.
+                </Text>
+
+                <FormInput
+                  label="Ancien mot de passe"
+                  value={ancienMotdepasse}
+                  onChangeText={setAncienMotdepasse}
+                  placeholder="Votre mot de passe actuel"
+                  secureTextEntry
+                  enableVisibilityToggle
+                  error={errorsPassword.ancienMotdepasse}
+                />
+
+                <FormInput
+                  label="Nouveau mot de passe"
+                  value={nouveauMotdepasse}
+                  onChangeText={setNouveauMotdepasse}
+                  placeholder="Nouveau mot de passe"
+                  secureTextEntry
+                  enableVisibilityToggle
+                  error={errorsPassword.nouveauMotdepasse}
+                />
+
+                <FormInput
+                  label="Confirmer le nouveau mot de passe"
+                  value={confirmation}
+                  onChangeText={setConfirmation}
+                  placeholder="Confirmer le nouveau mot de passe"
+                  secureTextEntry
+                  enableVisibilityToggle
+                  error={errorsPassword.confirmation}
+                />
+
+                <View className="flex-row gap-3 mt-2">
+                  <View className="flex-1">
+                    <AppButton
+                      title="Annuler"
+                      onPress={() => {
+                        setPasswordMode(false);
+                        resetPasswordFields();
+                      }}
+                      variant="secondary"
+                    />
+                  </View>
+                  <View className="flex-1">
+                    <AppButton
+                      title="Enregistrer"
+                      onPress={handleChangePassword}
+                      isLoading={passwordMutation.isPending}
+                    />
+                  </View>
+                </View>
+              </View>
+            ) : (
+              <View className="flex-col gap-3">
+                <View className="flex-row items-center gap-2">
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={18}
+                    color="#16a34a"
+                  />
+                  <Text className="text-gray">Mot de passe sécurisé</Text>
+                </View>
+
+                <AppButton
+                  title="Modifier"
+                  onPress={() => setPasswordMode(true)}
+                  variant="secondary"
+                  icon={
+                    <Ionicons name="create-outline" size={15} color="#334155" />
+                  }
+                  className="rounded-xl border border-grayLight bg-[#F8FAFC]"
+                />
+                <AppButton
+                  title={isAnonymizing ? "Suppression..." : "Supprimer le compte"}
+                  onPress={handleDeleteAccount}
+                  variant="secondary"
+                  isLoading={isAnonymizing}
+                  className="rounded-xl border border-grayLight bg-[#F8FAFC]"
+                />
+              </View>
+            )}
+
+            {passwordMessage && (
+              <View className="rounded-xl bg-[#ECFDF3] border border-[#ABEFC6] px-3 py-2">
+                <Text className="text-[#067647]">{passwordMessage.text}</Text>
+              </View>
             )}
           </View>
 
-          {passwordMessage && (
-            <Text style={styles.successMessage}>{passwordMessage.text}</Text>
-          )}
-
-          {passwordMode ? (
-            <View style={styles.formContainer}>
-              <FormInput
-                label="Ancien mot de passe"
-                value={ancienMotdepasse}
-                onChangeText={setAncienMotdepasse}
-                placeholder="Votre mot de passe actuel"
-                secureTextEntry
-                enableVisibilityToggle
-                error={errorsPassword.ancienMotdepasse}
+          {/* Confidentialité et données */}
+          <View className="flex-col  bg-white  rounded-3xl p-6 gap-6   shadow-base">
+            <View className="flex-row gap-4 items-start ">
+              <Ionicons
+                className="bg-[#E8F1FF] p-2 rounded-2xl"
+                name="shield-checkmark-outline"
+                size={25}
+                color="#246BFD"
               />
 
-              <FormInput
-                label="Nouveau mot de passe"
-                value={nouveauMotdepasse}
-                onChangeText={setNouveauMotdepasse}
-                placeholder="Nouveau mot de passe"
-                secureTextEntry
-                enableVisibilityToggle
-                error={errorsPassword.nouveauMotdepasse}
-                style={{ marginTop: 16 }}
-              />
+              <View className="flex-col gap-2 flex-1">
+                <Text className="font-semibold text-xl">
+                  Confidentialité & données
+                </Text>
 
-              <FormInput
-                label="Confirmer le nouveau mot de passe"
-                value={confirmation}
-                onChangeText={setConfirmation}
-                placeholder="Confirmer le nouveau mot de passe"
-                secureTextEntry
-                enableVisibilityToggle
-                error={errorsPassword.confirmation}
-                style={{ marginTop: 16 }}
-              />
-
-              <View style={styles.buttonGroup}>
-                <AppButton
-                  title="Annuler"
-                  onPress={() => {
-                    setPasswordMode(false);
-                    resetPasswordFields();
-                  }}
-                  variant="secondary"
-                  style={styles.button}
-                />
-                <AppButton
-                  title="Enregistrer"
-                  onPress={handleChangePassword}
-                  isLoading={passwordMutation.isPending}
-                  style={styles.button}
-                />
+                <Text className="text-gray">
+                  Vos informations restent liées à votre compte et peuvent être
+                  exportées ou supprimées à tout moment.
+                </Text>
               </View>
             </View>
-          ) : (
-            <View style={styles.infoContainer}>
-              <Text style={styles.infoText}>Mot de passe sécurisé</Text>
-            </View>
-          )}
-        </View>
 
-        {/* Export de données */}
-        <View style={styles.exportSection}>
-          <View style={styles.exportHeader}>
-            <View style={styles.exportHeaderIcon}>
-              <Text style={styles.exportHeaderIconText}>⬇️</Text>
+            <View className="gap-3">
+              {[
+                {
+                  title: "Données privées",
+                  text: "Chaque utilisateur ne voit que ses propres entreprises, rendez-vous et notes.",
+                },
+                {
+                  title: "Export disponible",
+                  text: "Vous pouvez récupérer vos données en ZIP ou par catégorie.",
+                },
+                {
+                  title: "Suppression maîtrisée",
+                  text: "La suppression efface les données du compte puis anonymise l’utilisateur.",
+                },
+              ].map((item) => (
+                <View
+                  key={item.title}
+                  className="rounded-2xl border border-grayLight bg-[#F8FAFC] p-4"
+                >
+                  <Text className="font-semibold text-slate-900">
+                    {item.title}
+                  </Text>
+                  <Text className="mt-1 text-sm text-gray">{item.text}</Text>
+                </View>
+              ))}
             </View>
-            <View style={styles.exportHeaderText}>
-              <Text style={styles.exportTitle}>Export de données</Text>
-              <Text style={styles.exportSubtitle}>
-                Sauvegardez ou utilisez vos données dans d'autres outils
+
+            <TouchableOpacity
+              onPress={() => handleExportData()}
+              disabled={isExporting}
+              activeOpacity={0.8}
+              className="bg-primary rounded-2xl px-4 py-4 flex-row items-center justify-between"
+            >
+              <View className="flex-row items-center gap-3">
+                <View className="h-10 w-10 items-center justify-center rounded-xl bg-white/20">
+                  <Ionicons name="archive-outline" size={20} color="white" />
+                </View>
+                <View className="flex-1 pr-2">
+                  <Text className="text-white font-semibold text-base">
+                    Export complet
+                  </Text>
+                  <Text className="text-white/80 text-sm">
+                    Toutes les données en fichier ZIP
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+
+            <View className="flex-row items-center gap-3">
+              <View className="h-[1px] flex-1 bg-grayLight" />
+              <Text className="text-xs font-semibold text-gray tracking-widest">
+                PAR CATÉGORIE
+              </Text>
+              <View className="h-[1px] flex-1 bg-grayLight" />
+            </View>
+
+            <View className="border border-grayLight rounded-2xl overflow-hidden">
+              {exportItems.map((item, index) => (
+                <TouchableOpacity
+                  key={item.label}
+                  onPress={() => handleExportData(item.type)}
+                  className={`px-4 py-4 flex-row items-center justify-between ${
+                    index !== exportItems.length - 1
+                      ? "border-b border-grayLight"
+                      : ""
+                  }`}
+                >
+                  <View className="flex-row items-center gap-3">
+                    <View
+                      className={`h-10 w-10 items-center justify-center rounded-xl ${item.iconBackgroundClass}`}
+                    >
+                      <Ionicons
+                        name={item.icon}
+                        size={20}
+                        color={item.iconColor}
+                      />
+                    </View>
+                    <Text className="font-medium text-base">{item.label}</Text>
+                  </View>
+                  <Ionicons name="download-outline" size={18} color="#94A3B8" />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {!!exportError && (
+              <View className="rounded-xl bg-[#FEF3F2] border border-[#FECDCA] px-3 py-2">
+                <Text className="text-[#B42318]">{exportError}</Text>
+              </View>
+            )}
+
+            <View className="bg-[#EEF4FF] border border-[#D6E4FF] rounded-2xl p-3">
+              <Text className="text-[#2F6FED]">
+                Vos données vous appartiennent. Exportez-les à tout moment en
+                toute liberté.
               </Text>
             </View>
           </View>
 
-          <TouchableOpacity
-            style={[styles.exportPrimaryCard, isExporting && { opacity: 0.7 }]}
-            onPress={handleExportData}
-            disabled={isExporting}
-          >
-            <View style={styles.exportPrimaryLeft}>
-              <View style={styles.exportPrimaryIcon}>
-                <Text style={styles.exportPrimaryIconText}>📄</Text>
-              </View>
-              <View>
-                <Text style={styles.exportPrimaryTitle}>Export complet</Text>
-                <Text style={styles.exportPrimarySubtitle}>
-                  Tout en un fichier ZIP
+          {/* Aide */}
+          <View className="flex-col bg-white rounded-3xl p-6 gap-5 shadow-base">
+            <View className="flex-row gap-4 items-start">
+              <Ionicons
+                className="bg-primaryLight p-2 rounded-2xl"
+                name="help-circle-outline"
+                size={25}
+                color="#007aff"
+              />
+              <View className="flex-1 gap-2">
+                <Text className="font-semibold text-xl">Aide</Text>
+                <Text className="text-gray">
+                  En cas de problème, contactez l’administrateur du projet avec
+                  votre email de compte.
                 </Text>
               </View>
             </View>
-            <Text style={styles.exportPrimaryAction}>⬇️</Text>
-          </TouchableOpacity>
 
-          <View style={styles.exportDivider}>
-            <View style={styles.exportDividerLine} />
-            <Text style={styles.exportDividerText}>OU PAR CATÉGORIE</Text>
-            <View style={styles.exportDividerLine} />
+            <View className="rounded-2xl border border-grayLight bg-[#F8FAFC] p-4">
+              <Text className="font-semibold text-slate-900">
+                Parcours conseillé
+              </Text>
+              <Text className="mt-1 text-sm text-gray">
+                Créez une entreprise, ajoutez un contact, planifiez un
+                rendez-vous puis notez le compte-rendu.
+              </Text>
+            </View>
           </View>
 
-          <View style={styles.exportList}>
-            {[
-              { label: "Prospects", icon: "🏢", type: "prospects" },
-              { label: "Rendez-vous", icon: "📅", type: "rdvs" },
-              { label: "Notes", icon: "📝", type: "notes" },
-              { label: "Chiffre d'affaires", icon: "📊", type: "ca" },
-              { label: "Objectifs", icon: "🎯", type: "objectifs" },
-            ].map((item) => (
-              <TouchableOpacity
-                key={item.label}
-                style={styles.exportListItem}
-                onPress={() => handleExportData(item.type as any)}
-              >
-                <View style={styles.exportListLeft}>
-                  <View style={styles.exportListIcon}>
-                    <Text style={styles.exportListIconText}>{item.icon}</Text>
-                  </View>
-                  <Text style={styles.exportListLabel}>{item.label}</Text>
-                </View>
-                <Text style={styles.exportListAction}>⬇️</Text>
-              </TouchableOpacity>
-            ))}
+          {/* Version */}
+          <View className="rounded-3xl border border-grayLight bg-white px-5 py-4 shadow-sm">
+            <View className="flex-row items-center justify-between">
+              <Text className="font-semibold text-slate-900">Arius</Text>
+              <Text className="text-gray">Version {appVersion}</Text>
+            </View>
           </View>
 
-          {!!exportError && (
-            <Text style={styles.exportErrorText}>{exportError}</Text>
-          )}
-
-          <View style={styles.exportInfoBox}>
-            <Text style={styles.exportInfoText}>
-              Vos données vous appartiennent. Exportez-les à tout moment en
-              toute liberté.
-            </Text>
+          {/* Déconnexion */}
+          <View className="pb-2">
+            <AppButton
+              title="Déconnexion"
+              onPress={handleLogout}
+              variant="danger"
+              className="bg-red border border-red"
+            />
           </View>
-        </View>
-
-        {/* Déconnexion */}
-        <View style={styles.section}>
-          <AppButton
-            title="Deconnexion"
-            onPress={handleLogout}
-            variant="danger"
-            style={styles.logoutButton}
-          />
         </View>
       </ScrollView>
+
+      <Modal
+        visible={deleteAccountModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setDeleteAccountModalVisible(false)}
+      >
+        <View className="flex-1 justify-center bg-black/40 px-5">
+          <View className="rounded-3xl bg-white p-5 gap-4">
+            <View className="gap-2">
+              <Text className="text-xl font-bold text-slate-900">
+                Confirmer la suppression
+              </Text>
+              <Text className="text-gray">
+                Cette action est irréversible. Entrez votre mot de passe pour
+                supprimer vos données et anonymiser le compte.
+              </Text>
+            </View>
+
+            <FormInput
+              label="Mot de passe"
+              value={deleteAccountPassword}
+              onChangeText={setDeleteAccountPassword}
+              placeholder="Votre mot de passe"
+              secureTextEntry
+              enableVisibilityToggle
+              error={deleteAccountError}
+            />
+
+            <View className="gap-3">
+              <AppButton
+                title="Supprimer le compte"
+                onPress={confirmDeleteAccount}
+                variant="danger"
+                isLoading={isAnonymizing}
+                className="bg-red border border-red"
+              />
+              <AppButton
+                title="Annuler"
+                onPress={() => {
+                  setDeleteAccountModalVisible(false);
+                  setDeleteAccountPassword("");
+                  setDeleteAccountError(null);
+                }}
+                variant="secondary"
+                disabled={isAnonymizing}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  scrollView: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-  },
-  profileHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: Colors.light.card,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    marginBottom: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 3,
-  },
-  avatarLarge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: Colors.light.tint,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  avatarText: {
-    color: "white",
-    fontWeight: "700",
-    fontSize: 18,
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: Colors.light.text,
-    marginBottom: 4,
-  },
-  profileEmail: {
-    fontSize: 13,
-    color: Colors.light.muted,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.light.background,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.light.background,
-    paddingHorizontal: 16,
-  },
-  errorText: {
-    fontSize: 16,
-    color: Colors.light.text,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  retryButton: {
-    paddingHorizontal: 24,
-  },
-  section: {
-    marginBottom: 24,
-    backgroundColor: Colors.light.card,
-    borderRadius: 8,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: Colors.light.text,
-  },
-  infoContainer: {
-    gap: 12,
-  },
-  infoItem: {
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
-    paddingBottom: 12,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: Colors.light.text,
-    opacity: 0.6,
-    marginBottom: 4,
-  },
-  infoValue: {
-    fontSize: 16,
-    color: Colors.light.text,
-    fontWeight: "600",
-  },
-  infoText: {
-    fontSize: 14,
-    color: Colors.light.text,
-  },
-  formContainer: {
-    gap: 8,
-  },
-  errorMessage: {
-    fontSize: 12,
-    color: "red",
-    marginTop: -4,
-    marginBottom: 8,
-  },
-  successMessage: {
-    fontSize: 12,
-    color: "green",
-    marginBottom: 8,
-  },
-  buttonGroup: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 20,
-  },
-  button: {
-    flex: 1,
-  },
-  exportSection: {
-    marginBottom: 24,
-    backgroundColor: Colors.light.card,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 2,
-  },
-  exportHeader: {
-    flexDirection: "row",
-    gap: 12,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  exportHeaderIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "#EAF2FF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  exportHeaderIconText: {
-    fontSize: 18,
-  },
-  exportHeaderText: {
-    flex: 1,
-  },
-  exportTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: Colors.light.text,
-  },
-  exportSubtitle: {
-    fontSize: 12,
-    color: Colors.light.muted,
-    marginTop: 2,
-  },
-  exportPrimaryCard: {
-    backgroundColor: "#2F6FED",
-    borderRadius: 12,
-    padding: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 14,
-  },
-  exportPrimaryLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  exportPrimaryIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  exportPrimaryIconText: {
-    fontSize: 18,
-  },
-  exportPrimaryTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: "white",
-  },
-  exportPrimarySubtitle: {
-    fontSize: 12,
-    color: "rgba(255,255,255,0.9)",
-    marginTop: 2,
-  },
-  exportPrimaryAction: {
-    fontSize: 18,
-    color: "white",
-  },
-  exportDivider: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginBottom: 12,
-  },
-  exportDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.light.border,
-  },
-  exportDividerText: {
-    fontSize: 11,
-    color: Colors.light.muted,
-    fontWeight: "600",
-  },
-  exportList: {
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: "white",
-  },
-  exportListItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
-  },
-  exportListLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  exportListIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: "#F3F6FF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  exportListIconText: {
-    fontSize: 14,
-  },
-  exportListLabel: {
-    fontSize: 13,
-    color: Colors.light.text,
-    fontWeight: "600",
-  },
-  exportListAction: {
-    fontSize: 16,
-    color: "#94a3b8",
-  },
-  exportInfoBox: {
-    marginTop: 14,
-    backgroundColor: "#EEF4FF",
-    padding: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#D6E4FF",
-  },
-  exportInfoText: {
-    fontSize: 12,
-    color: "#3764D8",
-  },
-  exportErrorText: {
-    fontSize: 12,
-    color: "#ef4444",
-  },
-  logoutButton: {
-    alignSelf: "stretch",
-  },
-});

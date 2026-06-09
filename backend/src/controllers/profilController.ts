@@ -1,6 +1,21 @@
 import { Request, Response } from "express";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import { pool } from "../db/mysql.js";
-import { getUserById, hashPassword, comparePassword } from "../models/user.js";
+import {
+  anonymizeUser,
+  comparePassword,
+  getUserById,
+  hashPassword,
+  isAnonymizedUser,
+} from "../models/user.js";
+import { Note } from "../models/note.js";
+import { Rdv } from "../models/rdv.js";
+import { Devis } from "../models/devis.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function getProfil(req: Request, res: Response) {
   try {
@@ -9,6 +24,8 @@ export async function getProfil(req: Request, res: Response) {
 
     const user = await getUserById(userId);
     if (!user) return res.status(404).json({ error: "user not found" });
+    if (isAnonymizedUser(user))
+      return res.status(410).json({ error: "account anonymized" });
 
     return res.json({
       id: user.id,
@@ -59,6 +76,74 @@ export async function updateProfil(req: Request, res: Response) {
     });
   } catch (e) {
     console.error("updateProfil error:", e);
+    return res.status(500).json({ error: "internal_error" });
+  }
+}
+
+export async function anonymiserCompte(req: Request, res: Response) {
+  try {
+    const userId = (req as any).userId;
+    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    const motdepasse = req.body?.motdepasse ?? req.body?.password;
+
+    if (!motdepasse || typeof motdepasse !== "string") {
+      return res.status(400).json({ error: "password required" });
+    }
+
+    const user = await getUserById(userId);
+    if (!user) return res.status(404).json({ error: "user not found" });
+    if (isAnonymizedUser(user)) {
+      return res.status(410).json({ error: "account already anonymized" });
+    }
+    if (!user.password) {
+      return res.status(400).json({ error: "password unavailable" });
+    }
+
+    const isValid = await comparePassword(motdepasse, user.password);
+    if (!isValid) {
+      return res.status(400).json({ error: "invalid password" });
+    }
+
+    const [entrepriseRows] = await pool.execute(
+      "SELECT id FROM entreprises WHERE user_id = ?",
+      [userId],
+    );
+    const entrepriseIds = (entrepriseRows as { id: string }[]).map(
+      (row) => row.id,
+    );
+    const uploadsDir = path.join(
+      path.dirname(path.dirname(__dirname)),
+      "uploads",
+    );
+
+    for (const entrepriseId of entrepriseIds) {
+      const entrepriseUploadDir = path.join(
+        uploadsDir,
+        "entreprises",
+        entrepriseId,
+      );
+      if (fs.existsSync(entrepriseUploadDir)) {
+        fs.rmSync(entrepriseUploadDir, { recursive: true, force: true });
+      }
+    }
+
+    await Promise.all([
+      Note.deleteMany({ user_id: userId }),
+      Rdv.deleteMany({ user_id: userId }),
+      Devis.deleteMany({ user_id: userId }),
+    ]);
+
+    await pool.execute("DELETE FROM ca_mensuel WHERE user_id = ?", [userId]);
+    await pool.execute("DELETE FROM objectifs_mensuels WHERE user_id = ?", [
+      userId,
+    ]);
+    await pool.execute("DELETE FROM contacts WHERE user_id = ?", [userId]);
+    await pool.execute("DELETE FROM entreprises WHERE user_id = ?", [userId]);
+
+    await anonymizeUser(userId);
+    return res.json({ message: "account deleted and anonymized successfully" });
+  } catch (e) {
+    console.error("anonymiserCompte error:", e);
     return res.status(500).json({ error: "internal_error" });
   }
 }

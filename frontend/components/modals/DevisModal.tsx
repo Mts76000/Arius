@@ -4,7 +4,6 @@ import {
   ScrollView,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   Alert,
   Platform,
@@ -12,8 +11,9 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import { UploadDevisInput } from "@/services/devis";
 import { FormErrors } from "@/utils/validation";
-import { styles } from "@/styles/entrepriseDetailStyles";
-import { AppButton } from "@/components/ui/AppButton";
+import { FormInput } from "@/components/forms/FormInput";
+import { FormHeader, FormSection } from "@/components/forms/Form";
+import { getFormModalPresentationStyle } from "@/components/forms/formDefinitions";
 
 interface DevisModalProps {
   visible: boolean;
@@ -102,8 +102,7 @@ export function DevisModal({
 
         setSelectedFile(file);
       }
-    } catch (error) {
-      console.error("Error picking document:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible de sélectionner le fichier");
     }
   };
@@ -136,8 +135,7 @@ export function DevisModal({
       setSelectedFile(null);
       setErrors({});
       onClose();
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder le devis");
     }
   };
@@ -146,107 +144,79 @@ export function DevisModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle={getFormModalPresentationStyle("devis")}
       onRequestClose={onClose}
     >
-      <ScrollView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <AppButton
-            title="Annuler"
-            onPress={onClose}
-            variant="link"
-            disabled={isLoading}
-          />
-          <Text style={styles.modalTitle}>Nouveau Devis</Text>
-          <AppButton
-            title={isLoading ? "..." : "Enregistrer"}
-            onPress={handleSubmit}
-            size="sm"
-            disabled={isLoading || !selectedFile}
-          />
-        </View>
+      <ScrollView
+        className="flex-1 bg-gray-50"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <FormHeader
+          title="Nouveau devis"
+          onCancel={onClose}
+          onSave={handleSubmit}
+          isSaving={isLoading}
+          cancelDisabled={isLoading}
+          saveDisabled={isLoading || !selectedFile}
+        />
 
-        <View style={styles.modalForm}>
+        <FormSection>
           {/* Nom */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Nom du devis</Text>
-            <TextInput
-              style={[styles.input, errors.nom && { borderColor: "#ef4444" }]}
-              placeholder="Ex: Devis Q1 2026"
-              value={nom}
-              onChangeText={setNom}
-              editable={!isLoading}
-            />
-            {errors.nom && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
-                {errors.nom}
-              </Text>
-            )}
-          </View>
+          <FormInput
+            label="Nom du devis"
+            placeholder="Ex: Devis Q1 2026"
+            value={nom}
+            onChangeText={setNom}
+            editable={!isLoading}
+            error={errors.nom}
+          />
 
           {/* Notes */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Notes (optionnel)</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Description ou commentaires..."
-              value={notes}
-              onChangeText={setNotes}
-              multiline
-              numberOfLines={4}
-              editable={!isLoading}
-            />
-          </View>
+          <FormInput
+            label="Notes (optionnel)"
+            placeholder="Description ou commentaires..."
+            value={notes}
+            onChangeText={setNotes}
+            multiline
+            numberOfLines={4}
+            editable={!isLoading}
+            error={null}
+          />
 
           {/* Fichier */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Fichier PDF</Text>
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-gray-800">
+              Fichier PDF
+            </Text>
             <TouchableOpacity
               onPress={handleFileSelect}
               disabled={isLoading}
-              style={{
-                borderWidth: 2,
-                borderStyle: "dashed",
-                borderColor: selectedFile
-                  ? "#10b981"
-                  : errors.file
-                    ? "#ef4444"
-                    : "#cbd5e1",
-                paddingVertical: 24,
-                borderRadius: 8,
-                alignItems: "center",
-                backgroundColor: selectedFile ? "#f0fdf4" : "#f8fafc",
-              }}
+              className={`rounded-2xl border border-dashed p-4 ${
+                errors.file
+                  ? "border-red-300 bg-red-50"
+                  : selectedFile
+                    ? "border-primary bg-primaryLight"
+                    : "border-gray-200 bg-gray-50"
+              }`}
             >
-              <Text style={{ fontSize: 32, marginBottom: 8 }}>📄</Text>
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontWeight: "600",
-                  color: "#0f172a",
-                  marginBottom: 4,
-                }}
-              >
-                {selectedFile ? selectedFile.name : "Sélectionner un PDF"}
-              </Text>
-              {selectedFile && (
-                <Text style={{ fontSize: 12, color: "#64748b" }}>
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </Text>
-              )}
-              {!selectedFile && (
-                <Text style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
-                  PDF uniquement, max 20 MB
-                </Text>
-              )}
+              <View className="gap-1">
+                <View>
+                  <Text className="text-gray-900 font-semibold">
+                    {selectedFile ? selectedFile.name : "Sélectionner un PDF"}
+                  </Text>
+                  <Text className="text-gray-500 text-sm">
+                    {selectedFile
+                      ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`
+                      : "PDF uniquement, max 20 MB"}
+                  </Text>
+                </View>
+              </View>
             </TouchableOpacity>
             {errors.file && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
-                {errors.file}
-              </Text>
+              <Text className="text-red-600 text-sm">{errors.file}</Text>
             )}
           </View>
-        </View>
+        </FormSection>
       </ScrollView>
     </Modal>
   );

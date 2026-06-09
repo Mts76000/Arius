@@ -1,5 +1,5 @@
 import React from "react";
-import { Alert, ActivityIndicator, View, Text, StyleSheet } from "react-native";
+import { Alert, ActivityIndicator, View, Text } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEntreprise, useUpdateEntreprise } from "@/hooks/useEntreprises";
 import { EntrepriseForm } from "@/components/forms/EntrepriseForm";
@@ -22,7 +22,7 @@ export default function EditEntrepriseScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.centered}>
+      <View>
         <ActivityIndicator size="large" color="#2563eb" />
       </View>
     );
@@ -30,7 +30,7 @@ export default function EditEntrepriseScreen() {
 
   if (!entreprise) {
     return (
-      <View style={styles.centered}>
+      <View>
         <Text>Entreprise introuvable</Text>
       </View>
     );
@@ -56,12 +56,3 @@ export default function EditEntrepriseScreen() {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f9fafb",
-  },
-});

@@ -4,9 +4,6 @@ import {
   ScrollView,
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
   Alert,
   Platform,
 } from "react-native";
@@ -15,9 +12,21 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Rdv, CreateRdvInput, RdvStatus } from "@/services/rdvs";
 import { Entreprise } from "@/services/entreprises";
 import { Contact } from "@/services/contacts";
-import { ValidationRules, FormErrors } from "@/utils/validation";
-import { styles } from "@/styles/entrepriseDetailStyles";
-import { AppButton } from "@/components/ui/AppButton";
+import { FormErrors } from "@/utils/validation";
+import { FormInput } from "@/components/forms/FormInput";
+import {
+  ChoiceChip,
+  FormGroup,
+  FormHeader,
+  Form,
+  PickerFrame,
+} from "@/components/forms/Form";
+import {
+  getFormModalPresentationStyle,
+  RDV_DURATION_OPTIONS,
+  RDV_STATUS_OPTIONS,
+} from "@/components/forms/formDefinitions";
+import { getRdvStatusConfig } from "@/utils/rdvStatus";
 
 interface RdvModalProps {
   visible: boolean;
@@ -29,8 +38,6 @@ interface RdvModalProps {
   onClose: () => void;
   isLoading?: boolean;
 }
-
-const DURATIONS = [15, 30, 45, 60];
 
 export function RdvModal({
   visible,
@@ -117,8 +124,7 @@ export function RdvModal({
       setDuree(30);
       setSelectedStatus("planifie");
       setErrors({});
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible de sauvegarder le RDV");
     }
   };
@@ -127,50 +133,32 @@ export function RdvModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle={getFormModalPresentationStyle("rdv")}
       onRequestClose={onClose}
     >
-      <ScrollView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <AppButton
-            title="Annuler"
-            onPress={onClose}
-            variant="link"
-            disabled={isLoading}
-          />
-          <Text style={styles.modalTitle}>
-            {rdv ? "Modifier RDV" : "Nouveau RDV"}
-          </Text>
-          <AppButton
-            title={isLoading ? "..." : "Enregistrer"}
-            onPress={handleSubmit}
-            size="sm"
-            disabled={isLoading}
-          />
-        </View>
+      <ScrollView
+        className="flex-1 bg-gray-50"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <FormHeader
+          title={rdv ? "Modifier le rendez-vous" : "Nouveau rendez-vous"}
+          onCancel={onClose}
+          onSave={handleSubmit}
+          isSaving={isLoading}
+          cancelDisabled={isLoading}
+          saveDisabled={isLoading}
+        />
 
-        <View style={styles.modalForm}>
+        <Form>
           {/* Entreprise */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Entreprise</Text>
+          <FormGroup title="Entreprise" error={errors.entreprise_id}>
             {Platform.OS === "web" ? (
-              <View
-                style={[
-                  styles.input,
-                  { paddingVertical: 0, paddingHorizontal: 0 },
-                  errors.entreprise_id && { borderColor: "#ef4444" },
-                ]}
-              >
+              <PickerFrame error={!!errors.entreprise_id}>
                 <select
+                  className="w-full bg-transparent outline-none py-3 px-3 text-gray-900"
                   value={selectedEntrepriseId}
                   onChange={(e: any) => setSelectedEntrepriseId(e.target.value)}
                   disabled={isLoading}
-                  style={{
-                    height: 50,
-                    width: "100%",
-                    border: "none",
-                    outline: "none",
-                  }}
                 >
                   <option key="select-empty" value="">
                     Sélectionner une entreprise
@@ -181,64 +169,37 @@ export function RdvModal({
                     </option>
                   ))}
                 </select>
-              </View>
+              </PickerFrame>
             ) : (
-              <View
-                style={[
-                  styles.input,
-                  errors.entreprise_id && { borderColor: "#ef4444" },
-                ]}
-              >
+              <PickerFrame error={!!errors.entreprise_id}>
                 <Picker
                   selectedValue={selectedEntrepriseId}
                   onValueChange={(value) => setSelectedEntrepriseId(value)}
                   enabled={!isLoading}
-                  style={{
-                    height: 50,
-                    width: "100%",
-                    marginTop: -8,
-                    marginBottom: -8,
-                  }}
                 >
                   <Picker.Item label="Sélectionner une entreprise" value="" />
                   {entreprises?.map((e) => (
                     <Picker.Item key={e.id} label={e.nom} value={e.id} />
                   ))}
                 </Picker>
-              </View>
+              </PickerFrame>
             )}
-            {errors.entreprise_id && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
-                {errors.entreprise_id}
-              </Text>
-            )}
-          </View>
+          </FormGroup>
 
           {/* Contact - Only show if enterprise selected and has contacts */}
           {selectedEntrepriseId &&
             contacts?.filter((c) => c.entreprise_id === selectedEntrepriseId)
               .length > 0 && (
-              <View style={styles.formGroup}>
-                <Text style={styles.label}>Contact (optionnel)</Text>
+              <FormGroup title="Contact (optionnel)">
                 {Platform.OS === "web" ? (
-                  <View
-                    style={[
-                      styles.input,
-                      { paddingVertical: 0, paddingHorizontal: 0 },
-                    ]}
-                  >
+                  <PickerFrame>
                     <select
+                      className="w-full bg-transparent outline-none py-3 px-3 text-gray-900"
                       value={selectedContactId}
                       onChange={(e: any) =>
                         setSelectedContactId(e.target.value)
                       }
                       disabled={isLoading}
-                      style={{
-                        height: 50,
-                        width: "100%",
-                        border: "none",
-                        outline: "none",
-                      }}
                     >
                       <option key="select-contact-empty" value="">
                         Sélectionner un contact (optionnel)
@@ -253,19 +214,13 @@ export function RdvModal({
                           </option>
                         ))}
                     </select>
-                  </View>
+                  </PickerFrame>
                 ) : (
-                  <View style={styles.input}>
+                  <PickerFrame>
                     <Picker
                       selectedValue={selectedContactId}
                       onValueChange={(value) => setSelectedContactId(value)}
                       enabled={!isLoading}
-                      style={{
-                        height: 50,
-                        width: "100%",
-                        marginTop: -8,
-                        marginBottom: -8,
-                      }}
                     >
                       <Picker.Item
                         label="Sélectionner un contact (optionnel)"
@@ -285,76 +240,59 @@ export function RdvModal({
                           />
                         ))}
                     </Picker>
-                  </View>
+                  </PickerFrame>
                 )}
-              </View>
+              </FormGroup>
             )}
 
           {/* Status */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Statut</Text>
-            <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-              {[
-                { value: "planifie" as RdvStatus, label: "📅 Prévu" },
-                { value: "termine" as RdvStatus, label: "✓ Terminé" },
-                { value: "annule" as RdvStatus, label: "✕ Annulé" },
-              ].map((status) => (
-                <TouchableOpacity
-                  key={status.value}
-                  onPress={() => setSelectedStatus(status.value)}
-                  style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    borderRadius: 8,
-                    backgroundColor:
+          <FormGroup title="Statut">
+            <View className="flex-row flex-wrap gap-2">
+              {[...RDV_STATUS_OPTIONS].map((status) => {
+                const statusConfig = getRdvStatusConfig(status.value);
+                return (
+                  <ChoiceChip
+                    key={status.value}
+                    label={status.label}
+                    selected={selectedStatus === status.value}
+                    onPress={() => setSelectedStatus(status.value)}
+                    selectedClassName={`${statusConfig.badgeBgClass} border-transparent`}
+                    selectedTextClassName={`${statusConfig.badgeTextClass} font-semibold`}
+                    style={
                       selectedStatus === status.value
-                        ? status.value === "planifie"
-                          ? "#3b82f6"
-                          : status.value === "termine"
-                            ? "#10b981"
-                            : "#ef4444"
-                        : "#e5e7eb",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color:
-                        selectedStatus === status.value ? "#ffffff" : "#374151",
-                      fontWeight: "600",
-                      fontSize: 14,
-                    }}
-                  >
-                    {status.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                        ? { backgroundColor: statusConfig.badgeBgColor }
+                        : undefined
+                    }
+                    textStyle={
+                      selectedStatus === status.value
+                        ? { color: statusConfig.badgeTextColor }
+                        : undefined
+                    }
+                  />
+                );
+              })}
             </View>
-          </View>
+          </FormGroup>
 
           {/* Titre */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Titre</Text>
-            <TextInput
-              style={[styles.input, errors.titre && { borderColor: "#ef4444" }]}
+          <FormGroup title="Titre" error={errors.titre}>
+            <FormInput
+              label=""
               placeholder="Ex: Réunion de présentation"
               value={titre}
               onChangeText={setTitre}
               editable={!isLoading}
+              error={null}
             />
-            {errors.titre && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
-                {errors.titre}
-              </Text>
-            )}
-          </View>
+          </FormGroup>
 
           {/* Date */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Date et Heure</Text>
+          <FormGroup title="Date et heure">
             {Platform.OS === "web" ? (
-              <View style={{ flexDirection: "row", gap: 8 }}>
+              <View className="flex-row gap-2">
                 <input
                   type="date"
+                  className="flex-1 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-gray-900"
                   value={date.toISOString().split("T")[0]}
                   onChange={(e: any) => {
                     const newDate = new Date(date);
@@ -365,10 +303,10 @@ export function RdvModal({
                     setDate(newDate);
                   }}
                   disabled={isLoading}
-                  style={{ ...styles.input, flex: 1 }}
                 />
                 <input
                   type="time"
+                  className="flex-1 rounded-2xl border border-gray-200 bg-white px-3 py-3 text-gray-900"
                   value={date.toTimeString().slice(0, 5)}
                   onChange={(e: any) => {
                     const newDate = new Date(date);
@@ -379,22 +317,12 @@ export function RdvModal({
                     setDate(newDate);
                   }}
                   disabled={isLoading}
-                  style={{ ...styles.input, flex: 1 }}
                 />
               </View>
             ) : (
-              <View>
-                <View style={{ marginBottom: 12 }}>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: "#64748b",
-                      marginBottom: 4,
-                      fontWeight: "600",
-                    }}
-                  >
-                    Date
-                  </Text>
+              <View className="gap-3">
+                <View className="rounded-2xl border border-gray-200 bg-white px-2">
+                  <Text className="text-xs text-gray-500 px-2 pt-2">Date</Text>
                   <DateTimePicker
                     value={date}
                     mode="date"
@@ -404,17 +332,8 @@ export function RdvModal({
                     }}
                   />
                 </View>
-                <View>
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: "#64748b",
-                      marginBottom: 4,
-                      fontWeight: "600",
-                    }}
-                  >
-                    Heure
-                  </Text>
+                <View className="rounded-2xl border border-gray-200 bg-white px-2">
+                  <Text className="text-xs text-gray-500 px-2 pt-2">Heure</Text>
                   <DateTimePicker
                     value={date}
                     mode="time"
@@ -426,64 +345,34 @@ export function RdvModal({
                 </View>
               </View>
             )}
-          </View>
+          </FormGroup>
 
           {/* Duration */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Durée</Text>
-            <View
-              style={{
-                flexDirection: "row",
-                flexWrap: "wrap",
-                gap: 8,
-                marginBottom: 12,
-              }}
-            >
-              {DURATIONS.map((d) => (
-                <TouchableOpacity
+          <FormGroup title="Durée">
+            <View className="flex-row flex-wrap gap-2">
+              {RDV_DURATION_OPTIONS.map((d) => (
+                <ChoiceChip
                   key={d}
+                  label={`${d} min`}
+                  selected={duree === d}
                   onPress={() => setDuree(d)}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 10,
-                    borderRadius: 8,
-                    backgroundColor: duree === d ? "#2563eb" : "#e5e7eb",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: duree === d ? "#ffffff" : "#374151",
-                      fontWeight: "600",
-                      fontSize: 14,
-                    }}
-                  >
-                    {d} min
-                  </Text>
-                </TouchableOpacity>
+                />
               ))}
             </View>
-            <View style={{ marginTop: 4 }}>
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: "#64748b",
-                  fontWeight: "600",
-                  marginBottom: 8,
-                }}
-              >
+            <View className="gap-2">
+              <Text className="text-sm font-medium text-gray-700">
                 Durée personnalisée (en minutes)
               </Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    paddingHorizontal: 14,
-                    paddingVertical: 10,
-                    fontSize: 14,
-                  },
-                ]}
+              <FormInput
+                label=""
                 placeholder="Ex: 90"
-                value={!DURATIONS.includes(duree) ? duree.toString() : ""}
+                value={
+                  !RDV_DURATION_OPTIONS.includes(
+                    duree as (typeof RDV_DURATION_OPTIONS)[number],
+                  )
+                    ? duree.toString()
+                    : ""
+                }
                 onChangeText={(value) => {
                   if (value === "") {
                     setDuree(30);
@@ -496,24 +385,25 @@ export function RdvModal({
                 }}
                 keyboardType="number-pad"
                 editable={!isLoading}
+                error={null}
               />
             </View>
-          </View>
+          </FormGroup>
 
           {/* Description */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
+          <FormGroup title="Description">
+            <FormInput
+              label=""
               value={description}
               onChangeText={setDescription}
               placeholder="Notes supplémentaires (optionnel)"
               multiline
               numberOfLines={4}
               editable={!isLoading}
+              error={null}
             />
-          </View>
-        </View>
+          </FormGroup>
+        </Form>
       </ScrollView>
     </Modal>
   );

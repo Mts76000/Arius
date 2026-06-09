@@ -1,7 +1,6 @@
 import React, { useMemo } from "react";
 import {
   ActivityIndicator,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -11,35 +10,24 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/authStore";
-import { Colors } from "@/constants/theme";
 import { useMyRdvs } from "@/hooks/useRdvs";
+import { useContact } from "@/hooks/useContacts";
 import { useEntreprises } from "@/hooks/useEntreprises";
 import { AppButton } from "@/components/ui/AppButton";
+import { BtnPlus } from "@/components/ui/BtnPlus";
+import { getRdvStatusConfig } from "@/utils/rdvStatus";
 
 export default function HomeScreen() {
   const router = useRouter();
   const { user, isLoading } = useAuthStore();
-
-  const today = useMemo(() => new Date(), []);
-  const startDate = useMemo(() => {
-    const date = new Date(today);
-    date.setHours(0, 0, 0, 0);
-    return date;
-  }, [today]);
-  const endDate = useMemo(() => {
-    const date = new Date(today);
-    date.setDate(date.getDate() + 7);
-    date.setHours(23, 59, 59, 999);
-    return date;
-  }, [today]);
+  const nowIso = useMemo(() => new Date().toISOString(), []);
 
   const rdvFilters = useMemo(
     () => ({
-      de: startDate.toISOString(),
-      a: endDate.toISOString(),
-      limite: 10,
+      de: nowIso,
+      limite: 3,
     }),
-    [startDate, endDate],
+    [nowIso],
   );
 
   const {
@@ -47,40 +35,29 @@ export default function HomeScreen() {
     isLoading: isLoadingRdvs,
     refetch: refetchRdvs,
   } = useMyRdvs(rdvFilters);
+  const { data: allEntreprisesData } = useEntreprises();
 
-  const entrepriseFilters = useMemo(
-    () => ({ statut: "a_reactiver" as const, limite: 5 }),
-    [],
-  );
-  const {
-    data: reactiverData,
-    isLoading: isLoadingReactiver,
-    refetch: refetchReactiver,
-  } = useEntreprises(entrepriseFilters);
-
-  const refreshing = isLoadingRdvs || isLoadingReactiver;
-
-  const formattedDate = useMemo(() => {
-    return new Intl.DateTimeFormat("fr-FR", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(today);
-  }, [today]);
-
-  const greetingName = user?.prenom || user?.nom || "Utilisateur";
+  const refreshing = isLoadingRdvs;
 
   const rdvs = rdvsData?.rdvs || [];
   const upcomingRdvs = [...rdvs]
-    .filter((rdv) => new Date(rdv.date_prevue) >= new Date())
     .sort(
       (a, b) =>
         new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime(),
     )
     .slice(0, 3);
 
-  const aReactiver = reactiverData?.entreprises || [];
+  const firstRdvContactId = upcomingRdvs[0]?.contact_id || "";
+  const secondRdvContactId = upcomingRdvs[1]?.contact_id || "";
+  const thirdRdvContactId = upcomingRdvs[2]?.contact_id || "";
+
+  const { data: firstRdvContact } = useContact(firstRdvContactId);
+  const { data: secondRdvContact } = useContact(secondRdvContactId);
+  const { data: thirdRdvContact } = useContact(thirdRdvContactId);
+
+  const quickActionCardBase = "flex-1  rounded-3xl p-4 shadow-base gap-7 ";
+  const quickActionIconBase = "rounded-xl w-9 h-9 items-center justify-center";
+  const quickActionTextBase = "font-medium  leading-4";
 
   const formatShortDate = (value: string) => {
     return new Intl.DateTimeFormat("fr-FR", {
@@ -91,18 +68,36 @@ export default function HomeScreen() {
     }).format(new Date(value));
   };
 
+  const getEntrepriseNameById = (entrepriseId: string) => {
+    return (
+      allEntreprisesData?.entreprises.find((e) => e.id === entrepriseId)?.nom ||
+      "Entreprise inconnue"
+    );
+  };
+
+  const getContactDisplayName = (contactId?: string) => {
+    if (!contactId) return "Client non defini";
+
+    const contact = [firstRdvContact, secondRdvContact, thirdRdvContact].find(
+      (c) => c?.id === contactId,
+    );
+
+    if (!contact) return "Client non defini";
+
+    return `${contact.prenom || ""} ${contact.nom}`.trim();
+  };
+
   if (!user) {
     return (
-      <View style={styles.centered}>
+      <View>
         {isLoading ? (
-          <ActivityIndicator size="large" color={Colors.light.tint} />
+          <ActivityIndicator size="large" />
         ) : (
           <>
-            <Text style={styles.infoText}>Non connecté</Text>
+            <Text>Non connecté</Text>
             <AppButton
               title="Aller a la connexion"
               onPress={() => router.push("/login")}
-              style={styles.primaryButton}
             />
           </>
         )}
@@ -111,272 +106,186 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            refetchRdvs();
-            refetchReactiver();
-          }}
-          tintColor={Colors.light.tint}
-        />
-      }
-    >
-      <Text style={styles.dateText}>{formattedDate}</Text>
-      <Text style={styles.title}>Bonjour {greetingName} 👋</Text>
+    <View className="flex-1">
+      <ScrollView
+        className="pt-8"
+        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 180 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              refetchRdvs();
+            }}
+            className="text-primary"
+          />
+        }
+      >
+        <View className="flex flex-col gap-5">
+          <View>
+            <Text className="text-xl font-semibold">Actions rapides</Text>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Actions rapides</Text>
-      </View>
-      <View style={styles.quickActionsGrid}>
-        <TouchableOpacity
-          style={[styles.quickActionCard, styles.quickActionPrimary]}
-          onPress={() => router.push("/entreprises/create")}
-        >
-          <View style={styles.quickActionIcon}>
-            <Ionicons name="person-add" size={22} color="#2563eb" />
+            <View className="my-4 gap-3">
+              <View className="flex-row items-stretch gap-3">
+                <TouchableOpacity
+                  onPress={() => router.push("/entreprises/create")}
+                  className={`${quickActionCardBase} bg-white`}
+                >
+                  <View className={`${quickActionIconBase} bg-primary/30`}>
+                    <Ionicons
+                      name="person-add-outline"
+                      size={22}
+                      color="#2563eb"
+                    />
+                  </View>
+                  <Text className={quickActionTextBase} numberOfLines={2}>
+                    Nouvelle entreprise
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => router.push("/entreprises")}
+                  className={`${quickActionCardBase} bg-white`}
+                >
+                  <View className={`${quickActionIconBase} bg-primary/30`}>
+                    <Ionicons
+                      name="business-outline"
+                      size={22}
+                      color="#2563eb"
+                    />
+                  </View>
+                  <Text className={quickActionTextBase} numberOfLines={2}>
+                    Mes entreprises
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              <View className="flex-row items-stretch gap-3">
+                <TouchableOpacity
+                  onPress={() => router.push("/rdvs")}
+                  className={`${quickActionCardBase} bg-purpleLight`}
+                >
+                  <View className={`${quickActionIconBase} bg-purple/30`}>
+                    <Ionicons
+                      name="calendar-outline"
+                      size={22}
+                      color={"#A855F7"}
+                    />
+                  </View>
+                  <Text className={quickActionTextBase} numberOfLines={2}>
+                    Rendez-vous
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => router.push("/ca")}
+                  className={`${quickActionCardBase} bg-greenLight`}
+                >
+                  <View className={`${quickActionIconBase} bg-greenMedium`}>
+                    <Ionicons
+                      name="trending-up-outline"
+                      size={22}
+                      color="#34C759"
+                    />
+                  </View>
+                  <Text className={quickActionTextBase} numberOfLines={2}>
+                    Objectifs CA
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
-          <Text style={styles.quickActionText}>Nouvelle entreprise</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.quickActionCard}
-          onPress={() => router.push("/entreprises")}
-        >
-          <View style={styles.quickActionIcon}>
-            <Ionicons name="briefcase" size={22} color="#2563eb" />
-          </View>
-          <Text style={styles.quickActionText}>Toutes les entreprises</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.quickActionCard}
-          onPress={() => router.push("/rdvs")}
-        >
-          <View style={styles.quickActionIcon}>
-            <Ionicons name="calendar" size={22} color="#7c3aed" />
-          </View>
-          <Text style={styles.quickActionText}>Rendez-vous</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.quickActionCard}
-          onPress={() => router.push("/ca")}
-        >
-          <View style={styles.quickActionIcon}>
-            <Ionicons name="trending-up" size={22} color="#10b981" />
-          </View>
-          <Text style={styles.quickActionText}>Objectifs CA</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>À surveiller</Text>
-      </View>
-      <View style={styles.infoCard}>
-        <View style={styles.infoCardHeader}>
-          <Text style={styles.infoCardTitle}>Prochains RDV (7 jours)</Text>
-          {isLoadingRdvs && <ActivityIndicator size="small" />}
-        </View>
-        {upcomingRdvs.length === 0 ? (
-          <Text style={styles.emptyText}>Aucun RDV planifié</Text>
-        ) : (
-          upcomingRdvs.map((rdv) => (
-            <View key={rdv._id} style={styles.listItem}>
-              <View style={styles.listItemMain}>
-                <Text style={styles.listItemTitle}>{rdv.titre}</Text>
-                <Text style={styles.listItemSubtitle}>
-                  {formatShortDate(rdv.date_prevue)}
+          <View>
+            <View className="flex flex-row justify-between align-middle">
+              <View className="flex flex-row items-center gap-2">
+                <Ionicons name="time-outline" size={20} color="#007aff" />
+                <Text className="text-xl font-semibold">
+                  Rendez-vous à venir
                 </Text>
               </View>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{rdv.statut}</Text>
+              <View className="flex flex-row items-center  gap-2">
+                <Text
+                  className=" text-primary  "
+                  onPress={() => router.push("/rdvs")}
+                >
+                  Voir tous
+                </Text>
+                <Ionicons
+                  name="chevron-forward-outline"
+                  size={20}
+                  color="#007aff"
+                />
               </View>
+              {isLoadingRdvs && <ActivityIndicator size="small" />}
             </View>
-          ))
-        )}
-      </View>
+            {upcomingRdvs.length === 0 ? (
+              <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+                <Text className="text-lg font-bold text-slate-900">
+                  Aucun RDV planifié
+                </Text>
+                <Text className="mt-1 text-center text-sm text-slate-500">
+                  Les prochains rendez-vous apparaîtront ici.
+                </Text>
+              </View>
+            ) : (
+              upcomingRdvs.map((rdv) => {
+                const statusConfig = getRdvStatusConfig(rdv.statut);
 
-      <View style={styles.infoCard}>
-        <View style={styles.infoCardHeader}>
-          <Text style={styles.infoCardTitle}>Entreprises à réactiver</Text>
-          {isLoadingReactiver && <ActivityIndicator size="small" />}
+                return (
+                  <View
+                    className="bg-white rounded-3xl p-6 text mt-5 shadow-base"
+                    key={rdv._id}
+                  >
+                    <View className="flex flex-col gap-4">
+                      <View>
+                        <View className="flex flex-row justify-between items-center ">
+                          <Text className="font-semibold text-lg text-gray">
+                            {formatShortDate(rdv.date_prevue)}
+                          </Text>
+                          <View
+                            className={`${statusConfig.badgeBgClass} rounded-3xl px-3 py-2`}
+                            style={{
+                              backgroundColor: statusConfig.badgeBgColor,
+                            }}
+                          >
+                            <Text
+                              className={`${statusConfig.badgeTextClass} font-bold`}
+                              style={{ color: statusConfig.badgeTextColor }}
+                            >
+                              {statusConfig.label}
+                            </Text>
+                          </View>
+                        </View>
+                        <Text className="text-lg font-bold">{rdv.titre}</Text>
+                      </View>
+                      <View className="bg-grayLight h-[0.3px]"></View>
+                      <View className="flex flex-row gap-2 items-center ">
+                        <Ionicons
+                          name="business-outline"
+                          size={15}
+                          color="#4B5563"
+                        />
+                        <Text className="text-lg capitalize text-gray">
+                          {getEntrepriseNameById(rdv.entreprise_id)}
+                        </Text>
+                        <Text className="text-lg text-gray">-</Text>
+                        <Text className="text-lg capitalize text-gray">
+                          {getContactDisplayName(rdv.contact_id)}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                );
+              })
+            )}
+          </View>
         </View>
-        {aReactiver.length === 0 ? (
-          <Text style={styles.emptyText}>Rien à relancer pour l’instant</Text>
-        ) : (
-          aReactiver.slice(0, 3).map((entreprise) => (
-            <View key={entreprise.id} style={styles.listItem}>
-              <View style={styles.listItemMain}>
-                <Text style={styles.listItemTitle}>{entreprise.nom}</Text>
-                <Text style={styles.listItemSubtitle}>À réactiver</Text>
-              </View>
-              <Ionicons name="alert-circle" size={18} color="#f59e0b" />
-            </View>
-          ))
-        )}
-        <AppButton
-          title="Voir toutes les entreprises"
-          onPress={() => router.push("/entreprises")}
-          variant="link"
-          style={styles.linkButton}
-        />
-      </View>
-    </ScrollView>
+      </ScrollView>
+
+      <BtnPlus
+        formType="entreprise"
+        onOpenEntreprise={() => router.push("/entreprises/create")}
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  content: {
-    padding: 20,
-    paddingBottom: 32,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-    backgroundColor: Colors.light.background,
-  },
-  dateText: {
-    fontSize: 13,
-    color: Colors.light.muted,
-    textTransform: "capitalize",
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: "800",
-    marginBottom: 16,
-    color: Colors.light.text,
-  },
-  primaryButton: {
-    marginTop: 12,
-  },
-  infoText: {
-    fontSize: 18,
-    marginBottom: 16,
-    color: Colors.light.text,
-    textAlign: "center",
-  },
-  sectionHeader: {
-    marginTop: 16,
-    marginBottom: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: Colors.light.text,
-  },
-  quickActionsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  quickActionCard: {
-    width: "48%",
-    backgroundColor: Colors.light.card,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 2,
-  },
-  quickActionPrimary: {
-    borderColor: "#bfdbfe",
-    backgroundColor: "#eff6ff",
-  },
-  quickActionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: "rgba(37, 99, 235, 0.08)",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 10,
-  },
-  quickActionText: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: Colors.light.text,
-  },
-  infoCard: {
-    backgroundColor: Colors.light.card,
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    marginBottom: 16,
-  },
-  infoCardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  infoCardTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: Colors.light.text,
-  },
-  listItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.light.border,
-  },
-  listItemMain: {
-    flex: 1,
-    marginRight: 8,
-  },
-  listItemTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: Colors.light.text,
-  },
-  listItemSubtitle: {
-    fontSize: 12,
-    color: Colors.light.muted,
-    marginTop: 2,
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-    backgroundColor: "#ede9fe",
-  },
-  badgeText: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#7c3aed",
-    textTransform: "capitalize",
-  },
-  emptyText: {
-    fontSize: 13,
-    color: Colors.light.muted,
-    paddingVertical: 8,
-  },
-  linkButton: {
-    marginTop: 12,
-    alignSelf: "flex-start",
-  },
-  linkButton: {
-    marginTop: 12,
-    alignSelf: "flex-start",
-  },
-});

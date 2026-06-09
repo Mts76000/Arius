@@ -2,21 +2,20 @@ import React, { useState, useRef } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
-  TextInput,
   TouchableOpacity,
-  ActivityIndicator,
-  Image,
   Alert,
   Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { Ionicons } from "@expo/vector-icons";
 import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
 import type { CreateEntrepriseInput } from "@/services/entreprises";
 import { useAuthStore } from "@/store/authStore";
 import { AppButton } from "@/components/ui/AppButton";
+import { EntrepriseAvatar } from "@/components/ui/EntrepriseAvatar";
+import { FormInput } from "@/components/forms/FormInput";
+import { ChoiceChip, Form, FormGroup } from "@/components/forms/Form";
+import { ENTREPRISE_STATUS_OPTIONS } from "@/components/forms/formDefinitions";
 import Constants from "expo-constants";
 
 interface EntrepriseFormProps {
@@ -79,8 +78,7 @@ export function EntrepriseForm({
         const uri = result.assets[0].uri;
         await uploadImage(uri);
       }
-    } catch (error) {
-      console.error("pickImage error:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible de sélectionner l'image");
     }
   };
@@ -179,8 +177,9 @@ export function EntrepriseForm({
       });
 
       if (!uploadResponse.ok) {
-        const errorData = await uploadResponse.json().catch(() => ({}));
-        console.error("Upload response error:", errorData);
+        const errorData = await uploadResponse
+          .json()
+          .catch(() => ({ error: null }));
         throw new Error(
           errorData.error ||
             `Upload failed with status ${uploadResponse.status}`,
@@ -192,8 +191,7 @@ export function EntrepriseForm({
       // Stocker le chemin retourné (souvent relatif), on résout en absolu au rendu
       setFormData((prevData) => ({ ...prevData, logo: data.url }));
       Alert.alert("Succès", "Logo uploadé avec succès");
-    } catch (error) {
-      console.error("Upload error:", error);
+    } catch {
       Alert.alert("Erreur", "Impossible d'uploader l'image");
     } finally {
       setUploading(false);
@@ -214,330 +212,154 @@ export function EntrepriseForm({
     await onSubmit(formData);
   };
 
+  const bottomSpacing = Platform.OS === "web" ? 32 : 170;
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Nom de l&apos;entreprise *</Text>
-        <TextInput
-          style={[styles.input, formErrors.nom && styles.inputError]}
-          placeholder="Nom de l'entreprise"
-          placeholderTextColor="#9ca3af"
-          value={formData.nom ?? ""}
-          onChangeText={(t) => setFormData({ ...formData, nom: t ?? "" })}
-        />
-        {formErrors.nom && (
-          <Text style={styles.errorText}>{formErrors.nom}</Text>
-        )}
-      </View>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Statut</Text>
-        <View style={styles.buttonGroup}>
-          {(["client", "prospect", "fournisseur", "a_reactiver"] as const).map(
-            (s) => (
-              <TouchableOpacity
-                key={s}
-                style={[
-                  styles.statut,
-                  formData.statut === s && styles.statutActive,
-                ]}
-                onPress={() => setFormData({ ...formData, statut: s })}
-              >
-                <Text
-                  style={[
-                    styles.statutText,
-                    formData.statut === s && styles.statutTextActive,
-                  ]}
-                >
-                  {s === "a_reactiver" ? "À réactiver" : s}
-                </Text>
-              </TouchableOpacity>
-            ),
-          )}
-        </View>
-      </View>
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Adresse</Text>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Rue</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Numéro et nom de rue"
-            placeholderTextColor="#9ca3af"
-            value={formData.rue ?? ""}
-            onChangeText={(t) => setFormData({ ...formData, rue: t ?? "" })}
+    <ScrollView
+      className="flex-1 bg-gray-50"
+      contentContainerStyle={{ paddingBottom: bottomSpacing }}
+    >
+      <Form>
+        <FormGroup title="Nom de l'entreprise" required error={formErrors.nom}>
+          <FormInput
+            placeholder="Nom de l'entreprise"
+            label=""
+            value={formData.nom ?? ""}
+            onChangeText={(t) => setFormData({ ...formData, nom: t ?? "" })}
+            error={null}
           />
-        </View>
-        <View style={styles.row}>
-          <View style={[styles.formGroup, styles.flex1]}>
-            <Text style={styles.label}>Code Postal</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="75000"
-              placeholderTextColor="#9ca3af"
-              value={formData.code_postal ?? ""}
-              onChangeText={(t) =>
-                setFormData({ ...formData, code_postal: t ?? "" })
-              }
-            />
+        </FormGroup>
+
+        <FormGroup title="Statut">
+          <View className="flex-row flex-wrap justify-between gap-3">
+            {ENTREPRISE_STATUS_OPTIONS.map((statusOption) => (
+              <ChoiceChip
+                key={statusOption.value}
+                label={statusOption.label}
+                selected={formData.statut === statusOption.value}
+                onPress={() =>
+                  setFormData({ ...formData, statut: statusOption.value })
+                }
+                className="w-[48%]"
+              />
+            ))}
           </View>
-          <View style={[styles.formGroup, styles.flex2]}>
-            <Text style={styles.label}>Ville</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ville"
-              placeholderTextColor="#9ca3af"
-              value={formData.ville ?? ""}
-              onChangeText={(t) => setFormData({ ...formData, ville: t ?? "" })}
+        </FormGroup>
+
+        <FormGroup title="Adresse">
+          <FormGroup title="Rue">
+            <FormInput
+              placeholder="Numéro et nom de rue"
+              label=""
+              value={formData.rue ?? ""}
+              onChangeText={(t) => setFormData({ ...formData, rue: t ?? "" })}
+              error={null}
             />
+          </FormGroup>
+
+          <View className="gap-3">
+            <FormGroup title="Code postal">
+              <FormInput
+                placeholder="75000"
+                label=""
+                value={formData.code_postal ?? ""}
+                onChangeText={(t) =>
+                  setFormData({ ...formData, code_postal: t ?? "" })
+                }
+                error={null}
+              />
+            </FormGroup>
+            <FormGroup title="Ville">
+              <FormInput
+                placeholder="Ville"
+                label=""
+                value={formData.ville ?? ""}
+                onChangeText={(t) =>
+                  setFormData({ ...formData, ville: t ?? "" })
+                }
+                error={null}
+              />
+            </FormGroup>
           </View>
-        </View>
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Pays</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="France"
-            placeholderTextColor="#9ca3af"
-            value={formData.pays ?? ""}
-            onChangeText={(t) => setFormData({ ...formData, pays: t ?? "" })}
+
+          <FormGroup title="Pays">
+            <FormInput
+              placeholder="France"
+              label=""
+              value={formData.pays ?? ""}
+              onChangeText={(t) => setFormData({ ...formData, pays: t ?? "" })}
+              error={null}
+            />
+          </FormGroup>
+        </FormGroup>
+
+        <FormGroup title="Description">
+          <FormInput
+            placeholder="Description de l'entreprise..."
+            label=""
+            value={formData.description ?? ""}
+            onChangeText={(t) =>
+              setFormData({ ...formData, description: t ?? "" })
+            }
+            multiline
+            numberOfLines={4}
+            error={null}
           />
-        </View>
-      </View>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Description</Text>
-        <TextInput
-          style={[styles.input, styles.textarea]}
-          placeholder="Description de l'entreprise..."
-          placeholderTextColor="#9ca3af"
-          value={formData.description ?? ""}
-          onChangeText={(t) =>
-            setFormData({ ...formData, description: t ?? "" })
-          }
-          multiline
-          numberOfLines={4}
-        />
-      </View>
-      <View style={styles.formGroup}>
-        <Text style={styles.label}>Logo</Text>
-        <View style={styles.logoContainer}>
-          {formData.logo && (
-            <Image
-              source={{
-                uri: formData.logo.startsWith("http")
-                  ? formData.logo
-                  : `${baseURL}${formData.logo}`,
-              }}
-              style={styles.logoPreview}
-            />
-          )}
-          <View style={styles.logoButtons}>
-            <TouchableOpacity
-              style={styles.logoBtn}
-              onPress={pickImage}
-              disabled={uploading}
-            >
-              <Ionicons name="image" size={20} color="#2563eb" />
-              <Text style={styles.logoBtnText}>Galerie</Text>
-            </TouchableOpacity>
+        </FormGroup>
+
+        <FormGroup title="Logo">
+          <View className="rounded-2xl border border-gray-200 bg-white p-4">
+            <View className="flex-row items-center gap-4">
+              <EntrepriseAvatar
+                name={formData.nom}
+                logo={formData.logo}
+                size={84}
+                rounded="xl"
+              />
+              <View className="flex-1 gap-2">
+                <View className="flex-row items-center gap-3 pt-1">
+                  <TouchableOpacity onPress={pickImage} disabled={uploading}>
+                    <View className="rounded-2xl border border-primary px-4 py-3 self-start">
+                      <Text className="text-primary font-semibold">
+                        {uploading ? "Upload..." : "Galerie"}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                  {formData.logo && (
+                    <TouchableOpacity
+                      onPress={() => setFormData({ ...formData, logo: "" })}
+                      className="rounded-2xl border border-red-200 px-4 py-3"
+                    >
+                      <Text className="text-red-600 font-semibold">Retirer</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </View>
+            </View>
           </View>
-          {formData.logo && (
-            <TouchableOpacity
-              style={styles.removeLogo}
-              onPress={() => setFormData({ ...formData, logo: "" })}
-            >
-              <Ionicons name="close" size={18} color="#dc2626" />
-            </TouchableOpacity>
-          )}
+        </FormGroup>
+        <View className="flex-row gap-3">
+          <View className="flex-1">
+            <AppButton title="Annuler" onPress={onCancel} variant="secondary" />
+          </View>
+          <View className="flex-1">
+            <AppButton
+              title={isLoading ? "En cours..." : submitLabel}
+              onPress={handleSubmit}
+              isLoading={isLoading}
+            />
+          </View>
         </View>
-      </View>
-      <View style={styles.actions}>
-        <AppButton
-          title="Annuler"
-          onPress={onCancel}
-          variant="secondary"
-          style={styles.cancelBtn}
-        />
-        <AppButton
-          title={isLoading ? "En cours..." : submitLabel}
-          onPress={handleSubmit}
-          isLoading={isLoading}
-          style={styles.submitBtn}
-        />
-      </View>
+      </Form>
       {Platform.OS === "web" && (
         <input
           key="file-input"
           ref={fileInputRef as any}
           type="file"
           accept="image/*"
-          style={{ display: "none" }}
           onChange={handleWebFileSelect as any}
         />
       )}
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f9fafb" },
-  content: { padding: 24, paddingBottom: 40 },
-  formGroup: { marginBottom: 20 },
-  label: {
-    color: "#111827",
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  input: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 14,
-    color: "#1f2937",
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    fontSize: 16,
-  },
-  textarea: {
-    textAlignVertical: "top",
-    minHeight: 100,
-  },
-  buttonGroup: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-  },
-  statut: {
-    flex: 1,
-    minWidth: "47%",
-    paddingVertical: 14,
-    borderRadius: 10,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e5e7eb",
-  },
-  statutActive: {
-    backgroundColor: "#2563eb",
-    borderColor: "#2563eb",
-  },
-  statutText: {
-    color: "#6b7280",
-    fontSize: 14,
-    fontWeight: "700",
-    textTransform: "capitalize",
-  },
-  statutTextActive: { color: "#fff" },
-  section: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 16,
-  },
-  row: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  flex1: { flex: 1 },
-  flex2: { flex: 2 },
-  actions: {
-    flexDirection: "row",
-    gap: 12,
-    marginTop: 32,
-  },
-  cancelBtn: {
-    flex: 1,
-    paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: "#ffffff",
-    alignItems: "center",
-    borderWidth: 2,
-    borderColor: "#e5e7eb",
-  },
-  cancelText: {
-    color: "#6b7280",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  submitBtn: {
-    flex: 2,
-    paddingVertical: 16,
-    borderRadius: 12,
-    backgroundColor: "#2563eb",
-    alignItems: "center",
-  },
-  inputError: {
-    borderColor: "#ef4444",
-    borderWidth: 2,
-  },
-  errorText: {
-    color: "#ef4444",
-    fontSize: 13,
-    marginTop: 6,
-    fontWeight: "500",
-  },
-  submitText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  hint: {
-    fontSize: 12,
-    color: "#6b7280",
-    marginTop: 4,
-    fontStyle: "italic",
-  },
-  logoContainer: {
-    backgroundColor: "#ffffff",
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#d1d5db",
-    alignItems: "center",
-    gap: 12,
-  },
-  logoPreview: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    backgroundColor: "#f3f4f6",
-  },
-  logoButtons: {
-    flexDirection: "row",
-    gap: 12,
-    width: "100%",
-  },
-  logoBtn: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 12,
-    backgroundColor: "#f9fafb",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#e5e7eb",
-    gap: 8,
-  },
-  logoBtnText: {
-    color: "#2563eb",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  removeLogo: {
-    position: "absolute",
-    top: 12,
-    right: 12,
-    backgroundColor: "#fff",
-    borderRadius: 50,
-    padding: 4,
-    borderWidth: 1,
-    borderColor: "#fee2e2",
-  },
-});

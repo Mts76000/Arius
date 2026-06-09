@@ -5,10 +5,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
+  ScrollView,
 } from "react-native";
 import { Note, NoteType } from "@/services/notes";
 import { NoteCard } from "@/components/cards/NoteCard";
-import { AppButton } from "@/components/ui/AppButton";
 
 interface NotesTabProps {
   notes: Note[] | undefined;
@@ -33,6 +33,16 @@ export const NotesTab: React.FC<NotesTabProps> = ({
   onEditNote,
   onDeleteNote,
 }) => {
+  const noteFilters: { value: NoteType | "all"; label: string }[] = [
+    { value: "all", label: "Tout" },
+    { value: "info", label: "Info" },
+    { value: "appel", label: "Appels" },
+    { value: "reunion", label: "Réunions" },
+    { value: "email", label: "Emails" },
+    { value: "autre", label: "Autre" },
+  ];
+
+  const hasSearchQuery = noteSearchQuery.trim().length > 0;
   const filteredNotes = notes
     ?.filter((note) => noteTypeFilter === "all" || note.type === noteTypeFilter)
     .filter((note) => {
@@ -65,163 +75,83 @@ export const NotesTab: React.FC<NotesTabProps> = ({
     });
 
   return (
-    <View
-      style={{
-        backgroundColor: "#ffffff",
-        paddingHorizontal: 16,
-        paddingTop: 16,
-        paddingBottom: 24,
-      }}
-    >
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <Text style={{ fontSize: 20, fontWeight: "800", color: "#0f172a" }}>
-          Notes
-        </Text>
-        <AppButton title="+ Nouvelle note" onPress={onAddNote} size="sm" />
+    <View className="p-5">
+      <View className="flex flex-row justify-between pt-5">
+        <Text className="text-lg font-bold">Notes</Text>
+        <TouchableOpacity onPress={onAddNote}>
+          <Text className="text-primary font-semibold text-lg">+ Ajouter</Text>
+        </TouchableOpacity>
       </View>
 
-      <View
-        style={{
-          marginBottom: 16,
-          paddingBottom: 12,
-          borderBottomWidth: 1,
-          borderBottomColor: "#e5e7eb",
-        }}
-      >
-        <View
-          style={{
-            backgroundColor: "#f1f5f9",
-            borderRadius: 10,
-            paddingHorizontal: 12,
-            paddingVertical: 8,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <Text style={{ fontSize: 16, color: "#64748b" }}>🔍</Text>
+      {(notes?.length ?? 0) > 0 && (
+        <View className="mt-4 rounded-xl border border-slate-200 bg-white px-3">
           <TextInput
-            placeholder="Rechercher par titre, date..."
+            placeholder="Rechercher une note..."
             placeholderTextColor="#94a3b8"
             value={noteSearchQuery}
             onChangeText={onSearchChange}
-            style={{ flex: 1, fontSize: 14, color: "#0f172a", padding: 0 }}
+            className="py-3 text-slate-900"
           />
         </View>
-      </View>
+      )}
 
-      <View
-        style={{
-          flexDirection: "row",
-          gap: 8,
-          marginBottom: 16,
-          flexWrap: "wrap",
-        }}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        className="mt-3"
+        contentContainerStyle={{ gap: 8, paddingEnd: 16 }}
       >
-        {[
-          { value: "all", label: "Tout" },
-          { value: "info", label: "Info" },
-          { value: "appel", label: "Appels" },
-          { value: "reunion", label: "Réunions" },
-          { value: "email", label: "Emails" },
-          { value: "autre", label: "Autre" },
-        ].map((filter) => (
+        {noteFilters.map((filter) => (
           <TouchableOpacity
             key={filter.value}
-            onPress={() => onTypeFilterChange(filter.value as any)}
-            style={{
-              paddingHorizontal: 14,
-              paddingVertical: 8,
-              borderRadius: 8,
-              backgroundColor:
-                noteTypeFilter === filter.value ? "#0ea5e9" : "#f1f5f9",
-            }}
+            onPress={() => onTypeFilterChange(filter.value)}
+            className={`rounded-full border px-4 py-2 ${noteTypeFilter === filter.value ? "border-primary bg-primary/15" : "border-slate-200 bg-white"}`}
           >
             <Text
-              style={{
-                fontWeight: "600",
-                fontSize: 13,
-                color: noteTypeFilter === filter.value ? "#ffffff" : "#64748b",
-              }}
+              className={`text-sm font-semibold whitespace-nowrap ${noteTypeFilter === filter.value ? "text-primary" : "text-slate-600"}`}
             >
               {filter.label}
             </Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
-      {notesLoading ? (
-        <ActivityIndicator
-          size="small"
-          color="#0ea5e9"
-          style={{ marginTop: 32 }}
-        />
-      ) : filteredNotes && filteredNotes.length > 0 ? (
-        <View style={{ gap: 12 }}>
-          {filteredNotes.map((note) => (
-            <NoteCard
-              key={note._id}
-              note={note}
-              onEdit={() => onEditNote(note)}
-              onDelete={() => onDeleteNote(note._id)}
-            />
-          ))}
-        </View>
-      ) : (
-        <View
-          style={{
-            backgroundColor: "#f8fafc",
-            borderColor: "#e2e8f0",
-            borderWidth: 1,
-            borderRadius: 12,
-            padding: 24,
-            alignItems: "center",
-            marginTop: 32,
-          }}
-        >
-          <Text style={{ fontSize: 48, marginBottom: 12 }}>📝</Text>
-          <Text
-            style={{
-              color: "#0f172a",
-              fontWeight: "700",
-              fontSize: 16,
-              marginBottom: 6,
-            }}
-          >
-            Aucune note pour l'instant
-          </Text>
-          <Text
-            style={{
-              color: "#64748b",
-              fontSize: 14,
-              marginBottom: 16,
-              textAlign: "center",
-            }}
-          >
-            Commence à documenter tes interactions avec ce client
-          </Text>
-          <TouchableOpacity
-            onPress={onAddNote}
-            style={{
-              backgroundColor: "#0ea5e9",
-              paddingHorizontal: 16,
-              paddingVertical: 10,
-              borderRadius: 10,
-            }}
-          >
-            <Text style={{ color: "#ffffff", fontWeight: "700" }}>
-              + Ajouter une note
+      <View className="mt-5">
+        {notesLoading ? (
+          <View className="bg-white rounded-3xl p-5 flex-col gap-4">
+            <ActivityIndicator size="small" color="#0ea5e9" />
+          </View>
+        ) : filteredNotes && filteredNotes.length > 0 ? (
+          <View className="bg-white rounded-3xl p-5 flex-col gap-4">
+            {filteredNotes.map((note) => (
+              <NoteCard
+                key={note._id}
+                note={note}
+                onEdit={() => onEditNote(note)}
+                onDelete={() => onDeleteNote(note._id)}
+              />
+            ))}
+          </View>
+        ) : hasSearchQuery ? (
+          <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+            <Text className="text-lg font-bold text-slate-900">
+              Aucune note trouvée
             </Text>
-          </TouchableOpacity>
-        </View>
-      )}
+            <Text className="mt-1 text-center text-sm text-slate-500">
+              Essayez un autre mot-clé ou un autre filtre.
+            </Text>
+          </View>
+        ) : (
+          <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+            <Text className="text-lg font-bold text-slate-900">
+              Aucune note
+            </Text>
+            <Text className="mt-1 text-center text-sm text-slate-500">
+              Ajoutez une première note pour conserver le suivi commercial.
+            </Text>
+          </View>
+        )}
+      </View>
     </View>
   );
 };

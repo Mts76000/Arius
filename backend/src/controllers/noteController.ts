@@ -3,7 +3,7 @@ import * as NoteModel from "../models/note.js";
 import { z } from "zod";
 
 const CreateNoteSchema = z.object({
-  entreprise_id: z.string().uuid(),
+  entreprise_id: z.string().min(1),
   contenu: z.string().min(1),
   type: z.enum(["appel", "reunion", "email", "info", "autre"]),
   tags: z.array(z.string()).optional(),
@@ -17,6 +17,49 @@ const UpdateNoteSchema = z.object({
   tags: z.array(z.string()).optional(),
   est_template: z.boolean().optional(),
   nom_template: z.string().optional().nullable(),
+});
+
+const normalizeNoteType = (value: unknown) => {
+  if (typeof value !== "string") return value;
+
+  const normalized = value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  const map: Record<string, string> = {
+    appel: "appel",
+    reunion: "reunion",
+    email: "email",
+    info: "info",
+    autre: "autre",
+  };
+
+  return map[normalized] || value;
+};
+
+const normalizeCreateNotePayload = (body: any) => ({
+  entreprise_id:
+    typeof body?.entreprise_id === "string"
+      ? body.entreprise_id
+      : typeof body?.entrepriseId === "string"
+        ? body.entrepriseId
+        : "",
+  contenu: typeof body?.contenu === "string" ? body.contenu.trim() : "",
+  type: normalizeNoteType(body?.type),
+  tags: Array.isArray(body?.tags) ? body.tags : undefined,
+  est_template:
+    typeof body?.est_template === "boolean"
+      ? body.est_template
+      : typeof body?.estTemplate === "boolean"
+        ? body.estTemplate
+        : undefined,
+  nom_template:
+    typeof body?.nom_template === "string" || body?.nom_template === null
+      ? body.nom_template
+      : typeof body?.nomTemplate === "string" || body?.nomTemplate === null
+        ? body.nomTemplate
+        : undefined,
 });
 
 export async function listByEntreprise(req: Request, res: Response) {
@@ -69,9 +112,14 @@ export async function create(req: Request, res: Response) {
     const userId = (req as any).userId as string;
     if (!userId) return res.status(401).json({ error: "unauthorized" });
 
-    const parsed = CreateNoteSchema.safeParse(req.body);
+    const parsed = CreateNoteSchema.safeParse(
+      normalizeCreateNotePayload(req.body),
+    );
     if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.errors });
+      return res.status(400).json({
+        error: parsed.error.errors,
+        message: "Payload note invalide",
+      });
     }
 
     const note = await NoteModel.createNote(userId, parsed.data);

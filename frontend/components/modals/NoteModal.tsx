@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from "react";
 import {
+  Alert,
   Modal,
   ScrollView,
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
 import { Note, NoteType, CreateNoteInput } from "@/services/notes";
-import { ValidationRules, FormErrors } from "@/utils/validation";
-import { styles } from "@/styles/entrepriseDetailStyles";
-import { AppButton } from "@/components/ui/AppButton";
+import { FormErrors } from "@/utils/validation";
+import { FormInput } from "@/components/forms/FormInput";
+import {
+  CheckboxRow,
+  ChoiceChip,
+  FormHeader,
+  FormSection,
+} from "@/components/forms/Form";
+import {
+  getFormModalPresentationStyle,
+  NOTE_TYPE_OPTIONS,
+} from "@/components/forms/formDefinitions";
 
 interface NoteModalProps {
   visible: boolean;
@@ -23,16 +31,6 @@ interface NoteModalProps {
   onClose: () => void;
   isLoading?: boolean;
 }
-
-const NOTE_TYPES: NoteType[] = ["appel", "reunion", "email", "info", "autre"];
-
-const NOTE_TYPE_LABELS: Record<NoteType, string> = {
-  appel: "Appel",
-  reunion: "Réunion",
-  email: "Email",
-  info: "Info",
-  autre: "Autre",
-};
 
 export function NoteModal({
   visible,
@@ -79,6 +77,10 @@ export function NoteModal({
     onTypeChange?.(value);
   };
 
+  const getNoteTypeLabel = (noteType: NoteType) =>
+    NOTE_TYPE_OPTIONS.find((option) => option.value === noteType)?.label ||
+    noteType;
+
   const handleSubmit = async () => {
     const newErrors: FormErrors = {};
 
@@ -87,7 +89,7 @@ export function NoteModal({
     }
 
     if (isTemplate && !templateName.trim()) {
-      newErrors.nom_template = "Nom du template requis";
+      newErrors.nom_template = "Nom du modèle requis";
     }
 
     setErrors(newErrors);
@@ -107,8 +109,8 @@ export function NoteModal({
     try {
       await onSubmit(data);
       setErrors({});
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
+    } catch {
+      Alert.alert("Erreur", "Impossible de sauvegarder la note");
     }
   };
 
@@ -116,136 +118,77 @@ export function NoteModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle={getFormModalPresentationStyle("note")}
       onRequestClose={onClose}
     >
-      <ScrollView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <AppButton
-            title="Annuler"
-            onPress={onClose}
-            variant="link"
-            disabled={isLoading}
-          />
-          <Text style={styles.modalTitle}>
-            {note ? "Modifier note" : "Nouvelle note"}
-          </Text>
-          <AppButton
-            title={isLoading ? "..." : "Enregistrer"}
-            onPress={handleSubmit}
-            size="sm"
-            disabled={isLoading}
-          />
-        </View>
+      <ScrollView
+        className="flex-1 bg-gray-50"
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <FormHeader
+          title={note ? "Modifier note" : "Nouvelle note"}
+          onCancel={onClose}
+          onSave={handleSubmit}
+          isSaving={isLoading}
+          cancelDisabled={isLoading}
+          saveDisabled={isLoading}
+        />
 
-        <View style={styles.modalForm}>
+        <FormSection>
           {/* Type Selector */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Type</Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-              {NOTE_TYPES.map((t) => (
-                <TouchableOpacity
-                  key={t}
-                  onPress={() => handleSelectType(t)}
-                  style={{
-                    paddingHorizontal: 14,
-                    paddingVertical: 8,
-                    borderRadius: 8,
-                    backgroundColor: type === t ? "#2563eb" : "#e5e7eb",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: type === t ? "#ffffff" : "#374151",
-                      fontWeight: "600",
-                      fontSize: 14,
-                    }}
-                  >
-                    {NOTE_TYPE_LABELS[t]}
-                  </Text>
-                </TouchableOpacity>
+          <View className="gap-2">
+            <Text className="text-sm font-semibold text-gray-800">Type</Text>
+            <View className="flex-row flex-wrap gap-2">
+              {NOTE_TYPE_OPTIONS.map((typeOption) => (
+                <ChoiceChip
+                  key={typeOption.value}
+                  label={typeOption.label}
+                  selected={type === typeOption.value}
+                  onPress={() => handleSelectType(typeOption.value)}
+                />
               ))}
             </View>
           </View>
 
-          {/* Templates suggestions */}
-          <View style={styles.formGroup}>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 6,
-              }}
-            >
-              <Text style={styles.label}>
-                💾 Templates pour {NOTE_TYPE_LABELS[type]}
+          {/* Suggestions de modèles */}
+          <View className="gap-2">
+            <View className="gap-1">
+              <Text className="text-sm font-semibold text-gray-800">
+                Modèles pour {getNoteTypeLabel(type)}
               </Text>
               {templates.length > 0 && (
-                <Text style={{ color: "#6b7280", fontSize: 12 }}>
-                  Tap pour insérer
+                <Text className="text-xs text-gray-500">
+                  Touchez un modèle pour l’insérer
                 </Text>
               )}
             </View>
             {templates.length > 0 ? (
-              <View style={{ gap: 10 }}>
+              <View className="gap-2">
                 {templates.map((template) => (
                   <View
                     key={template._id}
-                    style={{
-                      backgroundColor: "#f8fafc",
-                      borderColor: "#e2e8f0",
-                      borderWidth: 1,
-                      borderRadius: 12,
-                      padding: 12,
-                    }}
+                    className="rounded-2xl border border-gray-100 bg-gray-50 p-3"
                   >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        marginBottom: 6,
-                      }}
-                    >
-                      <View style={{ flex: 1, marginRight: 12 }}>
+                    <View className="flex-row items-start justify-between gap-3">
+                      <View className="flex-1 gap-1">
                         <Text
-                          style={{
-                            color: "#0f172a",
-                            fontSize: 14,
-                            fontWeight: "800",
-                          }}
                           numberOfLines={1}
+                          className="font-medium text-gray-800"
                         >
                           {template.nom_template || "Sans titre"}
                         </Text>
                         <Text
-                          style={{
-                            color: "#475569",
-                            fontSize: 12,
-                            marginTop: 2,
-                          }}
                           numberOfLines={2}
+                          className="text-gray-600 text-sm"
                         >
                           {template.contenu}
                         </Text>
                       </View>
                       <TouchableOpacity
                         onPress={() => handleApplyTemplate(template)}
-                        style={{
-                          backgroundColor: "#0ea5e9",
-                          paddingHorizontal: 12,
-                          paddingVertical: 8,
-                          borderRadius: 10,
-                        }}
+                        className="rounded-xl border border-primary/30 bg-primary/10 px-3 py-2"
                       >
-                        <Text
-                          style={{
-                            color: "#0b1120",
-                            fontWeight: "800",
-                            fontSize: 12,
-                          }}
-                        >
+                        <Text className="text-primary text-xs font-medium">
                           Insérer
                         </Text>
                       </TouchableOpacity>
@@ -254,87 +197,53 @@ export function NoteModal({
                 ))}
               </View>
             ) : (
-              <View
-                style={{
-                  backgroundColor: "#fef3c7",
-                  borderColor: "#fcd34d",
-                  borderWidth: 1,
-                  borderRadius: 10,
-                  padding: 12,
-                }}
-              >
-                <Text
-                  style={{ color: "#92400e", fontSize: 12, fontWeight: "600" }}
-                >
-                  💡 Aucun template pour ce type
+              <View className="rounded-2xl border border-dashed border-gray-200 bg-gray-50 p-4 gap-1">
+                <Text className="text-gray-700 font-medium">
+                  Aucun modèle pour ce type
                 </Text>
-                <Text style={{ color: "#b45309", fontSize: 11, marginTop: 4 }}>
-                  Coche "Enregistrer comme template" en bas pour créer un modèle
-                  réutilisable
+                <Text className="text-gray-500 text-sm">
+                  {'Cochez "Enregistrer comme modèle" en bas pour créer un texte réutilisable.'}
                 </Text>
               </View>
             )}
           </View>
 
           {/* Content */}
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Contenu</Text>
-            <TextInput
-              style={[
-                styles.input,
-                styles.textArea,
-                errors.contenu && { borderColor: "#ef4444" },
-              ]}
+          <View>
+            <FormInput
+              label="Contenu"
               value={contenu}
               onChangeText={setContenu}
               placeholder="Écrivez votre note..."
               multiline
               numberOfLines={6}
               editable={!isLoading}
+              error={errors.contenu}
             />
-            {errors.contenu && (
-              <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
-                {errors.contenu}
-              </Text>
-            )}
           </View>
 
-          {/* Template toggle */}
-          <TouchableOpacity
+          {/* Bascule modèle */}
+          <CheckboxRow
+            label="Enregistrer comme modèle"
+            checked={isTemplate}
             onPress={() => setIsTemplate(!isTemplate)}
-            style={styles.checkboxRow}
             disabled={isLoading}
-          >
-            <View
-              style={[styles.checkbox, isTemplate && styles.checkboxChecked]}
-            >
-              {isTemplate && <Text style={styles.checkboxCheck}>✓</Text>}
-            </View>
-            <Text style={styles.checkboxLabel}>Enregistrer comme template</Text>
-          </TouchableOpacity>
+          />
 
-          {/* Template name input */}
+          {/* Nom du modèle */}
           {isTemplate && (
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>Nom du template</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  errors.nom_template && { borderColor: "#ef4444" },
-                ]}
+            <View>
+              <FormInput
+                label="Nom du modèle"
                 placeholder="ex: Compte-rendu réunion standard"
                 value={templateName}
                 onChangeText={setTemplateName}
                 editable={!isLoading}
+                error={errors.nom_template}
               />
-              {errors.nom_template && (
-                <Text style={{ color: "#ef4444", fontSize: 12, marginTop: 4 }}>
-                  {errors.nom_template}
-                </Text>
-              )}
             </View>
           )}
-        </View>
+        </FormSection>
       </ScrollView>
     </Modal>
   );

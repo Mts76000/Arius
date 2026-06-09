@@ -11,9 +11,7 @@ const CreateRdvSchema = z.object({
   duree_minutes: z.number().int().min(1, "Durée invalide"),
   entreprise_id: z.string().min(1, "Entreprise requise"),
   contact_id: z.string().optional(),
-  statut: z
-    .enum(["planifie", "en_cours", "termine", "annule", "reporte"])
-    .optional(),
+  statut: z.enum(["planifie", "termine", "annule"]).optional(),
 });
 
 const UpdateRdvSchema = z.object({
@@ -21,9 +19,7 @@ const UpdateRdvSchema = z.object({
   description: z.string().optional(),
   date_prevue: z.string().datetime().optional(),
   duree_minutes: z.number().int().min(1, "Durée invalide").optional(),
-  statut: z
-    .enum(["planifie", "en_cours", "termine", "annule", "reporte"])
-    .optional(),
+  statut: z.enum(["planifie", "termine", "annule"]).optional(),
 });
 
 type CreateRdvInput = z.infer<typeof CreateRdvSchema>;
@@ -63,10 +59,41 @@ export async function listMyRdvs(req: Request, res: Response) {
     );
     const skip = (pageNum - 1) * limiteNum;
 
-    const rdvs = await Rdv.find(filter)
-      .sort({ date_prevue: -1 })
-      .skip(skip)
-      .limit(limiteNum);
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const rdvs = await Rdv.aggregate([
+      { $match: filter },
+      {
+        $addFields: {
+          __isUpcoming: { $gte: ["$date_prevue", startOfToday] },
+          __sortDate: { $toLong: "$date_prevue" },
+        },
+      },
+      {
+        $addFields: {
+          __sortBucket: { $cond: ["$__isUpcoming", 0, 1] },
+          __sortValue: {
+            $cond: [
+              "$__isUpcoming",
+              "$__sortDate",
+              { $multiply: ["$__sortDate", -1] },
+            ],
+          },
+        },
+      },
+      { $sort: { __sortBucket: 1, __sortValue: 1 } },
+      { $skip: skip },
+      { $limit: limiteNum },
+      {
+        $project: {
+          __isUpcoming: 0,
+          __sortDate: 0,
+          __sortBucket: 0,
+          __sortValue: 0,
+        },
+      },
+    ]);
 
     const total = await Rdv.countDocuments(filter);
 
@@ -83,17 +110,74 @@ export async function listMyRdvs(req: Request, res: Response) {
 export async function listByEntreprise(req: Request, res: Response) {
   try {
     const { id } = req.params;
+    const { de, a, page = "1", limite = "20" } = req.query;
     const userId = (req as any).userId;
 
     if (!userId) {
       return res.status(401).json({ error: "Non authentifié" });
     }
 
-    const rdvs = await Rdv.find({ entreprise_id: id, user_id: userId }).sort({
-      date_prevue: -1,
-    });
+    const filter: any = { entreprise_id: id, user_id: userId };
 
-    res.json({ rdvs });
+    if (de || a) {
+      filter.date_prevue = {};
+      if (de) {
+        filter.date_prevue.$gte = new Date(de as string);
+      }
+      if (a) {
+        filter.date_prevue.$lte = new Date(a as string);
+      }
+    }
+
+    const pageNum = Math.max(1, parseInt(page as string) || 1);
+    const limiteNum = Math.min(
+      100,
+      Math.max(1, parseInt(limite as string) || 20),
+    );
+    const skip = (pageNum - 1) * limiteNum;
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const rdvs = await Rdv.aggregate([
+      { $match: filter },
+      {
+        $addFields: {
+          __isUpcoming: { $gte: ["$date_prevue", startOfToday] },
+          __sortDate: { $toLong: "$date_prevue" },
+        },
+      },
+      {
+        $addFields: {
+          __sortBucket: { $cond: ["$__isUpcoming", 0, 1] },
+          __sortValue: {
+            $cond: [
+              "$__isUpcoming",
+              "$__sortDate",
+              { $multiply: ["$__sortDate", -1] },
+            ],
+          },
+        },
+      },
+      { $sort: { __sortBucket: 1, __sortValue: 1 } },
+      { $skip: skip },
+      { $limit: limiteNum },
+      {
+        $project: {
+          __isUpcoming: 0,
+          __sortDate: 0,
+          __sortBucket: 0,
+          __sortValue: 0,
+        },
+      },
+    ]);
+
+    const total = await Rdv.countDocuments(filter);
+
+    res.json({
+      rdvs,
+      pagination: { page: pageNum, limite: limiteNum, total },
+    });
   } catch (error) {
     console.error("Erreur listByEntreprise:", error);
     res.status(500).json({ error: "Erreur serveur" });
@@ -133,11 +217,6 @@ export async function create(req: Request, res: Response) {
     const validation = CreateRdvSchema.safeParse(req.body);
 
     if (!validation.success) {
-      console.log(
-        "Validation error:",
-        JSON.stringify(validation.error.errors, null, 2),
-      );
-      console.log("Request body:", req.body);
       return res.status(400).json({ errors: validation.error.errors });
     }
 

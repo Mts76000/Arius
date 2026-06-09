@@ -1,13 +1,15 @@
 import React from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { Note, NoteType } from "@/services/notes";
+import { ActionMenu } from "@/components/ui/ActionMenu";
 
 const NOTE_TYPE_ICONS: Record<NoteType, string> = {
-  appel: "📞",
-  reunion: "🤝",
-  email: "📧",
-  info: "ℹ️",
-  autre: "📝",
+  appel: "phone-portrait-outline",
+  reunion: "people-outline",
+  email: "mail-outline",
+  info: "information-circle-outline",
+  autre: "document-outline",
 };
 
 const NOTE_TYPE_LABELS: Record<NoteType, string> = {
@@ -20,21 +22,38 @@ const NOTE_TYPE_LABELS: Record<NoteType, string> = {
 
 const TYPE_COLORS: Record<
   NoteType,
-  { bg: string; text: string; border: string }
+  { bg: string; text: string; border: string; iconColor: string }
 > = {
-  appel: { bg: "#e0f2fe", text: "#0ea5e9", border: "#bae6fd" },
-  reunion: { bg: "#dcfce7", text: "#16a34a", border: "#bbf7d0" },
-  email: { bg: "#ede9fe", text: "#7c3aed", border: "#ddd6fe" },
-  info: { bg: "#f8fafc", text: "#0f172a", border: "#e2e8f0" },
-  autre: { bg: "#fff7ed", text: "#ea580c", border: "#fed7aa" },
-};
-
-const TAG_LABELS: Record<string, string> = {
-  relance: "Relance",
-  prioritaire: "Prioritaire",
-  risque: "À risque",
-  suivi: "Suivi",
-  decision: "Décision",
+  appel: {
+    bg: "#e0f2fe",
+    text: "#0ea5e9",
+    border: "#bae6fd",
+    iconColor: "#0ea5e9",
+  },
+  reunion: {
+    bg: "#dcfce7",
+    text: "#16a34a",
+    border: "#bbf7d0",
+    iconColor: "#16a34a",
+  },
+  email: {
+    bg: "#ede9fe",
+    text: "#7c3aed",
+    border: "#ddd6fe",
+    iconColor: "#7c3aed",
+  },
+  info: {
+    bg: "#f8fafc",
+    text: "#0f172a",
+    border: "#e2e8f0",
+    iconColor: "#0f172a",
+  },
+  autre: {
+    bg: "#fff7ed",
+    text: "#ea580c",
+    border: "#fed7aa",
+    iconColor: "#ea580c",
+  },
 };
 
 // Format date complète avec heure (ex: "27 jan 14:30")
@@ -70,153 +89,80 @@ function formatTimeAgo(date?: Date | string | null): string {
 
 interface NoteCardProps {
   note: Note;
-  onPress?: () => void;
   onDelete?: () => void;
   onEdit?: () => void;
 }
 
-export function NoteCard({ note, onPress, onDelete, onEdit }: NoteCardProps) {
+export function NoteCard({ note, onDelete, onEdit }: NoteCardProps) {
   const dateWithTime = formatDateWithTime(note.createdAt);
   const colors = TYPE_COLORS[note.type];
+  const timeAgo = formatTimeAgo(note.createdAt);
 
   return (
-    <Pressable
-      onPress={onPress}
-      className="mb-3"
-      style={{
-        backgroundColor: "#ffffff",
-        borderRadius: 16,
-        overflow: "hidden",
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 6 },
-        borderColor: "#e5e7eb",
-        borderWidth: 1,
-      }}
-    >
-      <View style={{ flexDirection: "row" }}>
-        <View
-          style={{
-            width: 6,
-            backgroundColor: colors.text,
-            opacity: 0.9,
-          }}
-        />
-        <View style={{ flex: 1, padding: 14 }}>
+    <View className="rounded-2xl border border-slate-100 bg-slate-50 p-4 flex-col gap-3">
+      {/* Header avec type et template badge */}
+      <View className="flex-row items-start justify-between gap-3">
+        <View className="flex-1 flex-row items-center gap-3">
+          {/* Type icon avec couleur */}
           <View
+            className="h-10 w-10 items-center justify-center rounded-full border"
             style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 10,
+              backgroundColor: colors.bg,
+              borderColor: colors.border,
             }}
           >
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 10 }}
-            >
-              <View
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 12,
-                  backgroundColor: colors.bg,
-                  borderColor: colors.border,
-                  borderWidth: 1,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text style={{ fontSize: 20 }}>
-                  {NOTE_TYPE_ICONS[note.type]}
-                </Text>
-              </View>
-              <View>
-                <Text
-                  style={{ color: "#0f172a", fontWeight: "800", fontSize: 15 }}
-                >
-                  {NOTE_TYPE_LABELS[note.type]}
-                </Text>
-                <Text
-                  style={{ color: "#6b7280", fontSize: 12, fontWeight: "500" }}
-                >
-                  {dateWithTime}
-                </Text>
-              </View>
-            </View>
-            {note.est_template && (
-              <View
-                style={{
-                  backgroundColor: "#eef2ff",
-                  borderColor: "#c7d2fe",
-                  borderWidth: 1,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  borderRadius: 10,
-                }}
-              >
-                <Text
-                  style={{ color: "#4338ca", fontWeight: "700", fontSize: 12 }}
-                >
-                  Template
-                </Text>
-              </View>
-            )}
+            <Ionicons
+              name={NOTE_TYPE_ICONS[note.type] as any}
+              size={18}
+              color={colors.iconColor}
+            />
           </View>
 
-          <Text
-            style={{
-              color: "#111827",
-              fontSize: 15,
-              lineHeight: 22,
-              marginBottom: 10,
-            }}
-          >
-            {note.contenu}
-          </Text>
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "flex-end",
-              gap: 8,
-              paddingTop: 10,
-              borderTopWidth: 1,
-              borderTopColor: "#e5e7eb",
-            }}
-          >
-            <Pressable
-              onPress={onEdit}
-              style={{
-                backgroundColor: "#e0f2fe",
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 10,
-              }}
-            >
-              <Text
-                style={{ color: "#0369a1", fontWeight: "700", fontSize: 13 }}
-              >
-                Éditer
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={onDelete}
-              style={{
-                backgroundColor: "#fee2e2",
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderRadius: 10,
-              }}
-            >
-              <Text
-                style={{ color: "#b91c1c", fontWeight: "700", fontSize: 13 }}
-              >
-                Supprimer
-              </Text>
-            </Pressable>
+          {/* Type et date */}
+          <View className="flex-1 gap-1">
+            <Text className="text-sm font-bold text-slate-900">
+              {NOTE_TYPE_LABELS[note.type]}
+            </Text>
+            <Text className="text-xs text-slate-500">
+              {timeAgo || dateWithTime}
+            </Text>
           </View>
         </View>
+
+        <ActionMenu
+          items={[
+            {
+              key: "edit",
+              label: "Éditer",
+              icon: "pencil-outline",
+              iconColor: "#3B82F6",
+              onPress: () => onEdit?.(),
+            },
+            {
+              key: "delete",
+              label: "Supprimer",
+              icon: "trash-outline",
+              iconColor: "#EF4444",
+              textClassName: "text-red-500",
+              onPress: () => onDelete?.(),
+            },
+          ]}
+        />
+
+        {/* Template badge */}
+        {note.est_template && (
+          <View className="rounded-full bg-amber-100 px-2.5 py-1">
+            <Text className="text-xs font-semibold text-amber-700">
+              Modèle
+            </Text>
+          </View>
+        )}
       </View>
-    </Pressable>
+
+      {/* Contenu */}
+      <Text className="text-sm text-slate-700 leading-5" numberOfLines={3}>
+        {note.contenu}
+      </Text>
+    </View>
   );
 }

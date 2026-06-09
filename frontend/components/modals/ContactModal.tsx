@@ -3,14 +3,15 @@ import {
   Modal,
   ScrollView,
   View,
-  Text,
-  TextInput,
-  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  useWindowDimensions,
 } from "react-native";
 import { CreateContactInput } from "@/services/contacts";
 import { FormErrors } from "@/utils/validation";
-import { styles } from "@/styles/entrepriseDetailStyles";
-import { AppButton } from "@/components/ui/AppButton";
+import { FormInput } from "@/components/forms/FormInput";
+import { CheckboxRow, FormHeader, FormSection } from "@/components/forms/Form";
+import { getFormModalPresentationStyle } from "@/components/forms/formDefinitions";
 
 type Props = {
   visible: boolean;
@@ -33,125 +34,106 @@ export function ContactModal({
   onChange,
   onTogglePrincipal,
 }: Props) {
+  const { height } = useWindowDimensions();
+
   return (
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      presentationStyle={getFormModalPresentationStyle("contact")}
       onRequestClose={onClose}
     >
-      <ScrollView style={styles.modalContainer}>
-        <View style={styles.modalHeader}>
-          <AppButton title="Annuler" onPress={onClose} variant="link" />
-          <Text style={styles.modalTitle}>
-            {isEditing ? "Modifier contact" : "Nouveau contact"}
-          </Text>
-          <AppButton title="Enregistrer" onPress={onSave} size="sm" />
-        </View>
+      <KeyboardAvoidingView
+        className="flex-1 bg-gray-50"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <ScrollView
+          className="flex-1"
+          keyboardShouldPersistTaps="handled"
+          contentInsetAdjustmentBehavior="automatic"
+          automaticallyAdjustKeyboardInsets
+          contentContainerStyle={{ paddingBottom: 24 }}
+        >
+          <FormHeader
+            title={isEditing ? "Modifier le contact" : "Nouveau contact"}
+            onCancel={onClose}
+            onSave={onSave}
+          />
 
-        <View style={styles.modalForm}>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Prénom</Text>
-            <TextInput
-              style={styles.input}
+          <FormSection>
+            <FormInput
+              label="Prénom"
               value={contactForm.prenom || ""}
               onChangeText={(text) => onChange("prenom", text)}
               placeholder="Jean"
+              error={null}
             />
-          </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>
-              Nom <Text style={styles.required}>*</Text>
-            </Text>
-            <TextInput
-              style={[styles.input, contactErrors.nom && styles.inputError]}
+            <FormInput
+              label="Nom"
               value={contactForm.nom}
               onChangeText={(text) => onChange("nom", text)}
               placeholder="Dupont"
+              error={contactErrors.nom}
             />
-            {contactErrors.nom && (
-              <Text style={styles.errorText}>{contactErrors.nom}</Text>
-            )}
-          </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Poste</Text>
-            <TextInput
-              style={styles.input}
+            <FormInput
+              label="Poste"
               value={contactForm.poste || ""}
               onChangeText={(text) => onChange("poste", text)}
               placeholder="Directeur commercial"
+              error={null}
             />
-          </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={[styles.input, contactErrors.email && styles.inputError]}
+            <FormInput
+              label="Email"
               value={contactForm.email || ""}
               onChangeText={(text) => onChange("email", text)}
               placeholder="jean.dupont@exemple.fr"
               keyboardType="email-address"
               autoCapitalize="none"
+              error={contactErrors.email}
             />
-            {contactErrors.email && (
-              <Text style={styles.errorText}>{contactErrors.email}</Text>
-            )}
-          </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Téléphone mobile</Text>
-            <TextInput
-              style={styles.input}
+            <FormInput
+              label="Téléphone mobile"
               value={contactForm.tel_mobile || ""}
               onChangeText={(text) => onChange("tel_mobile", text)}
               placeholder="06 12 34 56 78"
               keyboardType="phone-pad"
+              error={null}
             />
-          </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Téléphone direct</Text>
-            <TextInput
-              style={styles.input}
+            <FormInput
+              label="Téléphone direct"
               value={contactForm.tel_direct || ""}
               onChangeText={(text) => onChange("tel_direct", text)}
               placeholder="01 23 45 67 89"
               keyboardType="phone-pad"
+              error={null}
             />
-          </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>Commentaire</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
+            <FormInput
+              label="Commentaire"
               value={contactForm.commentaire || ""}
               onChangeText={(text) => onChange("commentaire", text)}
               placeholder="Notes..."
               multiline
               numberOfLines={4}
+              error={null}
             />
-          </View>
 
-          <TouchableOpacity
-            style={styles.checkboxRow}
-            onPress={onTogglePrincipal}
-          >
-            <View
-              style={[
-                styles.checkbox,
-                contactForm.contact_principal && styles.checkboxChecked,
-              ]}
-            >
-              {contactForm.contact_principal && (
-                <Text style={styles.checkboxCheck}>✓</Text>
-              )}
-            </View>
-            <Text style={styles.checkboxLabel}>Contact principal</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+            <CheckboxRow
+              label="Contact principal"
+              checked={!!contactForm.contact_principal}
+              onPress={onTogglePrincipal}
+            />
+          </FormSection>
+
+          {/* Espace tampon pour pouvoir scroller sous le footer de sheet/tab */}
+          <View style={{ height: Math.max(140, Math.round(height * 0.22)) }} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

@@ -1,16 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
   TouchableOpacity,
   ActivityIndicator,
-  StyleSheet,
   Alert,
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
-import { Colors } from "@/constants/theme";
+
 import {
   useCAEntreprise,
   useCreateCA,
@@ -20,7 +18,7 @@ import {
 import { CAModal } from "@/components/modals/CAModal";
 import { CAMensuel } from "@/services/ca";
 import { Entreprise } from "@/services/entreprises";
-import { AppButton } from "@/components/ui/AppButton";
+import { ActionMenu } from "@/components/ui/ActionMenu";
 
 const MOIS_LABELS = [
   "Janvier",
@@ -37,15 +35,24 @@ const MOIS_LABELS = [
   "Décembre",
 ];
 
+const formatEuro = (value: number) => {
+  return `${value.toLocaleString("fr-FR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} EUR`;
+};
+
 interface ChiffresTabProps {
   entreprise: Entreprise;
 }
 
 export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
   const currentDate = new Date();
+  const [selectedMois, setSelectedMois] = useState(currentDate.getMonth() + 1);
   const [selectedAnnee, setSelectedAnnee] = useState(currentDate.getFullYear());
   const [showCAModal, setShowCAModal] = useState(false);
   const [selectedCA, setSelectedCA] = useState<CAMensuel | null>(null);
+  const [showAnnuelle, setShowAnnuelle] = useState(false);
 
   const { data: stats, isLoading } = useCAEntreprise(
     entreprise.id,
@@ -55,12 +62,43 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
   const updateCAMutation = useUpdateCA();
   const deleteCAMutation = useDeleteCA();
 
-  const annees = [
-    currentDate.getFullYear() - 2,
-    currentDate.getFullYear() - 1,
-    currentDate.getFullYear(),
-    currentDate.getFullYear() + 1,
-  ];
+  // Filtrer les données par mois
+  const caMensuelFiltre =
+    stats?.ca_mensuel?.filter((ca) => ca.mois === selectedMois) || [];
+
+  // Calculer le CA par mois pour l'année
+  const caParMois = useMemo(() => {
+    return Array.from({ length: 12 }, (_, index) => {
+      const moisNum = index + 1;
+      const caMois =
+        stats?.ca_mensuel?.filter((ca) => ca.mois === moisNum) || [];
+      return caMois.reduce((sum, ca) => sum + ca.ca_ht, 0);
+    });
+  }, [stats?.ca_mensuel]);
+
+  // Calculer le total annuel
+  const totalAnnuel = useMemo(
+    () => caParMois.reduce((sum, value) => sum + value, 0),
+    [caParMois],
+  );
+
+  const handleMoisPrecedent = () => {
+    if (selectedMois === 1) {
+      setSelectedMois(12);
+      setSelectedAnnee((prev) => prev - 1);
+      return;
+    }
+    setSelectedMois((prev) => prev - 1);
+  };
+
+  const handleMoisSuivant = () => {
+    if (selectedMois === 12) {
+      setSelectedMois(1);
+      setSelectedAnnee((prev) => prev + 1);
+      return;
+    }
+    setSelectedMois((prev) => prev + 1);
+  };
 
   const handleAddCA = () => {
     setSelectedCA(null);
@@ -84,8 +122,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
           onPress: async () => {
             try {
               await deleteCAMutation.mutateAsync(ca.id);
-              Alert.alert("Succès", "CA supprimé");
-            } catch (error) {
+            } catch {
               Alert.alert("Erreur", "Impossible de supprimer le CA");
             }
           },
@@ -106,270 +143,222 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
           id: selectedCA.id,
           data: { ca_ht: data.ca_ht },
         });
-        Alert.alert("Succès", "CA mis à jour");
       } else {
         await createCAMutation.mutateAsync(data);
-        Alert.alert("Succès", "CA enregistré");
       }
       setShowCAModal(false);
       setSelectedCA(null);
-    } catch (error) {
+    } catch {
       Alert.alert("Erreur", "Impossible d'enregistrer le CA");
     }
   };
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.light.tint} />
+      <View className="flex-1 items-center justify-center">
+        <ActivityIndicator size="large" color="#0ea5e9" />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <AppButton
-          title="Ajouter du CA"
-          onPress={handleAddCA}
-          style={styles.addButton}
-        />
-
-        <View style={styles.yearSelector}>
-          <Picker
-            selectedValue={selectedAnnee}
-            onValueChange={(value) => setSelectedAnnee(value)}
-            style={styles.picker}
-          >
-            {annees.map((annee) => (
-              <Picker.Item key={annee} label={annee.toString()} value={annee} />
-            ))}
-          </Picker>
+    <ScrollView className="flex-1">
+      <View className="p-5 flex gap-5">
+        {/* Header */}
+        <View className="flex flex-row justify-between pt-5 pb-5">
+          <Text className="text-lg font-bold">CA</Text>
+          <TouchableOpacity onPress={handleAddCA}>
+            <Text className="text-primary font-semibold text-lg">
+              + Ajouter
+            </Text>
+          </TouchableOpacity>
         </View>
-      </View>
 
-      {/* KPIs */}
-      <View style={styles.kpisContainer}>
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiLabel}>CA total {selectedAnnee}</Text>
-          <Text style={styles.kpiValue}>
-            {(stats?.ca_total || 0).toLocaleString("fr-FR", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}{" "}
-            €
-          </Text>
-        </View>
-        <View style={styles.kpiCard}>
-          <Text style={styles.kpiLabel}>Moyenne mensuelle</Text>
-          <Text style={styles.kpiValue}>
-            {(stats?.moyenne_mensuelle || 0).toLocaleString("fr-FR", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}{" "}
-            €
-          </Text>
-        </View>
-      </View>
+        {/* Sélecteur de mois */}
+        <View className="bg-white rounded-3xl p-5 shadow-base">
+          <View className="flex-row items-center justify-between">
+            <TouchableOpacity
+              onPress={handleMoisPrecedent}
+              className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10"
+            >
+              <Ionicons name="chevron-back" size={20} color="#007aff" />
+            </TouchableOpacity>
 
-      {/* CA mensuel */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>CA mensuel</Text>
-
-        {stats?.ca_mensuel && stats.ca_mensuel.length > 0 ? (
-          <View style={styles.caList}>
-            {stats.ca_mensuel.map((ca) => (
-              <View key={ca.id} style={styles.caCard}>
-                <View style={styles.caInfo}>
-                  <Text style={styles.caMonth}>
-                    {MOIS_LABELS[ca.mois - 1]} {ca.annee}
-                  </Text>
-                  <Text style={styles.caAmount}>
-                    {ca.ca_ht.toLocaleString("fr-FR", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}{" "}
-                    €
-                  </Text>
-                </View>
-                <View style={styles.caActions}>
-                  <TouchableOpacity
-                    style={styles.actionIcon}
-                    onPress={() => handleEditCA(ca)}
-                  >
-                    <Ionicons
-                      name="pencil"
-                      size={20}
-                      color={Colors.light.tint}
-                    />
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.actionIcon}
-                    onPress={() => handleDeleteCA(ca)}
-                  >
-                    <Ionicons name="trash" size={20} color="#FF6B6B" />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
-
-            <View style={styles.totalCard}>
-              <Text style={styles.totalLabel}>Total {selectedAnnee}</Text>
-              <Text style={styles.totalAmount}>
-                {(stats?.ca_total || 0).toLocaleString("fr-FR", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}{" "}
-                €
+            <View className="items-center flex-1 px-2">
+              <Text className="text-2xl font-bold text-black">
+                {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
               </Text>
             </View>
-          </View>
-        ) : (
-          <Text style={styles.emptyText}>Aucun CA pour {selectedAnnee}</Text>
-        )}
-      </View>
 
-      <CAModal
-        visible={showCAModal}
-        onClose={() => {
-          setShowCAModal(false);
-          setSelectedCA(null);
-        }}
-        onSave={handleSaveCA}
-        entreprises={[entreprise]}
-        entrepriseIdInitial={entreprise.id}
-        moisInitial={selectedCA?.mois}
-        anneeInitiale={selectedCA?.annee || selectedAnnee}
-        caInitial={selectedCA?.ca_ht}
-        isEditing={!!selectedCA}
-      />
+            <TouchableOpacity
+              onPress={handleMoisSuivant}
+              className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10"
+            >
+              <Ionicons name="chevron-forward" size={20} color="#007aff" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* KPI Cards */}
+        <View className="flex-row gap-3 mb-5">
+          <View className="flex-1 rounded-2xl border border-slate-100 bg-white p-4">
+            <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+              CA Total
+            </Text>
+            <Text className="text-2xl font-bold text-primary">
+              {(stats?.ca_total || 0).toLocaleString("fr-FR", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
+              <Text className="text-base text-slate-400"> €</Text>
+            </Text>
+          </View>
+
+          <View className="flex-1 rounded-2xl border border-slate-100 bg-white p-4">
+            <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
+              Moy. Mois
+            </Text>
+            <Text className="text-2xl font-bold text-orange-500">
+              {(stats?.moyenne_mensuelle || 0).toLocaleString("fr-FR", {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+              })}
+              <Text className="text-base text-slate-400"> €</Text>
+            </Text>
+          </View>
+        </View>
+
+        {/* CA Mensuel */}
+        <View className="">
+          <View className="pb-3">
+            <Text className="text-lg font-bold">
+              CA Mensuel {selectedAnnee}
+            </Text>
+          </View>
+
+          {caMensuelFiltre.length > 0 ? (
+            <>
+              <View className="bg-white rounded-3xl p-5 flex-col gap-3 mb-4">
+                {caMensuelFiltre.map((ca) => (
+                  <View
+                    key={ca.id}
+                    className="flex-row items-center justify-between border-b border-slate-100 pb-3 last:border-b-0"
+                  >
+                    <View className="flex-1">
+                      <Text className="text-sm font-semibold text-slate-900">
+                        {MOIS_LABELS[ca.mois - 1]}
+                      </Text>
+                      <Text className="text-lg font-bold text-primary mt-1">
+                        {ca.ca_ht.toLocaleString("fr-FR", {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 0,
+                        })}{" "}
+                        €
+                      </Text>
+                    </View>
+
+                    <ActionMenu
+                      items={[
+                        {
+                          key: `edit-${ca.id}`,
+                          label: "Modifier",
+                          icon: "pencil-outline",
+                          iconColor: "#3B82F6",
+                          onPress: () => handleEditCA(ca),
+                        },
+                        {
+                          key: `delete-${ca.id}`,
+                          label: "Supprimer",
+                          icon: "trash-outline",
+                          iconColor: "#EF4444",
+                          textClassName: "text-red-500",
+                          onPress: () => handleDeleteCA(ca),
+                        },
+                      ]}
+                    />
+                  </View>
+                ))}
+              </View>
+
+              {/* Total */}
+            </>
+          ) : (
+            <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-4 items-center">
+              <Text className="text-lg font-bold text-slate-900">
+                Aucun CA
+              </Text>
+              <Text className="mt-1 text-center text-sm text-slate-500">
+                {"Ajoutez un montant pour suivre l'activité de cette entreprise."}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Vue annuelle */}
+        <View className="bg-white rounded-3xl p-5 shadow-base">
+          <TouchableOpacity
+            onPress={() => setShowAnnuelle((prev) => !prev)}
+            className="flex-row items-center justify-between"
+          >
+            <View className="flex-row items-center gap-3 flex-1">
+              <View className="h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                <Ionicons name="calendar-outline" size={18} color="#007aff" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-base font-semibold text-slate-900">
+                  Vue annuelle {selectedAnnee}
+                </Text>
+                <Text className="text-sm text-slate-500">
+                  Total: {formatEuro(totalAnnuel)}
+                </Text>
+              </View>
+            </View>
+            <Ionicons
+              name={showAnnuelle ? "chevron-up" : "chevron-down"}
+              size={22}
+              color="#0f172a"
+            />
+          </TouchableOpacity>
+
+          {showAnnuelle && (
+            <View className="mt-4 gap-2">
+              {MOIS_LABELS.map((mois, index) => (
+                <View
+                  key={mois}
+                  className={`flex-row items-center justify-between rounded-xl px-3 py-2 ${
+                    index + 1 === selectedMois
+                      ? "bg-primary/10 border border-primary/20"
+                      : "bg-slate-50"
+                  }`}
+                >
+                  <Text className="text-sm font-medium text-slate-700">
+                    {mois}
+                  </Text>
+                  <Text className="text-sm text-slate-900">
+                    {formatEuro(caParMois[index] || 0)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {/* Modal */}
+        <CAModal
+          visible={showCAModal}
+          onClose={() => {
+            setShowCAModal(false);
+            setSelectedCA(null);
+          }}
+          onSave={handleSaveCA}
+          entreprises={[entreprise]}
+          entrepriseIdInitial={entreprise.id}
+          moisInitial={selectedMois}
+          anneeInitiale={selectedAnnee}
+          caInitial={selectedCA?.ca_ht}
+          isEditing={!!selectedCA}
+        />
+      </View>
     </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.light.background,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 16,
-    gap: 12,
-  },
-  addButton: {
-    alignSelf: "flex-start",
-  },
-  yearSelector: {
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-    backgroundColor: Colors.light.card,
-    overflow: "hidden",
-    flex: 1,
-  },
-  picker: {
-    height: 50,
-    width: "100%",
-  },
-  kpisContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 16,
-    gap: 12,
-    marginBottom: 16,
-  },
-  kpiCard: {
-    flex: 1,
-    backgroundColor: Colors.light.card,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-  },
-  kpiLabel: {
-    fontSize: 12,
-    color: Colors.light.muted,
-    marginBottom: 4,
-  },
-  kpiValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.light.tint,
-  },
-  section: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.light.text,
-    marginBottom: 12,
-  },
-  caList: {
-    gap: 8,
-  },
-  caCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: Colors.light.card,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.light.border,
-  },
-  caInfo: {
-    flex: 1,
-  },
-  caMonth: {
-    fontSize: 14,
-    color: Colors.light.muted,
-    marginBottom: 4,
-  },
-  caAmount: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.light.text,
-  },
-  caActions: {
-    flexDirection: "row",
-    gap: 12,
-  },
-  actionIcon: {
-    padding: 4,
-  },
-  totalCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: Colors.light.tint,
-    padding: 16,
-    borderRadius: 12,
-    marginTop: 8,
-  },
-  totalLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  totalAmount: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  emptyText: {
-    textAlign: "center",
-    color: Colors.light.muted,
-    fontSize: 14,
-    padding: 20,
-  },
-});

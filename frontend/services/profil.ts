@@ -29,3 +29,10 @@ export async function changerMotdepasse(data: {
   const response = await api.post("/v1/utilisateurs/changer-motdepasse", data);
   return response.data;
 }
+
+export async function anonymiserCompte(data: {
+  motdepasse: string;
+}): Promise<{ message: string }> {
+  const response = await api.post("/v1/utilisateurs/anonymiser-compte", data);
+  return response.data;
+}

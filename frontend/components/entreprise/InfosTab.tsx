@@ -1,12 +1,12 @@
 import React from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
 import { Contact } from "@/services/contacts";
+import type { Entreprise } from "@/services/entreprises";
 import { ContactCard } from "@/components/cards/ContactCard";
-import { styles } from "@/styles/entrepriseDetailStyles";
-import { AppButton } from "@/components/ui/AppButton";
+import { Ionicons } from "@expo/vector-icons";
 
 interface InfosTabProps {
-  entreprise: any;
+  entreprise: Entreprise;
   contacts: Contact[] | undefined;
   contactsLoading: boolean;
   onAddContact: () => void;
@@ -27,50 +27,50 @@ export const InfosTab: React.FC<InfosTabProps> = ({
   onEmail,
 }) => {
   return (
-    <View>
-      {/* Description Section */}
-      {entreprise.description && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Description</Text>
-          <Text style={styles.text}>{entreprise.description}</Text>
-        </View>
-      )}
-
-      {/* Address Section */}
+    <View className="p-5">
       {(entreprise.rue ||
         entreprise.ville ||
         entreprise.code_postal ||
         entreprise.pays) && (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Adresse</Text>
-          <View style={styles.addressCard}>
-            {entreprise.rue && (
-              <Text style={styles.addressText}>{entreprise.rue}</Text>
-            )}
-            {(entreprise.code_postal || entreprise.ville) && (
-              <Text style={styles.addressText}>
-                {entreprise.code_postal && `${entreprise.code_postal} `}
-                {entreprise.ville}
-              </Text>
-            )}
-            {entreprise.pays && (
-              <Text style={styles.addressText}>{entreprise.pays}</Text>
-            )}
+        <View className="bg-white p-5 rounded-3xl shadow-base flex-row items-center mb-3">
+          <View className="bg-primary/20 flex justify-center items-center rounded-xl  h-14 w-14 mr-4">
+            <Ionicons name="location-outline" size={25} color="#007aff" />
+          </View>
+          <View>
+            <Text className="text-lg font-medium text-gray">Adresse</Text>
+
+            <View className="flex-col gap-2 mt-2">
+              {entreprise.rue && (
+                <Text className="font-medium ">{entreprise.rue}</Text>
+              )}
+              {(entreprise.code_postal ||
+                entreprise.ville ||
+                entreprise.pays) && (
+                <Text className="font-medium  capitalize ">
+                  {entreprise.code_postal && `${entreprise.code_postal} `}
+                  {entreprise.ville && ` ${entreprise.ville}`}
+                  {entreprise.pays && `, ${entreprise.pays}`}
+                </Text>
+              )}
+            </View>
           </View>
         </View>
       )}
 
-      {/* Contacts Section */}
-      <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Contacts</Text>
-          <AppButton title="+ Ajouter" onPress={onAddContact} size="sm" />
+      <View>
+        <View className="flex flex-row justify-between pt-5">
+          <Text className="text-lg font-bold">Contacts</Text>
+          <TouchableOpacity onPress={onAddContact}>
+            <Text className="text-primary font-semibold text-lg">
+              + Ajouter
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {contactsLoading ? (
           <ActivityIndicator size="small" color="#2563eb" />
         ) : contacts && contacts.length > 0 ? (
-          <View style={styles.contactsList}>
+          <View className="bg-white rounded-3xl p-5 mt-5 flex-col gap-4 ">
             {contacts.map((contact) => (
               <ContactCard
                 key={contact.id}
@@ -83,8 +83,15 @@ export const InfosTab: React.FC<InfosTabProps> = ({
             ))}
           </View>
         ) : (
-          <Text style={styles.noContacts}>Aucun contact</Text>
-        )}
+        <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
+          <Text className="text-lg font-bold text-slate-900">
+            Aucun contact
+          </Text>
+          <Text className="mt-1 text-center text-sm text-slate-500">
+            Ajoutez un contact pour appeler ou envoyer un email rapidement.
+          </Text>
+        </View>
+      )}
       </View>
     </View>
   );
