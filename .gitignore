@@ -3,8 +3,10 @@
 web-bundles/
 
 
-# GitHub (souvent inutile dans un repo)
-.github/
+# GitHub
+.github/*
+!.github/workflows/
+!.github/workflows/**
 .DS_Store
  
 # Node/Build
@@ -12,6 +14,9 @@ node_modules/
 backend/node_modules/
 frontend/node_modules/
 backend/dist/
+coverage/
+backend/coverage/
+frontend/coverage/
 
 # Env
 .env

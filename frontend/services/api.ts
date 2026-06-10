@@ -1,5 +1,6 @@
 import axios from "axios";
 import Constants from "expo-constants";
+import { useAuthStore } from "../store/authStore";
 
 const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
 
@@ -13,9 +14,6 @@ export const api = axios.create({
 
 // Les intercepteurs seront configurés après l'initialisation du store
 export function setupAuthInterceptors() {
-  // Import tardif pour éviter la boucle circulaire
-  const { useAuthStore } = require("@/store/authStore");
-
   // Ajouter un interceptor pour les requêtes sortantes
   api.interceptors.request.use((config) => {
     const token = useAuthStore.getState().token;
