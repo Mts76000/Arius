@@ -8,6 +8,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
+    "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -60,6 +61,7 @@
     "@vitest/coverage-v8": "^4.1.8",
     "eslint": "^9.39.4",
     "eslint-config-expo": "~55.0.0",
+    "prettier": "^3.8.4",
     "react-test-renderer": "^19.2.0",
     "typescript": "~5.9.3",
     "vitest": "^4.1.8"
