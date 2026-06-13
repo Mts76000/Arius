@@ -85,7 +85,7 @@ export async function forgotPassword(req: Request, res: Response) {
     const user = await getUserByEmail(email);
 
     if (user?.password) {
-      const token = generatePasswordResetToken(user.id);
+      const token = await generatePasswordResetToken(user.id);
       const resetUrl = `${env.frontendUrl}/reset-password?token=${encodeURIComponent(token)}`;
       await sendPasswordResetEmail(email, resetUrl);
     }
@@ -110,7 +110,7 @@ export async function resetPassword(req: Request, res: Response) {
     }
 
     const { token, password } = parsed.data;
-    const { sub: userId } = verifyPasswordResetToken(token);
+    const { sub: userId } = await verifyPasswordResetToken(token);
     const user = await getUserById(userId);
 
     if (!user) {

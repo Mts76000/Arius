@@ -1,54 +1,118 @@
-import { execFile } from "node:child_process";
-import path from "node:path";
-import { promisify } from "node:util";
-import { fileURLToPath } from "node:url";
+import mongoose from "mongoose";
+import { connectMongo } from "../db/mongo.js";
+import { pool } from "../db/mysql.js";
 
-const execFileAsync = promisify(execFile);
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const backendRoot = path.resolve(__dirname, "../..");
-
-export type BackendTestsResult = {
-  ok: boolean;
-  summary: string;
+export type HealthLine = {
+  name: "api" | "mysql" | "mongo";
+  status: "ok" | "error";
+  message: string;
+  latencyMs: number;
 };
 
-function extractVitestSummary(output: string) {
-  const lines = output
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean);
+const requiredMysqlTables = [
+  "users",
+  "password_reset_tokens",
+  "entreprises",
+  "contacts",
+  "objectifs_mensuels",
+  "ca_mensuel",
+];
 
-  const testFiles = lines.find((line) => line.startsWith("Test Files"));
-  const tests = lines.find((line) => line.startsWith("Tests"));
-
-  if (testFiles && tests) return `${testFiles} | ${tests}`;
-  return lines.at(-1) ?? "Aucun detail disponible";
+export function checkApi(): HealthLine {
+  return { name: "api", status: "ok", message: "running", latencyMs: 0 };
 }
 
-export async function runBackendTests(): Promise<BackendTestsResult> {
+export async function checkMysql(): Promise<HealthLine> {
+  const startedAt = performance.now();
+
   try {
-    const { stdout, stderr } = await execFileAsync("npm", ["test"], {
-      cwd: backendRoot,
-      timeout: 120_000,
-      maxBuffer: 10 * 1024 * 1024,
-      env: {
-        ...process.env,
-        HEALTH_CHECK_RUNNING_BACKEND_TESTS: "1",
-      },
-    });
+    await pool.query("SELECT 1");
+    const [rows] = await pool.query(
+      `SELECT table_name
+       FROM information_schema.tables
+       WHERE table_schema = DATABASE()
+         AND table_name IN (?)`,
+      [requiredMysqlTables],
+    );
+    const existingTables = new Set(
+      (rows as Array<{ TABLE_NAME?: string; table_name?: string }>).map(
+        (row) => row.TABLE_NAME ?? row.table_name,
+      ),
+    );
+    const missingTables = requiredMysqlTables.filter(
+      (table) => !existingTables.has(table),
+    );
+
+    if (missingTables.length > 0) {
+      return {
+        name: "mysql",
+        status: "error",
+        message: `schema incomplete: ${missingTables.join(", ")}`,
+        latencyMs: Math.round(performance.now() - startedAt),
+      };
+    }
 
     return {
-      ok: true,
-      summary: extractVitestSummary(`${stdout}\n${stderr}`),
+      name: "mysql",
+      status: "ok",
+      message: "connected, schema ready",
+      latencyMs: Math.round(performance.now() - startedAt),
     };
-  } catch (error) {
-    const err = error as { stdout?: string; stderr?: string; message?: string };
-    const output = `${err.stdout ?? ""}\n${err.stderr ?? ""}`.trim();
-
+  } catch {
     return {
-      ok: false,
-      summary: output ? extractVitestSummary(output) : err.message ?? "Tests KO",
+      name: "mysql",
+      status: "error",
+      message: "disconnected",
+      latencyMs: Math.round(performance.now() - startedAt),
     };
   }
+}
+
+export async function checkMongo(): Promise<HealthLine> {
+  const startedAt = performance.now();
+
+  try {
+    await connectMongo();
+    if (mongoose.connection.db) {
+      await mongoose.connection.db.admin().ping();
+    }
+    return {
+      name: "mongo",
+      status: "ok",
+      message: "connected",
+      latencyMs: Math.round(performance.now() - startedAt),
+    };
+  } catch {
+    return {
+      name: "mongo",
+      status: "error",
+      message: "disconnected",
+      latencyMs: Math.round(performance.now() - startedAt),
+    };
+  }
+}
+
+export function buildHealthPayload(checks: HealthLine[]) {
+  const isOk = checks.every((check) => check.status === "ok");
+
+  return {
+    status: isOk ? "ok" : "error",
+    service: "arius-api",
+    timestamp: new Date().toISOString(),
+    uptimeSeconds: Math.round(process.uptime()),
+    lines: checks.map(
+      (check) =>
+        `${check.name}: ${check.status} (${check.message}, ${check.latencyMs}ms)`,
+    ),
+    checks,
+  };
+}
+
+export async function runHealthChecks() {
+  const checks = [
+    checkApi(),
+    ...(await Promise.all([checkMysql(), checkMongo()])),
+  ];
+
+  return buildHealthPayload(checks);
 }

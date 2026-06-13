@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import { requireAuth } from "../middleware/auth.js";
 import {
   forgotPassword,
@@ -9,6 +10,14 @@ import {
 } from "../controllers/authController.js";
 
 const router = Router();
+
+const passwordResetLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: "too_many_password_reset_requests" },
+});
 
 /**
  * @openapi
@@ -77,7 +86,7 @@ router.post("/login", login);
  *       200:
  *         description: Demande prise en compte
  */
-router.post("/forgot-password", forgotPassword);
+router.post("/forgot-password", passwordResetLimiter, forgotPassword);
 
 /**
  * @openapi
@@ -104,7 +113,7 @@ router.post("/forgot-password", forgotPassword);
  *       400:
  *         description: Token invalide ou expiré
  */
-router.post("/reset-password", resetPassword);
+router.post("/reset-password", passwordResetLimiter, resetPassword);
 
 /**
  * @openapi

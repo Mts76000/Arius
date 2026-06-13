@@ -26,6 +26,28 @@ export const users = mysqlTable(
   (table) => [index("idx_email").on(table.email)],
 );
 
+export const passwordResetTokens = mysqlTable(
+  "password_reset_tokens",
+  {
+    id: char("id", { length: 36 }).primaryKey(),
+    userId: char("user_id", { length: 36 })
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: char("token_hash", { length: 64 }).notNull().unique(),
+    expiresAt: timestamp("expires_at").notNull(),
+    usedAt: timestamp("used_at"),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (table) => [
+    index("idx_password_reset_lookup").on(
+      table.tokenHash,
+      table.expiresAt,
+      table.usedAt,
+    ),
+    index("idx_password_reset_user").on(table.userId),
+  ],
+);
+
 export const entreprises = mysqlTable(
   "entreprises",
   {
