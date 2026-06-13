@@ -7,6 +7,7 @@ import {
   contacts as contactsTable,
   entreprises as entreprisesTable,
   objectifsMensuels,
+  passwordResetTokens,
   users,
 } from "../db/schema.js";
 import { pool } from "../db/mysql.js";
@@ -66,6 +67,9 @@ async function cleanDemoData() {
   await db
     .delete(entreprisesTable)
     .where(eq(entreprisesTable.userId, DEMO_USER_ID));
+  await db
+    .delete(passwordResetTokens)
+    .where(eq(passwordResetTokens.userId, DEMO_USER_ID));
   await db.delete(users).where(eq(users.id, DEMO_USER_ID));
 }
 
