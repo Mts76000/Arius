@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { z } from "zod";
 import {
   getContactsByEntreprise,
   getContactById,
@@ -8,70 +7,10 @@ import {
   deleteContact,
 } from "../models/contact.js";
 import { getEntrepriseById } from "../models/entreprise.js";
-
-const createSchema = z.object({
-  prenom: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-  nom: z.string().min(1, "Nom requis"),
-  poste: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-  email: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null))
-    .refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
-      message: "Email invalide",
-    }),
-  tel_direct: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-  tel_mobile: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-  contact_principal: z.boolean().optional().default(false),
-  commentaire: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-});
-
-const updateSchema = z.object({
-  prenom: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-  nom: z.string().min(1, "Nom requis").optional(),
-  poste: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-  email: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null))
-    .refine((val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
-      message: "Email invalide",
-    }),
-  tel_direct: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-  tel_mobile: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-  contact_principal: z.boolean().optional(),
-  commentaire: z
-    .union([z.string(), z.null()])
-    .optional()
-    .transform((val) => (val && val.trim() ? val : null)),
-});
+import {
+  createContactSchema,
+  updateContactSchema,
+} from "../validation/contactSchemas.js";
 
 export async function listContactsByEntreprise(req: Request, res: Response) {
   try {
@@ -132,7 +71,7 @@ export async function createContactHandler(req: Request, res: Response) {
       return res.status(404).json({ error: "Entreprise non trouvée" });
     }
 
-    const parsed = createSchema.safeParse(req.body);
+    const parsed = createContactSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error.flatten() });
     }
@@ -158,7 +97,7 @@ export async function updateContactHandler(req: Request, res: Response) {
       return res.status(400).json({ error: "ID contact invalide" });
     }
 
-    const parsed = updateSchema.safeParse(req.body);
+    const parsed = updateContactSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error.flatten() });
     }

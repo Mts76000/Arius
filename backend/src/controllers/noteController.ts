@@ -1,23 +1,9 @@
 import { Request, Response } from "express";
 import * as NoteModel from "../models/note.js";
-import { z } from "zod";
-
-const CreateNoteSchema = z.object({
-  entreprise_id: z.string().min(1),
-  contenu: z.string().min(1),
-  type: z.enum(["appel", "reunion", "email", "info", "autre"]),
-  tags: z.array(z.string()).optional(),
-  est_template: z.boolean().optional(),
-  nom_template: z.string().optional().nullable(),
-});
-
-const UpdateNoteSchema = z.object({
-  contenu: z.string().min(1).optional(),
-  type: z.enum(["appel", "reunion", "email", "info", "autre"]).optional(),
-  tags: z.array(z.string()).optional(),
-  est_template: z.boolean().optional(),
-  nom_template: z.string().optional().nullable(),
-});
+import {
+  createNoteSchema,
+  updateNoteSchema,
+} from "../validation/noteSchemas.js";
 
 const normalizeNoteType = (value: unknown) => {
   if (typeof value !== "string") return value;
@@ -112,7 +98,7 @@ export async function create(req: Request, res: Response) {
     const userId = (req as any).userId as string;
     if (!userId) return res.status(401).json({ error: "unauthorized" });
 
-    const parsed = CreateNoteSchema.safeParse(
+    const parsed = createNoteSchema.safeParse(
       normalizeCreateNotePayload(req.body),
     );
     if (!parsed.success) {
@@ -136,7 +122,7 @@ export async function update(req: Request, res: Response) {
 
     if (!userId) return res.status(401).json({ error: "unauthorized" });
 
-    const parsed = UpdateNoteSchema.safeParse(req.body);
+    const parsed = updateNoteSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error.errors });
     }
