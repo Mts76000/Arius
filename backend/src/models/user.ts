@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { OAuth2Client } from "google-auth-library";
 import { pool } from "../db/mysql.js";
 import { env } from "../config/env.js";
 
@@ -8,14 +7,11 @@ export interface User {
   id: string;
   email: string;
   password: string | null;
-  google_sub: string | null;
   prenom: string | null;
   nom: string | null;
   created_at: string;
   updated_at: string;
 }
-
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export function isAnonymizedUser(user: Pick<User, "id" | "email">): boolean {
   return user.email === getAnonymizedEmail(user.id);
@@ -43,19 +39,9 @@ export async function getUserById(id: string): Promise<User | null> {
   return r ?? null;
 }
 
-export async function getUserByGoogleSub(sub: string): Promise<User | null> {
-  const [rows] = await pool.execute(
-    "SELECT * FROM users WHERE google_sub = ? LIMIT 1",
-    [sub],
-  );
-  const r = (rows as any[])[0];
-  return r ?? null;
-}
-
 export async function createUser(input: {
   email: string;
   password?: string | null;
-  google_sub?: string | null;
   prenom?: string | null;
   nom?: string | null;
 }): Promise<User> {
@@ -65,12 +51,11 @@ export async function createUser(input: {
     id,
     input.email,
     input.password ?? null,
-    input.google_sub ?? null,
     input.prenom ?? null,
     input.nom ?? null,
   ];
   await pool.execute(
-    "INSERT INTO users (id, email, password, google_sub, prenom, nom) VALUES (?, ?, ?, ?, ?, ?)",
+    "INSERT INTO users (id, email, password, prenom, nom) VALUES (?, ?, ?, ?, ?)",
     values,
   );
   const user = await getUserByEmail(input.email);
@@ -78,21 +63,11 @@ export async function createUser(input: {
   return user;
 }
 
-export async function updateGoogleSubForEmail(
-  email: string,
-  sub: string,
-): Promise<void> {
-  await pool.execute("UPDATE users SET google_sub = ? WHERE email = ?", [
-    sub,
-    email,
-  ]);
-}
-
 export async function anonymizeUser(userId: string): Promise<void> {
   const now = new Date().toISOString().slice(0, 19).replace("T", " ");
   await pool.execute(
     `UPDATE users
-     SET email = ?, password = NULL, google_sub = NULL, prenom = NULL, nom = NULL, updated_at = ?
+     SET email = ?, password = NULL, prenom = NULL, nom = NULL, updated_at = ?
      WHERE id = ?`,
     [getAnonymizedEmail(userId), now, userId],
   );
@@ -119,31 +94,4 @@ export function generateJwt(userId: string): string {
 
 export function verifyJwt(token: string): { sub: string } {
   return jwt.verify(token, env.jwtSecret) as { sub: string };
-}
-
-export async function verifyGoogleIdToken(idToken: string): Promise<{
-  sub: string;
-  email?: string;
-  given_name?: string;
-  family_name?: string;
-}> {
-  const clientIds = (process.env.GOOGLE_CLIENT_ID ?? "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  const audience: string | string[] | undefined =
-    clientIds.length === 0
-      ? undefined
-      : clientIds.length === 1
-        ? clientIds[0]
-        : clientIds;
-  const ticket = await googleClient.verifyIdToken({ idToken, audience });
-  const payload = ticket.getPayload();
-  if (!payload || !payload.sub) throw new Error("Invalid Google token");
-  return {
-    sub: payload.sub,
-    email: payload.email ?? undefined,
-    given_name: (payload as any).given_name,
-    family_name: (payload as any).family_name,
-  };
 }

@@ -6,15 +6,14 @@ async function main() {
   try {
     await connectMongo();
     console.log("✓ MongoDB connecté");
-
-    const app = createApp();
-    app.listen(env.port, () => {
-      console.log(`✓ API démarrée sur http://localhost:${env.port}`);
-    });
   } catch (err) {
-    console.error("Erreur au démarrage:", err);
-    process.exit(1);
+    console.error("MongoDB indisponible au démarrage:", err);
   }
+
+  const app = createApp();
+  app.listen(env.port, () => {
+    console.log(`✓ API démarrée sur http://localhost:${env.port}`);
+  });
 }
 
 main();

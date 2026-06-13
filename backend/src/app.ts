@@ -3,11 +3,16 @@ import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import pinoHttp from "pino-http";
+import swaggerUi from "swagger-ui-express";
 import path from "path";
 import fs from "fs";
 import multer from "multer";
 import { fileURLToPath } from "url";
+import mongoose from "mongoose";
 import { pool } from "./db/mysql.js";
+import { env } from "./config/env.js";
+import { swaggerSpec } from "./config/swagger.js";
+import { connectMongo } from "./db/mongo.js";
 import authRoutes from "./routes/auth.js";
 import entreprisesRoutes from "./routes/entreprises.js";
 import contactsRoutes from "./routes/contacts.js";
@@ -23,8 +28,87 @@ import { requireAuth } from "./middleware/auth.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+type HealthLine = {
+  name: "api" | "mysql" | "mongo";
+  status: "ok" | "error";
+  message: string;
+  latencyMs: number;
+};
+
+async function checkMysql(): Promise<HealthLine> {
+  const startedAt = performance.now();
+
+  try {
+    await pool.query("SELECT 1");
+    return {
+      name: "mysql",
+      status: "ok",
+      message: "connected",
+      latencyMs: Math.round(performance.now() - startedAt),
+    };
+  } catch {
+    return {
+      name: "mysql",
+      status: "error",
+      message: "disconnected",
+      latencyMs: Math.round(performance.now() - startedAt),
+    };
+  }
+}
+
+async function checkMongo(): Promise<HealthLine> {
+  const startedAt = performance.now();
+
+  try {
+    await connectMongo();
+    if (mongoose.connection.db) {
+      await mongoose.connection.db.admin().ping();
+    }
+    return {
+      name: "mongo",
+      status: "ok",
+      message: "connected",
+      latencyMs: Math.round(performance.now() - startedAt),
+    };
+  } catch {
+    return {
+      name: "mongo",
+      status: "error",
+      message: "disconnected",
+      latencyMs: Math.round(performance.now() - startedAt),
+    };
+  }
+}
+
+function checkApi(): HealthLine {
+  return { name: "api", status: "ok", message: "running", latencyMs: 0 };
+}
+
+function buildHealthPayload(checks: HealthLine[]) {
+  const isOk = checks.every((check) => check.status === "ok");
+
+  return {
+    status: isOk ? "ok" : "error",
+    service: "arius-api",
+    timestamp: new Date().toISOString(),
+    uptimeSeconds: Math.round(process.uptime()),
+    lines: checks.map(
+      (check) =>
+        `${check.name}: ${check.status} (${check.message}, ${check.latencyMs}ms)`,
+    ),
+    checks,
+  };
+}
+
 export function createApp() {
   const app = express();
+
+  if (env.nodeEnv !== "production") {
+    app.get("/docs.json", (_req, res) => {
+      res.status(200).json(swaggerSpec);
+    });
+    app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  }
 
   // Autoriser le chargement des images depuis un autre port (expo web)
   app.use(helmet({ crossOriginResourcePolicy: false }));
@@ -94,7 +178,35 @@ export function createApp() {
     },
   });
 
-  // Route d'upload
+  /**
+   * @openapi
+   * /v1/upload:
+   *   post:
+   *     summary: Upload le logo d'une entreprise
+   *     tags: [Upload]
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             required: [entrepriseId, image]
+   *             properties:
+   *               entrepriseId:
+   *                 type: string
+   *               image:
+   *                 type: string
+   *                 format: binary
+   *     responses:
+   *       200:
+   *         description: Logo uploade
+   *       400:
+   *         description: Payload invalide
+   *       401:
+   *         $ref: '#/components/responses/Unauthorized'
+   */
   app.post(
     "/v1/upload",
     requireAuth,
@@ -167,13 +279,51 @@ export function createApp() {
     }),
   );
 
-  app.get("/health", async (_req, res) => {
-    try {
-      await pool.query("SELECT 1");
-      res.status(200).json({ status: "ok", mysql: "connected" });
-    } catch (err) {
-      res.status(503).json({ status: "error", mysql: "disconnected" });
-    }
+  /**
+   * @openapi
+   * /:
+   *   get:
+   *     summary: Verifie l'etat complet de l'API
+   *     tags: [Health]
+   *     responses:
+   *       200:
+   *         description: API et dependances disponibles
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/HealthResponse'
+   *       503:
+   *         description: Une dependance est indisponible
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/HealthResponse'
+   * /health:
+   *   get:
+   *     summary: Verifie l'etat complet de l'API
+   *     tags: [Health]
+   *     responses:
+   *       200:
+   *         description: API et dependances disponibles
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/HealthResponse'
+   *       503:
+   *         description: Une dependance est indisponible
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/HealthResponse'
+   */
+  app.get(["/", "/health"], async (_req, res) => {
+    const checks = [
+      checkApi(),
+      ...(await Promise.all([checkMysql(), checkMongo()])),
+    ];
+    const payload = buildHealthPayload(checks);
+
+    res.status(payload.status === "ok" ? 200 : 503).json(payload);
   });
   app.use("/v1/auth", authRoutes);
   app.use("/v1/utilisateurs", profilRoutes);

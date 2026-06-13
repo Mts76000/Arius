@@ -42,6 +42,86 @@ const uploadPdf = multer({
   },
 });
 
+/**
+ * @openapi
+ * /v1/entreprises/{id}/devis:
+ *   get:
+ *     summary: Liste les devis d'une entreprise
+ *     tags: [Devis]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Liste des devis
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *   post:
+ *     summary: Upload un devis PDF pour une entreprise
+ *     tags: [Devis]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [file]
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Devis uploade
+ *       400:
+ *         description: Fichier invalide
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ * /v1/devis/{id}:
+ *   get:
+ *     summary: Recupere un devis
+ *     tags: [Devis]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Devis trouve
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *   delete:
+ *     summary: Supprime un devis
+ *     tags: [Devis]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Devis supprime
+ */
 router.get(
   "/entreprises/:id/devis",
   requireAuth,

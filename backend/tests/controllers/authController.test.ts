@@ -5,11 +5,8 @@ const userModel = vi.hoisted(() => ({
   createUser: vi.fn(),
   generateJwt: vi.fn(),
   getUserByEmail: vi.fn(),
-  getUserByGoogleSub: vi.fn(),
   getUserById: vi.fn(),
   hashPassword: vi.fn(),
-  updateGoogleSubForEmail: vi.fn(),
-  verifyGoogleIdToken: vi.fn(),
 }));
 
 vi.mock("../../src/models/user.js", () => userModel);
