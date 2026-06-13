@@ -235,4 +235,54 @@ describe("E2E user workflow", () => {
       undefined,
     );
   });
+
+  it("logs in, lists entreprises and creates one before client-side logout", async () => {
+    const app = createApp();
+
+    userModel.getUserByEmail.mockResolvedValueOnce({
+      id: "user-1",
+      email: "mathis@example.com",
+      password: "hashed-password",
+    });
+    userModel.comparePassword.mockResolvedValueOnce(true);
+    entrepriseModel.getEntreprises.mockResolvedValueOnce({
+      entreprises: [],
+      total: 0,
+    });
+    entrepriseModel.createEntreprise.mockResolvedValueOnce({
+      id: "e2",
+      user_id: "user-1",
+      nom: "Nouvelle Entreprise",
+      statut: "prospect",
+    });
+
+    const loginResponse = await request(app).post("/v1/auth/login").send({
+      email: "mathis@example.com",
+      password: "secret123",
+    });
+
+    expect(loginResponse.status).toBe(200);
+    expect(loginResponse.body).toEqual({ token: "jwt-token" });
+
+    const listResponse = await request(app)
+      .get("/v1/entreprises")
+      .set("Authorization", "Bearer jwt-token");
+
+    expect(listResponse.status).toBe(200);
+    expect(listResponse.body).toEqual({ entreprises: [], total: 0 });
+
+    const createResponse = await request(app)
+      .post("/v1/entreprises")
+      .set("Authorization", "Bearer jwt-token")
+      .send({ nom: "Nouvelle Entreprise", statut: "prospect" });
+
+    expect(createResponse.status).toBe(201);
+    expect(entrepriseModel.createEntreprise).toHaveBeenCalledWith(
+      "user-1",
+      expect.objectContaining({
+        nom: "Nouvelle Entreprise",
+        statut: "prospect",
+      }),
+    );
+  });
 });
