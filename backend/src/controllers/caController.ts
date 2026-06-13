@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import {
   getCA,
-  getCAByMois,
   createCA,
   updateCA,
   deleteCA,

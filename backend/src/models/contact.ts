@@ -92,7 +92,7 @@ export async function createContact(
     );
   }
 
-  const [result] = await pool.execute(
+  await pool.execute(
     `INSERT INTO contacts (
       id, user_id, entreprise_id, prenom, nom, poste,
       email, tel_direct, tel_mobile, contact_principal, commentaire

@@ -84,7 +84,7 @@ export async function listByEntreprise(req: Request, res: Response) {
     );
 
     res.json(result);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch notes" });
   }
 }
@@ -102,7 +102,7 @@ export async function get(req: Request, res: Response) {
     }
 
     res.json(note);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch note" });
   }
 }
@@ -124,7 +124,7 @@ export async function create(req: Request, res: Response) {
 
     const note = await NoteModel.createNote(userId, parsed.data);
     res.status(201).json(note);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Failed to create note" });
   }
 }
@@ -147,7 +147,7 @@ export async function update(req: Request, res: Response) {
     }
 
     res.json(note);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Failed to update note" });
   }
 }
@@ -165,7 +165,7 @@ export async function remove(req: Request, res: Response) {
     }
 
     res.json({ success: true });
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Failed to delete note" });
   }
 }
@@ -182,7 +182,7 @@ export async function search(req: Request, res: Response) {
 
     const notes = await NoteModel.searchNotes(userId, q);
     res.json(notes);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Search failed" });
   }
 }
@@ -205,7 +205,7 @@ export async function getTemplates(req: Request, res: Response) {
       type as NoteModel.NoteType,
     );
     res.json(templates);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Failed to fetch templates" });
   }
 }
@@ -221,7 +221,7 @@ export async function getDashboard(req: Request, res: Response) {
 
     const data = await NoteModel.getNotesForDashboard(userId, threshold);
     res.json(data);
-  } catch (err) {
+  } catch {
     res.status(500).json({ error: "Dashboard fetch failed" });
   }
 }

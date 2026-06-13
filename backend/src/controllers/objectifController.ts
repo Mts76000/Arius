@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import {
   getObjectifs,
-  getObjectifByMois,
   createObjectif,
   updateObjectif,
   deleteObjectif,
