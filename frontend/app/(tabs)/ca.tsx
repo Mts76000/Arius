@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -60,6 +61,8 @@ const getProgressionMeta = (progression: number | null) => {
 
 export default function CAScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 900;
   const currentDate = new Date();
 
   const [selectedMois, setSelectedMois] = useState(currentDate.getMonth() + 1);
@@ -176,10 +179,16 @@ export default function CAScreen() {
   }
 
   return (
-    <View className="flex-1 p-4">
+    <View className="flex-1">
       <ScrollView
         className="pt-4"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 180 }}
+        contentContainerStyle={{
+          alignSelf: "center",
+          maxWidth: 1120,
+          paddingBottom: isDesktop ? 48 : 180,
+          paddingHorizontal: isDesktop ? 32 : 20,
+          width: "100%",
+        }}
         refreshControl={
           <RefreshControl refreshing={isRefetching} onRefresh={refetch} />
         }
