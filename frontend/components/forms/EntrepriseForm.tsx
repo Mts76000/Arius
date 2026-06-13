@@ -217,7 +217,7 @@ export function EntrepriseForm({
     await onSubmit(formData);
   };
 
-  const bottomSpacing = isCompactLayout ? insets.bottom + 150 : 48;
+  const bottomSpacing = isCompactLayout ? Math.max(112, insets.bottom + 96) : 48;
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -227,13 +227,13 @@ export function EntrepriseForm({
         keyboardShouldPersistTaps="handled"
       >
         <Form>
-          <FormGroup title="Nom de l'entreprise" required error={formErrors.nom}>
+          <FormGroup title="Nom de l'entreprise" required>
             <FormInput
               placeholder="Nom de l'entreprise"
               label=""
               value={formData.nom ?? ""}
               onChangeText={(t) => setFormData({ ...formData, nom: t ?? "" })}
-              error={null}
+              error={formErrors.nom}
             />
           </FormGroup>
 
@@ -345,7 +345,7 @@ export function EntrepriseForm({
             </View>
           </View>
         </FormGroup>
-        <View className="mt-2 flex-row gap-4">
+        <View className="mt-2 flex-row gap-3">
           <View className="flex-1">
             <AppButton title="Annuler" onPress={onCancel} variant="secondary" />
           </View>

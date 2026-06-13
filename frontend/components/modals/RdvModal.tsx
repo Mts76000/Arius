@@ -275,14 +275,14 @@ export function RdvModal({
           </FormGroup>
 
           {/* Titre */}
-          <FormGroup title="Titre" error={errors.titre}>
+          <FormGroup title="Titre">
             <FormInput
               label=""
               placeholder="Ex: Réunion de présentation"
               value={titre}
               onChangeText={setTitre}
               editable={!isLoading}
-              error={null}
+              error={errors.titre}
             />
           </FormGroup>
 
