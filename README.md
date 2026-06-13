@@ -5,17 +5,10 @@ CRM mobile-first pour gérer entreprises, contacts, notes, rendez-vous, devis, o
 ## Stack
 
 - Backend : Node 20, Express, TypeScript, MySQL, MongoDB, JWT
-- Frontend : Expo React Native, React Native Web, Zustand, TanStack Query, Axios, NativeWind
-- Dev local : Docker Compose
+- Frontend : Expo React Native, React Native Web, Zustand, TanStack Query, NativeWind
+- Dev local : Docker Compose, Drizzle, Faker, Zod, Vitest
 
-## Lancer le projet
-
-Prérequis :
-
-- Docker Desktop
-- Node 20+ si tu veux lancer les services hors Docker
-
-Commande recommandée :
+## Lancer en dev
 
 ```bash
 docker compose up --build
@@ -23,36 +16,35 @@ docker compose up --build
 
 URLs utiles :
 
-- Frontend : `http://localhost:8081`
+- Frontend web : `http://localhost:8081`
 - API : `http://localhost:3000`
 - Health API : `http://localhost:3000/health`
-- Swagger UI, hors production seulement : `http://localhost:3000/docs`
+- Swagger dev : `http://localhost:3000/docs`
 
-Bases exposées sur la machine :
+## Voir les bases
 
-- MySQL : `localhost:3307`, user `root`, password `root`, base `arius`
-- MongoDB : `localhost:27018`
+MySQL :
 
-Dans Docker, le backend utilise `mysql:3306` et `mongo:27017`.
+- UI Adminer : `http://localhost:8082`
+- Serveur : `mysql`
+- User : `root`
+- Mot de passe : `root`
+- Base : `arius`
+- Depuis le Mac : `localhost:3307`
 
-## Réinitialiser les bases Docker
+MongoDB :
 
-Le schéma MySQL est chargé depuis `backend/src/db/schema.sql` au premier démarrage du volume MySQL.
-
-Pour repartir d'une base vide :
-
-```bash
-docker compose down -v
-docker compose up --build
-```
+- UI mongo-express : `http://localhost:8083`
+- Depuis le Mac : `localhost:27018`
+- Dans Docker : `mongo:27017`
 
 ## Données de démo
 
-Pour remplir MySQL et MongoDB avec des fixtures :
+Remplir MySQL et MongoDB avec des fixtures Faker :
 
 ```bash
 cd backend
-npm run seed
+npm run db:seed
 ```
 
 Compte créé :
@@ -60,66 +52,16 @@ Compte créé :
 - Email : `demo@arius.local`
 - Mot de passe : `password123`
 
-## Drizzle
-
-Drizzle est utilisé côté backend pour décrire le schéma MySQL en TypeScript et préparer les évolutions de base.
-
-Fichiers importants :
-
-- `backend/src/db/schema.ts` : schéma MySQL version TypeScript.
-- `backend/drizzle.config.ts` : config Drizzle, lit les variables `MYSQL_*` du `.env`.
-- `backend/src/db/drizzle.ts` : connexion Drizzle utilisée par les scripts.
-- `backend/src/scripts/seed.ts` : fixtures avec Faker.
-
-Commandes :
+## Réinitialiser les bases Docker
 
 ```bash
-cd backend
-
-# Génère des fichiers de migration dans backend/drizzle/
-npm run db:generate
-
-# Applique le schéma Drizzle sur la base configurée dans .env
-npm run db:push
-
-# Remplit la base avec des fausses données
-npm run seed
+docker compose down -v
+docker compose up --build
 ```
 
-En local avec Docker, la base MySQL est exposée sur `localhost:3307`. Le `.env` backend doit donc contenir :
+Le schéma MySQL initial est chargé depuis `backend/src/db/schema.sql`.
 
-```env
-MYSQL_HOST=localhost
-MYSQL_PORT=3307
-MYSQL_USER=root
-MYSQL_PASSWORD=root
-MYSQL_DATABASE=arius
-```
-
-Note : au premier démarrage Docker, le schéma initial est encore chargé depuis `backend/src/db/schema.sql`. Drizzle sert ensuite à faire évoluer le schéma et à garder une version TypeScript lisible de la base.
-
-## Emails Resend
-
-Le mot de passe oublié utilise Resend côté backend.
-
-Variables à configurer dans `backend/.env` :
-
-```env
-FRONTEND_URL=http://localhost:8081
-RESEND_API_KEY=ta_cle_resend
-RESEND_FROM_EMAIL=contact@example.com
-```
-
-Flux :
-
-- L'utilisateur clique sur `Mot de passe oublié ?` depuis la page de connexion.
-- L'API envoie un lien temporaire par email.
-- Le lien ouvre `/reset-password?token=...`.
-- L'utilisateur définit un nouveau mot de passe.
-
-## Lancer hors Docker
-
-Backend :
+## Backend hors Docker
 
 ```bash
 cd backend
@@ -128,24 +70,45 @@ cp .env.example .env
 npm run dev
 ```
 
-Frontend :
+Avec MySQL Docker depuis le Mac :
+
+```env
+MYSQL_HOST=localhost
+MYSQL_PORT=3307
+MYSQL_USER=root
+MYSQL_PASSWORD=root
+MYSQL_DATABASE=arius
+MONGO_URL=mongodb://localhost:27018/arius
+```
+
+Commandes utiles :
+
+```bash
+npm run lint
+npm run build
+npm test
+npm run db:push
+npm run db:seed
+```
+
+## Frontend web
 
 ```bash
 cd frontend
 pnpm install
 cp .env.example .env
-pnpm start
+pnpm web
 ```
 
-## Lancer sur simulateur iOS
+## Simulateur iOS
 
-Docker peut rester lancé pour le backend, MySQL et MongoDB :
+Garde Docker lancé pour l'API, MySQL et MongoDB :
 
 ```bash
 docker compose up --build
 ```
 
-L'app iOS doit être lancée depuis le projet frontend sur la machine, pas depuis le conteneur web :
+Puis lance l'app depuis le projet frontend :
 
 ```bash
 cd frontend
@@ -153,12 +116,9 @@ pnpm install
 pnpm ios
 ```
 
-Prérequis :
+Prérequis : Xcode installé avec au moins un simulateur iOS.
 
-- Xcode installé
-- Un simulateur iOS disponible via Xcode
-
-Sur simulateur iOS, l'API peut rester sur `http://localhost:3000`. Sur un vrai iPhone, il faudra remplacer `localhost` par l'adresse IP locale du Mac dans la configuration frontend.
+Sur simulateur iOS, l'API peut rester sur `http://localhost:3000`. Sur un vrai iPhone, remplace `localhost` par l'adresse IP locale du Mac dans la config frontend.
 
 ## Tests
 
@@ -166,20 +126,25 @@ Backend :
 
 ```bash
 cd backend
-npm test
+npm run lint
 npm run build
+npm test
 ```
 
 Frontend :
 
 ```bash
 cd frontend
+pnpm lint
 pnpm test
 ```
 
-## Documentation
+## Variables Resend
 
-- Swagger dev : `http://localhost:3000/docs`
-- Spec OpenAPI dev : `http://localhost:3000/docs.json`
-- Dossier CDA : [docs/cda-dossier-plan.md](docs/cda-dossier-plan.md)
-- Veille sécurité : [docs/veille-securite.md](docs/veille-securite.md)
+Le mot de passe oublié utilise Resend côté backend :
+
+```env
+FRONTEND_URL=http://localhost:8081
+RESEND_API_KEY=ta_cle_resend
+RESEND_FROM_EMAIL=contact@example.com
+```
