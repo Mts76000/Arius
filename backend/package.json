@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "seed": "tsx src/scripts/seed.ts",
+    "db:seed": "tsx src/scripts/seed.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",
     "lint": "eslint .",
