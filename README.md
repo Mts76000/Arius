@@ -1,88 +1,91 @@
-# Arius - CRM Mobile
+# Arius
 
-Application CRM mobile-first pour gérer entreprises, contacts, notes, RDVs et devis.
+CRM mobile-first pour gérer entreprises, contacts, notes, rendez-vous, devis, objectifs et chiffre d'affaires.
 
-## Stack Technique
+## Stack
 
-**Backend**
+- Backend : Node 20, Express, TypeScript, MySQL, MongoDB, JWT
+- Frontend : Expo React Native, React Native Web, Zustand, TanStack Query, Axios, NativeWind
+- Dev local : Docker Compose
 
-- Node 20 + Express + TypeScript
-- MySQL 8 (utilisateurs, entreprises, contacts, objectifs, CA)
-- MongoDB 6 (notes, RDVs, devis, activités)
-- Authentification JWT (+ Google Sign-In)
+## Lancer le projet
 
-**Frontend**
+Prérequis :
 
-- Expo React Native + React Native Web
-- Zustand (state), TanStack Query (cache), Axios (HTTP)
-- NativeWind/Tailwind CSS
+- Docker Desktop
+- Node 20+ si tu veux lancer les services hors Docker
 
-## Installation
+Commande recommandée :
 
-### Prérequis
+```bash
+docker compose up --build
+```
 
-- Node 20+
-- MySQL 8 (local ou Homebrew)
-- MongoDB 6 (local ou Homebrew)
+URLs utiles :
 
-### Backend
+- Frontend : `http://localhost:8081`
+- API : `http://localhost:3000`
+- Health API : `http://localhost:3000/health`
+- Swagger UI, hors production seulement : `http://localhost:3000/docs`
+
+Bases exposées sur la machine :
+
+- MySQL : `localhost:3307`, user `root`, password `root`, base `arius`
+- MongoDB : `localhost:27018`
+
+Dans Docker, le backend utilise `mysql:3306` et `mongo:27017`.
+
+## Réinitialiser les bases Docker
+
+Le schéma MySQL est chargé depuis `backend/src/db/schema.sql` au premier démarrage du volume MySQL.
+
+Pour repartir d'une base vide :
+
+```bash
+docker compose down -v
+docker compose up --build
+```
+
+## Lancer hors Docker
+
+Backend :
 
 ```bash
 cd backend
 npm install
 cp .env.example .env
-# Éditer .env avec vos credentials MySQL/Mongo
 npm run dev
 ```
 
-### Frontend
+Frontend :
 
 ```bash
 cd frontend
-npm install
+pnpm install
 cp .env.example .env
-npm start
+pnpm start
 ```
 
-## Structure
+## Tests
 
-```
-backend/
-  src/
-    config/     # Configuration env
-    db/         # MySQL + Mongo connections
-    middleware/ # Auth, validation
-    routes/     # API endpoints
-    utils/      # Helpers
-  .env          # Variables d'environnement
+Backend :
 
-frontend/
-  app/          # Expo Router screens
-  components/   # UI components
-  services/     # API calls
-  store/        # Zustand stores
-  hooks/        # Custom hooks
-
-docs/
-  backlog/      # Epics et user stories
-  fullstack-architecture.md
+```bash
+cd backend
+npm test
+npm run build
 ```
 
-## Commandes
+Frontend :
 
-**Backend**
-
-- `npm run dev` - Dev avec hot reload (tsx)
-- `npm run build` - Build TypeScript
-- `npm start` - Production (node dist/server.js)
-
-**Frontend**
-
-- `npm start` - Dev server
-- `npm run ios` - iOS simulator
-- `npm run android` - Android emulator
-- `npm run web` - Navigateur
+```bash
+cd frontend
+pnpm test
+```
 
 ## Documentation
 
-Voir [docs/backlog/backlog-mvp.md](docs/backlog/backlog-mvp.md) pour les epics et user stories.
+- Swagger dev : `http://localhost:3000/docs`
+- Spec OpenAPI dev : `http://localhost:3000/docs.json`
+- Dossier CDA : [docs/cda-dossier-plan.md](docs/cda-dossier-plan.md)
+- Veille sécurité : [docs/veille-securite.md](docs/veille-securite.md)

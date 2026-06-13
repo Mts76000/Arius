@@ -1,0 +1,76 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: arius-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: arius
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:6
+    container_name: arius-mongo
+    restart: unless-stopped
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build:
+      context: ./backend
+    container_name: arius-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: arius
+      MONGO_URL: mongodb://mongo:27017/arius
+      JWT_SECRET: change-me-in-prod
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+      - backend_uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mongo:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: arius-frontend
+    restart: unless-stopped
+    environment:
+      EXPO_NO_TELEMETRY: "1"
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:
+  mongo_data:
+  backend_node_modules:
+  frontend_node_modules:
+  backend_uploads:

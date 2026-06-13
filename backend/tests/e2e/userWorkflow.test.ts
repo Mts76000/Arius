@@ -6,12 +6,9 @@ const userModel = vi.hoisted(() => ({
   createUser: vi.fn(),
   generateJwt: vi.fn(),
   getUserByEmail: vi.fn(),
-  getUserByGoogleSub: vi.fn(),
   getUserById: vi.fn(),
   hashPassword: vi.fn(),
   isAnonymizedUser: vi.fn(),
-  updateGoogleSubForEmail: vi.fn(),
-  verifyGoogleIdToken: vi.fn(),
   verifyJwt: vi.fn(),
 }));
 

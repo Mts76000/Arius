@@ -28,9 +28,8 @@ describe("entreprise model", () => {
   });
 
   it("lists only the current user's entreprises with search, status and pagination", async () => {
-    mocks.execute
-      .mockResolvedValueOnce([[{ id: "e1", nom: "ACME" }]])
-      .mockResolvedValueOnce([[{ total: 1 }]]);
+    mocks.query.mockResolvedValueOnce([[{ id: "e1", nom: "ACME" }]]);
+    mocks.execute.mockResolvedValueOnce([[{ total: 1 }]]);
 
     const result = await getEntreprises("user-1", {
       recherche: "ac",
@@ -40,13 +39,11 @@ describe("entreprise model", () => {
     });
 
     expect(result).toEqual({ entreprises: [{ id: "e1", nom: "ACME" }], total: 1 });
-    expect(mocks.execute).toHaveBeenNthCalledWith(
-      1,
+    expect(mocks.query).toHaveBeenCalledWith(
       expect.stringContaining("WHERE e.user_id = ?"),
       ["user-1", "%ac%", "client", 10, 10],
     );
-    expect(mocks.execute).toHaveBeenNthCalledWith(
-      2,
+    expect(mocks.execute).toHaveBeenCalledWith(
       expect.stringContaining("COUNT(*)"),
       ["user-1", "%ac%", "client"],
     );

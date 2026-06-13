@@ -4,11 +4,8 @@ import {
   createUser,
   generateJwt,
   getUserByEmail,
-  getUserByGoogleSub,
   getUserById,
   hashPassword,
-  updateGoogleSubForEmail,
-  verifyGoogleIdToken,
 } from "../models/user.js";
 
 export async function register(req: Request, res: Response) {
@@ -54,37 +51,6 @@ export async function login(req: Request, res: Response) {
     return res.status(200).json({ token });
   } catch {
     return res.status(500).json({ error: "internal_error" });
-  }
-}
-
-export async function google(req: Request, res: Response) {
-  try {
-    const { idToken } = req.body ?? {};
-    if (!idToken || typeof idToken !== "string")
-      return res.status(400).json({ error: "idToken required" });
-    const payload = await verifyGoogleIdToken(idToken);
-    const { sub, email, given_name, family_name } = payload;
-
-    let user = await getUserByGoogleSub(sub);
-    if (!user && email) {
-      const byEmail = await getUserByEmail(email);
-      if (byEmail) {
-        await updateGoogleSubForEmail(email, sub);
-        user = await getUserByEmail(email);
-      }
-    }
-    if (!user) {
-      user = await createUser({
-        email: email ?? `${sub}@google.local`,
-        google_sub: sub,
-        prenom: given_name ?? null,
-        nom: family_name ?? null,
-      });
-    }
-    const token = generateJwt(user.id);
-    return res.status(200).json({ token });
-  } catch (e) {
-    return res.status(401).json({ error: "invalid_google_token" });
   }
 }
 

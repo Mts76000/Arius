@@ -80,7 +80,7 @@ export async function getEntreprises(
   query += " ORDER BY e.nom ASC LIMIT ? OFFSET ?";
   params.push(limite, offset);
 
-  const [rows] = await pool.execute(query, params);
+  const [rows] = await pool.query(query, params);
 
   // Count total
   let countQuery =
