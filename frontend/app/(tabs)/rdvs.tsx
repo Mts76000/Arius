@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import {
@@ -35,6 +36,8 @@ interface RdvGroup {
 }
 
 export default function RdvsScreen() {
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 900;
   const [page, setPage] = useState(1);
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [timelineFilter, setTimelineFilter] =
@@ -366,9 +369,15 @@ export default function RdvsScreen() {
   const canGoNext = page < totalPages;
 
   return (
-    <View className="pt-8">
+    <View className="flex-1 pt-8">
       <ScrollView
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 180 }}
+        contentContainerStyle={{
+          alignSelf: "center",
+          maxWidth: 1120,
+          paddingBottom: isDesktop ? 48 : 180,
+          paddingHorizontal: isDesktop ? 32 : 20,
+          width: "100%",
+        }}
       >
         {/* Action Button */}
 

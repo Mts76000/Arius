@@ -6,6 +6,7 @@ import {
   View,
   ScrollView,
   RefreshControl,
+  useWindowDimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -19,7 +20,9 @@ import { getRdvStatusConfig } from "@/utils/rdvStatus";
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const { user, isLoading } = useAuthStore();
+  const isDesktop = width >= 900;
   const nowIso = useMemo(() => new Date().toISOString(), []);
 
   const rdvFilters = useMemo(
@@ -109,7 +112,13 @@ export default function HomeScreen() {
     <View className="flex-1">
       <ScrollView
         className="pt-8"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 180 }}
+        contentContainerStyle={{
+          alignSelf: "center",
+          maxWidth: 1120,
+          paddingHorizontal: isDesktop ? 32 : 20,
+          paddingBottom: isDesktop ? 48 : 180,
+          width: "100%",
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

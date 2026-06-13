@@ -19,6 +19,7 @@ vi.mock("react-native", () => {
     TouchableOpacity: make("TouchableOpacity"),
     View: make("View"),
     Dimensions: { get: () => ({ width: 390, height: 800 }) },
+    useWindowDimensions: () => ({ width: 390, height: 800 }),
     Modal: make("Modal"),
     Platform: { OS: "web" },
     Alert: { alert: vi.fn() },
@@ -254,8 +255,12 @@ describe("forms, entreprise and layout components", () => {
     expect(router.push).toHaveBeenCalledWith("/(tabs)/profil");
 
     const footer = render(<FooterTabs />);
-    expect(footer.root.findByType("Tabs").props.screenOptions).toEqual({
+    expect(footer.root.findByType("Tabs").props.screenOptions).toMatchObject({
       headerShown: false,
+      sceneStyle: {
+        backgroundColor: "#f8fafc",
+        marginLeft: 0,
+      },
     });
     expect(footer.root.findAllByType("Screen").map((screen) => screen.props.name)).toContain("profil");
   });

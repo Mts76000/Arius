@@ -49,7 +49,7 @@ export const FormInput: React.FC<FormInputProps> = ({
           textAlignVertical={isMultiline ? "top" : props.textAlignVertical}
           className={`w-full border bg-white px-4 text-gray-900 ${
             isMultiline ? "min-h-28 py-3" : "min-h-12 py-3"
-          } rounded-2xl ${error ? "border-red-400 bg-red-50" : "border-gray-200"} ${
+          } rounded-lg ${error ? "border-red-500 bg-red-50" : "border-slate-300"} ${
             showToggle ? "pr-12" : ""
           } ${!isEditable ? "opacity-60" : ""}`}
         />
@@ -75,7 +75,7 @@ export const FormInput: React.FC<FormInputProps> = ({
           </TouchableOpacity>
         )}
       </View>
-      {error && <Text className="text-red-600 text-sm">{error}</Text>}
+      {error && <Text className="text-sm font-medium text-red-700">{error}</Text>}
     </View>
   );
 };

@@ -1,4 +1,10 @@
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Text,
+  TouchableOpacity,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { usePathname, useRouter, useSegments } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/authStore";
@@ -76,7 +82,9 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const segments = useSegments();
+  const { width } = useWindowDimensions();
   const user = useAuthStore((state) => state.user as UserData | null);
+  const isDesktop = width >= 900;
 
   const handleAvatarPress = () => {
     router.push("/(tabs)/profil");
@@ -98,7 +106,13 @@ export function Header() {
   );
 
   return (
-    <View className="flex flex-row justify-between pl-5 pr-5 pt-16 pb-5 items-center bg-white">
+    <View
+      className="flex flex-row justify-between border-b border-slate-100 bg-white pl-5 pr-5 pt-16 pb-5 items-center"
+      style={{
+        marginLeft: isDesktop ? 240 : 0,
+        paddingTop: isDesktop ? 28 : 64,
+      }}
+    >
       {shouldShowBack ? (
         <TouchableOpacity
           onPress={handleBackPress}
