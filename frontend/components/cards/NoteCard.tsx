@@ -120,7 +120,7 @@ export function NoteCard({ note, onDelete, onEdit }: NoteCardProps) {
 
           {/* Type et date */}
           <View className="flex-1 gap-1">
-            <Text className="text-sm font-bold text-slate-900">
+            <Text className="text-sm font-semibold text-slate-900">
               {NOTE_TYPE_LABELS[note.type]}
             </Text>
             <Text className="text-xs text-slate-500">

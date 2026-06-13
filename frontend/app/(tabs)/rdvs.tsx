@@ -384,7 +384,7 @@ export default function RdvsScreen() {
         {/* Filters Section */}
         <View className="mb-6">
           {/* Quick Filters */}
-          <Text className="mb-3 text-base font-semibold text-black   tracking-wide">
+          <Text className="mb-3 text-base font-semibold text-slate-900">
             Filtrer par date
           </Text>
 
@@ -459,7 +459,7 @@ export default function RdvsScreen() {
                         }}
                         className="h-10 px-3 rounded-lg border border-slate-200 bg-white items-center justify-center"
                       >
-                        <Text className="text-base font-semibold text-slate-700 text-center">
+                        <Text className="text-sm font-semibold text-slate-700 text-center">
                           Effacer
                         </Text>
                       </TouchableOpacity>
@@ -483,7 +483,7 @@ export default function RdvsScreen() {
                   }`}
                 >
                   <Text
-                    className={`text-base font-semibold whitespace-nowrap text-center ${
+                    className={`text-sm font-semibold whitespace-nowrap text-center ${
                       dateFilter === filter.value
                         ? "text-white"
                         : "text-slate-700"
@@ -496,7 +496,7 @@ export default function RdvsScreen() {
             })}
           </ScrollView>
 
-          <Text className="mt-3 mb-2  text-base font-semibold text-black ">
+          <Text className="mt-3 mb-2 text-base font-semibold text-slate-900">
             Afficher
           </Text>
 
@@ -520,7 +520,7 @@ export default function RdvsScreen() {
                   }`}
                 >
                   <Text
-                    className={`text-base font-semibold ${
+                    className={`text-sm font-semibold ${
                       isActive ? "text-white" : "text-slate-700"
                     }`}
                   >

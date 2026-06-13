@@ -81,9 +81,9 @@ export function DevisTab({ entrepriseId }: DevisTabProps) {
   return (
     <View className="p-5">
       <View className="flex flex-row justify-between pt-5">
-        <Text className="text-lg font-bold">Devis</Text>
+        <Text className="text-lg font-semibold text-slate-900">Devis</Text>
         <TouchableOpacity onPress={() => setShowUploadModal(true)}>
-          <Text className="text-primary font-semibold text-lg">+ Ajouter</Text>
+          <Text className="text-base font-semibold text-primary">+ Ajouter</Text>
         </TouchableOpacity>
       </View>
 
@@ -127,7 +127,7 @@ export function DevisTab({ entrepriseId }: DevisTabProps) {
           </View>
         ) : hasSearchQuery ? (
           <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
-            <Text className="text-lg font-bold text-slate-900">
+            <Text className="text-base font-semibold text-slate-900">
               Aucun devis trouvé
             </Text>
             <Text className="mt-1 text-center text-sm text-slate-500">
@@ -136,7 +136,7 @@ export function DevisTab({ entrepriseId }: DevisTabProps) {
           </View>
         ) : (
           <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
-            <Text className="text-lg font-bold text-slate-900">
+            <Text className="text-base font-semibold text-slate-900">
               Aucun devis
             </Text>
             <Text className="mt-1 text-center text-sm text-slate-500">

@@ -166,9 +166,9 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
       <View className="p-5 flex gap-5">
         {/* Header */}
         <View className="flex flex-row justify-between pt-5 pb-5">
-          <Text className="text-lg font-bold">CA</Text>
+          <Text className="text-lg font-semibold text-slate-900">CA</Text>
           <TouchableOpacity onPress={handleAddCA}>
-            <Text className="text-primary font-semibold text-lg">
+            <Text className="text-base font-semibold text-primary">
               + Ajouter
             </Text>
           </TouchableOpacity>
@@ -185,7 +185,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
             </TouchableOpacity>
 
             <View className="items-center flex-1 px-2">
-              <Text className="text-2xl font-bold text-black">
+              <Text className="text-lg font-semibold text-slate-900">
                 {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
               </Text>
             </View>
@@ -205,12 +205,12 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
             <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
               CA Total
             </Text>
-            <Text className="text-2xl font-bold text-primary">
+            <Text className="text-lg font-semibold text-primary">
               {(stats?.ca_total || 0).toLocaleString("fr-FR", {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}
-              <Text className="text-base text-slate-400"> €</Text>
+              <Text className="text-sm text-slate-400"> €</Text>
             </Text>
           </View>
 
@@ -218,12 +218,12 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
             <Text className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">
               Moy. Mois
             </Text>
-            <Text className="text-2xl font-bold text-orange-500">
+            <Text className="text-lg font-semibold text-orange-500">
               {(stats?.moyenne_mensuelle || 0).toLocaleString("fr-FR", {
                 minimumFractionDigits: 0,
                 maximumFractionDigits: 0,
               })}
-              <Text className="text-base text-slate-400"> €</Text>
+              <Text className="text-sm text-slate-400"> €</Text>
             </Text>
           </View>
         </View>
@@ -231,7 +231,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
         {/* CA Mensuel */}
         <View className="">
           <View className="pb-3">
-            <Text className="text-lg font-bold">
+            <Text className="text-lg font-semibold text-slate-900">
               CA Mensuel {selectedAnnee}
             </Text>
           </View>
@@ -248,7 +248,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
                       <Text className="text-sm font-semibold text-slate-900">
                         {MOIS_LABELS[ca.mois - 1]}
                       </Text>
-                      <Text className="text-lg font-bold text-primary mt-1">
+                      <Text className="text-base font-semibold text-primary mt-1">
                         {ca.ca_ht.toLocaleString("fr-FR", {
                           minimumFractionDigits: 0,
                           maximumFractionDigits: 0,
@@ -284,7 +284,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
             </>
           ) : (
             <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-4 items-center">
-              <Text className="text-lg font-bold text-slate-900">
+              <Text className="text-base font-semibold text-slate-900">
                 Aucun CA
               </Text>
               <Text className="mt-1 text-center text-sm text-slate-500">

@@ -101,7 +101,7 @@ export function Header() {
   const titleContent = (
     <>
       {shouldShowBack && <Ionicons name="chevron-back" size={22} />}
-      <Text className="text-2xl font-bold">{pageTitle}</Text>
+      <Text className="text-xl font-semibold">{pageTitle}</Text>
     </>
   );
 
@@ -133,7 +133,7 @@ export function Header() {
         {!user ? (
           <ActivityIndicator size="small" />
         ) : (
-          <Text className="text-xl font-bold text-white">{initials}</Text>
+          <Text className="text-lg font-semibold text-white">{initials}</Text>
         )}
       </TouchableOpacity>
     </View>

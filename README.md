@@ -137,6 +137,29 @@ cp .env.example .env
 pnpm start
 ```
 
+## Lancer sur simulateur iOS
+
+Docker peut rester lancé pour le backend, MySQL et MongoDB :
+
+```bash
+docker compose up --build
+```
+
+L'app iOS doit être lancée depuis le projet frontend sur la machine, pas depuis le conteneur web :
+
+```bash
+cd frontend
+pnpm install
+pnpm ios
+```
+
+Prérequis :
+
+- Xcode installé
+- Un simulateur iOS disponible via Xcode
+
+Sur simulateur iOS, l'API peut rester sur `http://localhost:3000`. Sur un vrai iPhone, il faudra remplacer `localhost` par l'adresse IP locale du Mac dans la configuration frontend.
+
 ## Tests
 
 Backend :

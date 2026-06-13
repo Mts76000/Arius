@@ -77,9 +77,9 @@ export const NotesTab: React.FC<NotesTabProps> = ({
   return (
     <View className="p-5">
       <View className="flex flex-row justify-between pt-5">
-        <Text className="text-lg font-bold">Notes</Text>
+        <Text className="text-lg font-semibold text-slate-900">Notes</Text>
         <TouchableOpacity onPress={onAddNote}>
-          <Text className="text-primary font-semibold text-lg">+ Ajouter</Text>
+          <Text className="text-base font-semibold text-primary">+ Ajouter</Text>
         </TouchableOpacity>
       </View>
 
@@ -134,7 +134,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           </View>
         ) : hasSearchQuery ? (
           <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
-            <Text className="text-lg font-bold text-slate-900">
+            <Text className="text-base font-semibold text-slate-900">
               Aucune note trouvée
             </Text>
             <Text className="mt-1 text-center text-sm text-slate-500">
@@ -143,7 +143,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
           </View>
         ) : (
           <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
-            <Text className="text-lg font-bold text-slate-900">
+            <Text className="text-base font-semibold text-slate-900">
               Aucune note
             </Text>
             <Text className="mt-1 text-center text-sm text-slate-500">

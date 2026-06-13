@@ -6,6 +6,7 @@ import { FormInput } from "@/components/forms/FormInput";
 import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
 import { AppButton } from "@/components/ui/AppButton";
 import { Ionicons } from "@expo/vector-icons";
+import { AriusLogo } from "@/components/ui/AriusLogo";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -131,9 +132,7 @@ export default function LoginScreen() {
         style={{ maxWidth: 460 }}
       >
         <View className="flex-col items-center gap-4">
-          <View className="bg-primary w-[50px] h-[50px] rounded-xl items-center justify-center">
-            <Ionicons name="cube-outline" size={30} color="white" />
-          </View>
+          <AriusLogo size={54} />
           <Text className="text-4xl font-bold">Arius CRM</Text>
           <Text className="text-gray text-lg">
             {isForgotMode

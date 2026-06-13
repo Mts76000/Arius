@@ -6,8 +6,10 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  useWindowDimensions,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
 import type { CreateEntrepriseInput } from "@/services/entreprises";
 import { useAuthStore } from "@/store/authStore";
@@ -35,6 +37,9 @@ export function EntrepriseForm({
   submitLabel = "Enregistrer",
   entrepriseId,
 }: EntrepriseFormProps) {
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isCompactLayout = width < 900;
   const token = useAuthStore((state) => state.token);
   const baseURL =
     Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
@@ -212,23 +217,25 @@ export function EntrepriseForm({
     await onSubmit(formData);
   };
 
-  const bottomSpacing = Platform.OS === "web" ? 32 : 240;
+  const bottomSpacing = isCompactLayout ? insets.bottom + 150 : 48;
 
   return (
-    <ScrollView
-      className="flex-1 bg-gray-50"
-      contentContainerStyle={{ paddingBottom: bottomSpacing }}
-    >
-      <Form>
-        <FormGroup title="Nom de l'entreprise" required error={formErrors.nom}>
-          <FormInput
-            placeholder="Nom de l'entreprise"
-            label=""
-            value={formData.nom ?? ""}
-            onChangeText={(t) => setFormData({ ...formData, nom: t ?? "" })}
-            error={null}
-          />
-        </FormGroup>
+    <View className="flex-1 bg-gray-50">
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ paddingBottom: bottomSpacing }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Form>
+          <FormGroup title="Nom de l'entreprise" required error={formErrors.nom}>
+            <FormInput
+              placeholder="Nom de l'entreprise"
+              label=""
+              value={formData.nom ?? ""}
+              onChangeText={(t) => setFormData({ ...formData, nom: t ?? "" })}
+              error={null}
+            />
+          </FormGroup>
 
         <FormGroup title="Statut">
           <View className="flex-row flex-wrap justify-between gap-3">
@@ -308,7 +315,7 @@ export function EntrepriseForm({
         </FormGroup>
 
         <FormGroup title="Logo">
-          <View className="rounded-2xl border border-gray-200 bg-white p-4">
+          <View className="rounded-xl border border-gray-200 bg-white p-4">
             <View className="flex-row items-center gap-4">
               <EntrepriseAvatar
                 name={formData.nom}
@@ -317,10 +324,10 @@ export function EntrepriseForm({
                 rounded="xl"
               />
               <View className="flex-1 gap-2">
-                <View className="flex-row items-center gap-3 pt-1">
+                <View className="flex-row flex-wrap items-center gap-3 pt-1">
                   <TouchableOpacity onPress={pickImage} disabled={uploading}>
-                    <View className="rounded-2xl border border-primary px-4 py-3 self-start">
-                      <Text className="text-primary font-semibold">
+                    <View className="self-start rounded-lg border border-primary px-4 py-3">
+                      <Text className="font-semibold text-primary">
                         {uploading ? "Upload..." : "Ajouter un fichier"}
                       </Text>
                     </View>
@@ -328,9 +335,9 @@ export function EntrepriseForm({
                   {formData.logo && (
                     <TouchableOpacity
                       onPress={() => setFormData({ ...formData, logo: "" })}
-                      className="rounded-2xl border border-red-200 px-4 py-3"
+                      className="rounded-lg border border-red-200 px-4 py-3"
                     >
-                      <Text className="text-red-600 font-semibold">Retirer</Text>
+                      <Text className="font-semibold text-red-600">Retirer</Text>
                     </TouchableOpacity>
                   )}
                 </View>
@@ -338,7 +345,7 @@ export function EntrepriseForm({
             </View>
           </View>
         </FormGroup>
-        <View className="flex-row gap-3">
+        <View className="mt-2 flex-row gap-4">
           <View className="flex-1">
             <AppButton title="Annuler" onPress={onCancel} variant="secondary" />
           </View>
@@ -361,6 +368,7 @@ export function EntrepriseForm({
           style={{ display: "none" }}
         />
       )}
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }

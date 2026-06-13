@@ -6,6 +6,7 @@ import { AppButton } from "@/components/ui/AppButton";
 import { FormInput } from "@/components/forms/FormInput";
 import { FormErrors, hasErrors, ValidationRules } from "@/utils/validation";
 import { useAuthStore } from "@/store/authStore";
+import { AriusLogo } from "@/components/ui/AriusLogo";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -65,9 +66,7 @@ export default function ResetPasswordScreen() {
         style={{ maxWidth: 460 }}
       >
         <View className="flex-col items-center gap-4">
-          <View className="bg-primary w-[50px] h-[50px] rounded-xl items-center justify-center">
-            <Ionicons name="key-outline" size={30} color="white" />
-          </View>
+          <AriusLogo size={54} />
           <Text className="text-center text-4xl font-bold">
             Nouveau mot de passe
           </Text>

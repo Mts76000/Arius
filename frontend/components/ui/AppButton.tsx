@@ -62,7 +62,7 @@ export function AppButton({
       {isLoading ? <ActivityIndicator color="#ffffff" /> : icon}
       {!isLoading && (
         <Text
-          className={`font-semibold text-l ${customTextClassName ?? textClassName[variant]}`}
+          className={`text-base font-semibold ${customTextClassName ?? textClassName[variant]}`}
         >
           {title}
         </Text>

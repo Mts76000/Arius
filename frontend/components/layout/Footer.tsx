@@ -6,6 +6,7 @@ import type {
   BottomTabNavigationOptions,
 } from "@react-navigation/bottom-tabs";
 import { Pressable, Text, useWindowDimensions, View } from "react-native";
+import { AriusLogo } from "@/components/ui/AriusLogo";
 
 export type FooterTabName = "index" | "entreprises" | "rdvs" | "ca";
 
@@ -92,14 +93,8 @@ export function FooterTabs() {
     if (isDesktop) {
       return (
         <View className="absolute bottom-0 left-0 top-0 w-60 border-r border-slate-200 bg-white px-4 py-6">
-          <View className="mb-8 flex-row items-center gap-3 px-2">
-            <View className="h-10 w-10 items-center justify-center rounded-lg bg-primary">
-              <Ionicons name="cube-outline" size={22} color="#ffffff" />
-            </View>
-            <View>
-              <Text className="text-lg font-bold text-slate-950">Arius</Text>
-              <Text className="text-xs text-slate-500">CRM commercial</Text>
-            </View>
+          <View className="mb-8 px-2">
+            <AriusLogo showText />
           </View>
 
           <View className="gap-1">

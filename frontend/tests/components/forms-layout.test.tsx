@@ -54,6 +54,10 @@ vi.mock("@expo/vector-icons", () => ({
   Ionicons: ({ name }: { name: string }) => React.createElement("Text", null, name),
 }));
 
+vi.mock("react-native-safe-area-context", () => ({
+  useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 24, left: 0 }),
+}));
+
 vi.mock("expo-constants", () => ({
   default: { expoConfig: { extra: { apiUrl: "http://api.test" } } },
 }));

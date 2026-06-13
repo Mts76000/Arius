@@ -60,7 +60,7 @@ export const RdvCard: React.FC<RdvCardProps> = ({
         <View className="flex-1 flex-row items-start gap-3">
           <View className="flex-1 gap-2">
             <View className="flex-row items-center gap-2">
-              <Text className="text-base font-bold " numberOfLines={1}>
+              <Text className="text-base font-semibold" numberOfLines={1}>
                 {rdv.titre}
               </Text>
               <View
@@ -88,7 +88,7 @@ export const RdvCard: React.FC<RdvCardProps> = ({
             {contactName ? (
               <View className="mt-0.5 flex-row items-center gap-1.5">
                 <Ionicons name="person-outline" size={13} color="#64748B" />
-                <Text className=" font-medium text-slate-500" numberOfLines={1}>
+                <Text className="text-sm font-medium text-slate-500" numberOfLines={1}>
                   {contactName}
                 </Text>
               </View>
@@ -175,13 +175,13 @@ export const RdvCard: React.FC<RdvCardProps> = ({
       <View className="mt-3 w-full gap-2">
         <View className="flex-row items-center gap-2">
           <Ionicons name="calendar-outline" size={16} color="#007aff" />
-          <Text className="font-medium text-slate-700">{day}</Text>
+          <Text className="text-sm font-medium text-slate-700">{day}</Text>
           <Text className="text-slate-300">•</Text>
           <Ionicons name="time-outline" size={16} color="#007aff" />
-          <Text className="font-medium text-slate-700">{time}</Text>
+          <Text className="text-sm font-medium text-slate-700">{time}</Text>
           <Text className="text-slate-300">•</Text>
           <Ionicons name="hourglass-outline" size={16} color="#007aff" />
-          <Text className="font-medium text-slate-700">
+          <Text className="text-sm font-medium text-slate-700">
             {rdv.duree_minutes}m
           </Text>
         </View>
