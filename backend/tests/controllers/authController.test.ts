@@ -4,14 +4,29 @@ const userModel = vi.hoisted(() => ({
   comparePassword: vi.fn(),
   createUser: vi.fn(),
   generateJwt: vi.fn(),
+  generatePasswordResetToken: vi.fn(),
   getUserByEmail: vi.fn(),
   getUserById: vi.fn(),
   hashPassword: vi.fn(),
+  updateUserPassword: vi.fn(),
+  verifyPasswordResetToken: vi.fn(),
 }));
 
 vi.mock("../../src/models/user.js", () => userModel);
 
-import { login, me, register } from "../../src/controllers/authController.js";
+const emailService = vi.hoisted(() => ({
+  sendPasswordResetEmail: vi.fn(),
+}));
+
+vi.mock("../../src/services/emailService.js", () => emailService);
+
+import {
+  forgotPassword,
+  login,
+  me,
+  register,
+  resetPassword,
+} from "../../src/controllers/authController.js";
 
 function mockResponse() {
   const res = {
@@ -25,6 +40,7 @@ function mockResponse() {
 describe("auth controller", () => {
   beforeEach(() => {
     Object.values(userModel).forEach((mock) => mock.mockReset());
+    Object.values(emailService).forEach((mock) => mock.mockReset());
   });
 
   it("rejects registration without email", async () => {
@@ -115,5 +131,58 @@ describe("auth controller", () => {
       prenom: "Mathis",
       nom: "Lamotte",
     });
+  });
+
+  it("sends a reset email when forgot password matches a user", async () => {
+    userModel.getUserByEmail.mockResolvedValueOnce({
+      id: "user-1",
+      password: "hashed",
+    });
+    userModel.generatePasswordResetToken.mockReturnValueOnce("reset-token");
+    emailService.sendPasswordResetEmail.mockResolvedValueOnce(undefined);
+    const res = mockResponse();
+
+    await forgotPassword(
+      { body: { email: "test@example.com" } } as any,
+      res as any,
+    );
+
+    expect(emailService.sendPasswordResetEmail).toHaveBeenCalledWith(
+      "test@example.com",
+      expect.stringContaining("reset-token"),
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("does not reveal unknown emails on forgot password", async () => {
+    userModel.getUserByEmail.mockResolvedValueOnce(null);
+    const res = mockResponse();
+
+    await forgotPassword(
+      { body: { email: "missing@example.com" } } as any,
+      res as any,
+    );
+
+    expect(emailService.sendPasswordResetEmail).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it("resets password with a valid reset token", async () => {
+    userModel.verifyPasswordResetToken.mockReturnValueOnce({ sub: "user-1" });
+    userModel.getUserById.mockResolvedValueOnce({ id: "user-1" });
+    userModel.hashPassword.mockResolvedValueOnce("new-hash");
+    userModel.updateUserPassword.mockResolvedValueOnce(undefined);
+    const res = mockResponse();
+
+    await resetPassword(
+      { body: { token: "reset-token", password: "new-secret" } } as any,
+      res as any,
+    );
+
+    expect(userModel.updateUserPassword).toHaveBeenCalledWith(
+      "user-1",
+      "new-hash",
+    );
+    expect(res.status).toHaveBeenCalledWith(200);
   });
 });

@@ -73,6 +73,18 @@ export async function anonymizeUser(userId: string): Promise<void> {
   );
 }
 
+export async function updateUserPassword(
+  userId: string,
+  hashedPassword: string,
+): Promise<void> {
+  const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+  await pool.execute("UPDATE users SET password = ?, updated_at = ? WHERE id = ?", [
+    hashedPassword,
+    now,
+    userId,
+  ]);
+}
+
 export async function hashPassword(password: string): Promise<string> {
   const saltRounds = 10;
   return bcrypt.hash(password, saltRounds);
@@ -90,6 +102,26 @@ export function generateJwt(userId: string): string {
     algorithm: "HS256",
     expiresIn: "7d",
   });
+}
+
+export function generatePasswordResetToken(userId: string): string {
+  return jwt.sign({ sub: userId, purpose: "password_reset" }, env.jwtSecret, {
+    algorithm: "HS256",
+    expiresIn: "30m",
+  });
+}
+
+export function verifyPasswordResetToken(token: string): { sub: string } {
+  const payload = jwt.verify(token, env.jwtSecret) as {
+    sub: string;
+    purpose?: string;
+  };
+
+  if (payload.purpose !== "password_reset") {
+    throw new Error("invalid reset token");
+  }
+
+  return { sub: payload.sub };
 }
 
 export function verifyJwt(token: string): { sub: string } {

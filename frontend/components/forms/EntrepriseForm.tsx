@@ -212,7 +212,7 @@ export function EntrepriseForm({
     await onSubmit(formData);
   };
 
-  const bottomSpacing = Platform.OS === "web" ? 32 : 170;
+  const bottomSpacing = Platform.OS === "web" ? 32 : 240;
 
   return (
     <ScrollView
@@ -321,7 +321,7 @@ export function EntrepriseForm({
                   <TouchableOpacity onPress={pickImage} disabled={uploading}>
                     <View className="rounded-2xl border border-primary px-4 py-3 self-start">
                       <Text className="text-primary font-semibold">
-                        {uploading ? "Upload..." : "Galerie"}
+                        {uploading ? "Upload..." : "Ajouter un fichier"}
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -358,6 +358,7 @@ export function EntrepriseForm({
           type="file"
           accept="image/*"
           onChange={handleWebFileSelect as any}
+          style={{ display: "none" }}
         />
       )}
     </ScrollView>

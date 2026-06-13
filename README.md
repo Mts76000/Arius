@@ -98,6 +98,25 @@ MYSQL_DATABASE=arius
 
 Note : au premier démarrage Docker, le schéma initial est encore chargé depuis `backend/src/db/schema.sql`. Drizzle sert ensuite à faire évoluer le schéma et à garder une version TypeScript lisible de la base.
 
+## Emails Resend
+
+Le mot de passe oublié utilise Resend côté backend.
+
+Variables à configurer dans `backend/.env` :
+
+```env
+FRONTEND_URL=http://localhost:8081
+RESEND_API_KEY=ta_cle_resend
+RESEND_FROM_EMAIL=contact@example.com
+```
+
+Flux :
+
+- L'utilisateur clique sur `Mot de passe oublié ?` depuis la page de connexion.
+- L'API envoie un lien temporaire par email.
+- Le lien ouvre `/reset-password?token=...`.
+- L'utilisateur définit un nouveau mot de passe.
+
 ## Lancer hors Docker
 
 Backend :

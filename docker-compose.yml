@@ -31,6 +31,8 @@ services:
       context: ./backend
     container_name: arius-backend
     restart: unless-stopped
+    env_file:
+      - ./backend/.env
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -41,6 +43,7 @@ services:
       MYSQL_DATABASE: arius
       MONGO_URL: mongodb://mongo:27017/arius
       JWT_SECRET: change-me-in-prod
+      FRONTEND_URL: http://localhost:8081
     ports:
       - "3000:3000"
     volumes:

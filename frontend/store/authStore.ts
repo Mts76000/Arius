@@ -17,6 +17,8 @@ interface AuthState {
     prenom?: string,
     nom?: string,
   ) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, password: string) => Promise<void>;
   loadUser: () => Promise<void>;
   logout: () => void;
   clearError: () => void;
@@ -91,6 +93,40 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await get().loadUser();
     } catch (error: any) {
       set({ error: getFrenchAuthError(error, "Echec de l'inscription.") });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  forgotPassword: async (email: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authService.forgotPassword(email);
+    } catch (error: any) {
+      set({
+        error: getFrenchAuthError(
+          error,
+          "Impossible d'envoyer le lien de réinitialisation.",
+        ),
+      });
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  resetPassword: async (token: string, password: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      await authService.resetPassword(token, password);
+    } catch (error: any) {
+      set({
+        error: getFrenchAuthError(
+          error,
+          "Lien invalide ou expiré. Redemande un nouveau lien.",
+        ),
+      });
       throw error;
     } finally {
       set({ isLoading: false });
