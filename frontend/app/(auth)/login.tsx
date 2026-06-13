@@ -112,9 +112,14 @@ export default function LoginScreen() {
           </Text>
         </View>
         {error && (
-          <View className="w-full flex-row items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3">
+          <View
+            className="w-full flex-row items-start gap-2 rounded-lg border p-3"
+            style={{ backgroundColor: "#fef2f2", borderColor: "#fecaca" }}
+          >
             <Ionicons name="alert-circle-outline" size={20} color="#b91c1c" />
-            <Text className="flex-1 font-semibold text-red-700">{error}</Text>
+            <Text className="flex-1 font-semibold" style={{ color: "#b91c1c" }}>
+              {error}
+            </Text>
           </View>
         )}
         <FormInput
