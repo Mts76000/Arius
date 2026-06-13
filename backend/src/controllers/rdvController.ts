@@ -1,26 +1,10 @@
 import { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
-import { z } from "zod";
 import { Rdv } from "../models/rdv.js";
-
-// Zod schemas
-const CreateRdvSchema = z.object({
-  titre: z.string().min(3, "Titre requis (min 3 caractères)"),
-  description: z.string().optional(),
-  date_prevue: z.string().datetime("Date invalide"),
-  duree_minutes: z.number().int().min(1, "Durée invalide"),
-  entreprise_id: z.string().min(1, "Entreprise requise"),
-  contact_id: z.string().optional(),
-  statut: z.enum(["planifie", "termine", "annule"]).optional(),
-});
-
-const UpdateRdvSchema = z.object({
-  titre: z.string().min(3).optional(),
-  description: z.string().optional(),
-  date_prevue: z.string().datetime().optional(),
-  duree_minutes: z.number().int().min(1, "Durée invalide").optional(),
-  statut: z.enum(["planifie", "termine", "annule"]).optional(),
-});
+import {
+  createRdvSchema,
+  updateRdvSchema,
+} from "../validation/rdvSchemas.js";
 
 export async function listMyRdvs(req: Request, res: Response) {
   try {
@@ -211,7 +195,7 @@ export async function create(req: Request, res: Response) {
       return res.status(401).json({ error: "Non authentifié" });
     }
 
-    const validation = CreateRdvSchema.safeParse(req.body);
+    const validation = createRdvSchema.safeParse(req.body);
 
     if (!validation.success) {
       return res.status(400).json({ errors: validation.error.errors });
@@ -257,7 +241,7 @@ export async function update(req: Request, res: Response) {
       return res.status(401).json({ error: "Non authentifié" });
     }
 
-    const validation = UpdateRdvSchema.safeParse(req.body);
+    const validation = updateRdvSchema.safeParse(req.body);
 
     if (!validation.success) {
       return res.status(400).json({ error: validation.error.errors });
