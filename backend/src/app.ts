@@ -261,7 +261,6 @@ export function createApp() {
 
       try {
         // Assurer qu'il y a une extension
-        let finalFilename: string;
         const originalPath = req.file.path;
 
         let filename = req.file.filename;
@@ -292,9 +291,7 @@ export function createApp() {
           const newPath = path.join(logoDir, filename);
           fs.renameSync(originalPath, newPath);
         }
-        finalFilename = filename;
-
-        const fileUrl = `/uploads/entreprises/${entrepriseId}/logos/${finalFilename}`;
+        const fileUrl = `/uploads/entreprises/${entrepriseId}/logos/${filename}`;
         res.json({ url: fileUrl });
       } catch (error) {
         console.error("Upload processing error:", error);

@@ -98,7 +98,10 @@ export default function LoginScreen() {
         paddingVertical: 75,
       }}
     >
-      <View className="w-full max-w-md flex-col items-center gap-8 bg-white p-12 rounded-[20px] shadow-sm">
+      <View
+        className="w-full flex-col items-center gap-8 rounded-xl border border-slate-200 bg-white p-8 shadow-sm"
+        style={{ maxWidth: 460 }}
+      >
         <View className="flex-col items-center gap-4">
           <View className="bg-primary w-[50px] h-[50px] rounded-xl items-center justify-center">
             <Ionicons name="cube-outline" size={30} color="white" />
@@ -109,8 +112,14 @@ export default function LoginScreen() {
           </Text>
         </View>
         {error && (
-          <View className="flex items-center w-full p-2 bg-red-100 rounded-xl border border-red-300">
-            <Text className="text-red-500">{error}</Text>
+          <View
+            className="w-full flex-row items-start gap-2 rounded-lg border p-3"
+            style={{ backgroundColor: "#fef2f2", borderColor: "#fecaca" }}
+          >
+            <Ionicons name="alert-circle-outline" size={20} color="#b91c1c" />
+            <Text className="flex-1 font-semibold" style={{ color: "#b91c1c" }}>
+              {error}
+            </Text>
           </View>
         )}
         <FormInput

@@ -7,14 +7,18 @@ import {
   getUserById,
   hashPassword,
 } from "../models/user.js";
+import { loginSchema, registerSchema } from "../validation/authSchemas.js";
 
 export async function register(req: Request, res: Response) {
   try {
-    const { email, password, prenom, nom } = req.body ?? {};
-    if (!email || typeof email !== "string")
-      return res.status(400).json({ error: "email required" });
-    if (!password || typeof password !== "string")
-      return res.status(400).json({ error: "password required" });
+    const parsed = registerSchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: "validation_error",
+        details: parsed.error.flatten(),
+      });
+    }
+    const { email, password, prenom, nom } = parsed.data;
 
     const existing = await getUserByEmail(email);
     if (existing)
@@ -29,18 +33,21 @@ export async function register(req: Request, res: Response) {
     });
     const token = generateJwt(user.id);
     return res.status(201).json({ token });
-  } catch (e) {
+  } catch {
     return res.status(500).json({ error: "internal_error" });
   }
 }
 
 export async function login(req: Request, res: Response) {
   try {
-    const { email, password } = req.body ?? {};
-    if (!email || typeof email !== "string")
-      return res.status(400).json({ error: "email required" });
-    if (!password || typeof password !== "string")
-      return res.status(400).json({ error: "password required" });
+    const parsed = loginSchema.safeParse(req.body ?? {});
+    if (!parsed.success) {
+      return res.status(400).json({
+        error: "validation_error",
+        details: parsed.error.flatten(),
+      });
+    }
+    const { email, password } = parsed.data;
 
     const user = await getUserByEmail(email);
     if (!user || !user.password)

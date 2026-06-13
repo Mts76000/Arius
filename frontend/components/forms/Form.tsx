@@ -56,7 +56,14 @@ interface PickerFrameProps {
 }
 
 export function Form({ children }: FormProps) {
-  return <View className="px-5 pt-6 gap-5">{children}</View>;
+  return (
+    <View
+      className="w-full gap-5 px-5 pt-6"
+      style={{ maxWidth: 820, alignSelf: "center" }}
+    >
+      {children}
+    </View>
+  );
 }
 
 export function FormHeader({
@@ -114,7 +121,9 @@ export function FormGroup({
         </Text>
       ) : null}
       {children}
-      {error ? <Text className="text-red-600 text-sm">{error}</Text> : null}
+      {error ? (
+        <Text className="text-sm font-medium text-red-700">{error}</Text>
+      ) : null}
     </View>
   );
 }
@@ -122,7 +131,7 @@ export function FormGroup({
 export function FormSection({ children, className }: FormSectionProps) {
   return (
     <View
-      className={`mx-5 my-4 rounded-2xl border border-gray-100 bg-white p-5 shadow-sm gap-4 ${
+      className={`mx-5 my-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm gap-4 ${
         className ?? ""
       }`}
     >
@@ -146,8 +155,8 @@ export function ChoiceChip({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      className={`min-h-11 rounded-2xl border px-4 py-2.5 items-center justify-center ${
-        selected ? selectedClassName : "bg-white border-gray-200"
+      className={`min-h-11 rounded-lg border px-4 py-2.5 items-center justify-center ${
+        selected ? selectedClassName : "bg-white border-slate-200"
       } ${disabled ? "opacity-60" : ""} ${className ?? ""}`}
       style={style}
     >
@@ -171,8 +180,8 @@ export function CheckboxRow({
     <TouchableOpacity
       onPress={onPress}
       disabled={disabled}
-      className={`flex-row items-center gap-3 rounded-2xl border px-3 py-3 ${
-        checked ? "border-primary/30 bg-primaryLight" : "border-gray-100 bg-gray-50"
+      className={`flex-row items-center gap-3 rounded-lg border px-3 py-3 ${
+        checked ? "border-primary/30 bg-primaryLight" : "border-slate-200 bg-slate-50"
       } ${
         disabled ? "opacity-60" : ""
       }`}
@@ -197,8 +206,8 @@ export function PickerFrame({
 }: PickerFrameProps) {
   return (
     <View
-      className={`min-h-12 justify-center overflow-hidden rounded-2xl border ${
-        error ? "border-red-400 bg-red-50" : "border-gray-200 bg-white"
+      className={`min-h-12 justify-center overflow-hidden rounded-lg border ${
+        error ? "border-red-500 bg-red-50" : "border-slate-300 bg-white"
       } ${disabled ? "opacity-60" : ""} ${className ?? ""}`}
     >
       {children}

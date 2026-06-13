@@ -8,6 +8,7 @@ import {
   TextInput,
   RefreshControl,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -45,6 +46,8 @@ const statusBadgeClassName: Record<
 
 export default function EntreprisesScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 900;
   const [rechercheInput, setRechercheInput] = useState("");
   const [recherche, setRecherche] = useState("");
   const [statutFilter, setStatutFilter] = useState<
@@ -134,7 +137,7 @@ export default function EntreprisesScreen() {
     return (
       <TouchableOpacity
         onPress={() => router.push(`/entreprises/${item.id}` as any)}
-        className="mx-5 mb-3 rounded-3xl bg-white p-4 shadow-base"
+        className="mb-3 rounded-xl bg-white p-4 shadow-base"
         activeOpacity={0.85}
       >
         <View className="flex-row gap-4">
@@ -194,7 +197,14 @@ export default function EntreprisesScreen() {
 
   return (
     <View className="flex-1">
-      <View className="gap-3 px-5 pb-5 pt-5">
+      <View
+        className="w-full gap-3 px-5 pb-5 pt-5"
+        style={{
+          alignSelf: "center",
+          maxWidth: 1120,
+          paddingHorizontal: isDesktop ? 32 : 20,
+        }}
+      >
         <View className="flex-row items-center gap-2 rounded-2xl bg-white px-4 py-1 shadow-base">
           <Ionicons name="search-outline" size={20} color="#64748b" />
           <TextInput
@@ -258,7 +268,14 @@ export default function EntreprisesScreen() {
           data={entreprises}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingTop: 8, paddingBottom: 180 }}
+          contentContainerStyle={{
+            alignSelf: "center",
+            maxWidth: 1120,
+            paddingBottom: isDesktop ? 48 : 180,
+            paddingHorizontal: isDesktop ? 32 : 20,
+            paddingTop: 8,
+            width: "100%",
+          }}
           keyboardShouldPersistTaps="handled"
           refreshControl={
             <RefreshControl

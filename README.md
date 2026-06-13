@@ -46,6 +46,58 @@ docker compose down -v
 docker compose up --build
 ```
 
+## Données de démo
+
+Pour remplir MySQL et MongoDB avec des fixtures :
+
+```bash
+cd backend
+npm run seed
+```
+
+Compte créé :
+
+- Email : `demo@arius.local`
+- Mot de passe : `password123`
+
+## Drizzle
+
+Drizzle est utilisé côté backend pour décrire le schéma MySQL en TypeScript et préparer les évolutions de base.
+
+Fichiers importants :
+
+- `backend/src/db/schema.ts` : schéma MySQL version TypeScript.
+- `backend/drizzle.config.ts` : config Drizzle, lit les variables `MYSQL_*` du `.env`.
+- `backend/src/db/drizzle.ts` : connexion Drizzle utilisée par les scripts.
+- `backend/src/scripts/seed.ts` : fixtures avec Faker.
+
+Commandes :
+
+```bash
+cd backend
+
+# Génère des fichiers de migration dans backend/drizzle/
+npm run db:generate
+
+# Applique le schéma Drizzle sur la base configurée dans .env
+npm run db:push
+
+# Remplit la base avec des fausses données
+npm run seed
+```
+
+En local avec Docker, la base MySQL est exposée sur `localhost:3307`. Le `.env` backend doit donc contenir :
+
+```env
+MYSQL_HOST=localhost
+MYSQL_PORT=3307
+MYSQL_USER=root
+MYSQL_PASSWORD=root
+MYSQL_DATABASE=arius
+```
+
+Note : au premier démarrage Docker, le schéma initial est encore chargé depuis `backend/src/db/schema.sql`. Drizzle sert ensuite à faire évoluer le schéma et à garder une version TypeScript lisible de la base.
+
 ## Lancer hors Docker
 
 Backend :

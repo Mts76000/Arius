@@ -5,7 +5,7 @@ import type {
   BottomTabBarProps,
   BottomTabNavigationOptions,
 } from "@react-navigation/bottom-tabs";
-import { Pressable, View } from "react-native";
+import { Pressable, Text, useWindowDimensions, View } from "react-native";
 
 export type FooterTabName = "index" | "entreprises" | "rdvs" | "ca";
 
@@ -31,6 +31,13 @@ const iconByRoute: Record<FooterTabName, keyof typeof Ionicons.glyphMap> = {
   entreprises: "people-outline",
   rdvs: "calendar-outline",
   ca: "bar-chart-outline",
+};
+
+const labelByRoute: Record<FooterTabName, string> = {
+  index: "Accueil",
+  entreprises: "Entreprises",
+  rdvs: "Rendez-vous",
+  ca: "Chiffre d'affaires",
 };
 
 export const footerTabs: FooterTabConfig[] = [
@@ -67,6 +74,8 @@ export const footerTabs: FooterTabConfig[] = [
 export function FooterTabs() {
   const router = useRouter();
   const pathname = usePathname();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 900;
 
   const renderNativeWindTabBar = ({ state, navigation }: BottomTabBarProps) => {
     const visibleRouteNames: FooterTabName[] = [
@@ -80,8 +89,75 @@ export function FooterTabs() {
       visibleRouteNames.includes(route.name as FooterTabName),
     );
 
+    if (isDesktop) {
+      return (
+        <View className="absolute bottom-0 left-0 top-0 w-60 border-r border-slate-200 bg-white px-4 py-6">
+          <View className="mb-8 flex-row items-center gap-3 px-2">
+            <View className="h-10 w-10 items-center justify-center rounded-lg bg-primary">
+              <Ionicons name="cube-outline" size={22} color="#ffffff" />
+            </View>
+            <View>
+              <Text className="text-lg font-bold text-slate-950">Arius</Text>
+              <Text className="text-xs text-slate-500">CRM commercial</Text>
+            </View>
+          </View>
+
+          <View className="gap-1">
+            {visibleRoutes.map((route) => {
+              const isFocused = state.routes[state.index].key === route.key;
+              const routeName = route.name as FooterTabName;
+
+              const onPress = () => {
+                if (
+                  routeName === "entreprises" &&
+                  pathname !== "/(tabs)/entreprises"
+                ) {
+                  router.replace("/(tabs)/entreprises");
+                  return;
+                }
+
+                const event = navigation.emit({
+                  type: "tabPress",
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+
+                if (!isFocused && !event.defaultPrevented) {
+                  navigation.navigate(route.name);
+                }
+              };
+
+              return (
+                <Pressable
+                  key={route.key}
+                  onPress={onPress}
+                  className={`h-12 flex-row items-center gap-3 rounded-lg px-3 ${
+                    isFocused ? "bg-primaryLight" : "bg-white"
+                  }`}
+                  accessibilityRole="button"
+                >
+                  <Ionicons
+                    name={iconByRoute[routeName]}
+                    size={22}
+                    color={isFocused ? "#007aff" : "#64748b"}
+                  />
+                  <Text
+                    className={`font-semibold ${
+                      isFocused ? "text-primary" : "text-slate-600"
+                    }`}
+                  >
+                    {labelByRoute[routeName]}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      );
+    }
+
     return (
-      <View className="absolute left-4 right-4 bottom-10 h-16 flex-row items-center justify-center gap-10  rounded-full border-[0.3px] border-grayLight bg-white shadow-sm">
+      <View className="absolute left-4 right-4 bottom-10 h-16 flex-row items-center justify-center gap-10 rounded-full border-[0.3px] border-grayLight bg-white shadow-sm">
         {visibleRoutes.map((route) => {
           const isFocused = state.routes[state.index].key === route.key;
           const routeName = route.name as FooterTabName;
@@ -128,7 +204,13 @@ export function FooterTabs() {
   return (
     <Tabs
       tabBar={renderNativeWindTabBar}
-      screenOptions={{ headerShown: false }}
+      screenOptions={{
+        headerShown: false,
+        sceneStyle: {
+          backgroundColor: "#f8fafc",
+          marginLeft: isDesktop ? 240 : 0,
+        },
+      }}
     >
       {footerTabs.map((tab) => (
         <Tabs.Screen

@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import { z } from "zod";
 import {
   getEntreprises,
   getEntrepriseById,
@@ -7,96 +6,10 @@ import {
   updateEntreprise,
   deleteEntreprise,
 } from "../models/entreprise.js";
-
-const createSchema = z.object({
-  nom: z.string().min(1, "Nom requis"),
-  statut: z.enum(["client", "prospect", "fournisseur", "a_reactiver"]),
-  rue: z
-    .string()
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  code_postal: z
-    .string()
-    .max(10)
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  ville: z
-    .string()
-    .max(100)
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  pays: z
-    .string()
-    .max(100)
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  description: z
-    .string()
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  logo: z
-    .string()
-    .optional()
-    .or(z.literal(""))
-    .refine(
-      (val) => !val || val.startsWith("/uploads/") || /^https?:\/\//i.test(val),
-      {
-        message: "logo must be an URL or /uploads path",
-      },
-    )
-    .transform((val) => val || null),
-});
-
-const updateSchema = z.object({
-  nom: z.string().min(1).optional(),
-  statut: z
-    .enum(["client", "prospect", "fournisseur", "a_reactiver"])
-    .optional(),
-  rue: z
-    .string()
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  code_postal: z
-    .string()
-    .max(10)
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  ville: z
-    .string()
-    .max(100)
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  pays: z
-    .string()
-    .max(100)
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  description: z
-    .string()
-    .optional()
-    .nullable()
-    .transform((val) => val || null),
-  logo: z
-    .string()
-    .optional()
-    .or(z.literal(""))
-    .refine(
-      (val) => !val || val.startsWith("/uploads/") || /^https?:\/\//i.test(val),
-      {
-        message: "logo must be an URL or /uploads path",
-      },
-    )
-    .transform((val) => val || null),
-});
+import {
+  createEntrepriseSchema,
+  updateEntrepriseSchema,
+} from "../validation/entrepriseSchemas.js";
 
 export async function list(req: Request, res: Response) {
   try {
@@ -144,7 +57,7 @@ export async function create(req: Request, res: Response) {
     const userId = (req as any).userId as string;
     if (!userId) return res.status(401).json({ error: "unauthorized" });
 
-    const parsed = createSchema.safeParse(req.body);
+    const parsed = createEntrepriseSchema.safeParse(req.body);
     if (!parsed.success) {
       return res.status(400).json({
         error: "validation_error",
@@ -178,7 +91,7 @@ export async function update(req: Request, res: Response) {
     if (!userId) return res.status(401).json({ error: "unauthorized" });
 
     const { id } = req.params;
-    const parsed = updateSchema.safeParse(req.body);
+    const parsed = updateEntrepriseSchema.safeParse(req.body);
 
     if (!parsed.success) {
       return res.status(400).json({
