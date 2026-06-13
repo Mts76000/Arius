@@ -35,15 +35,48 @@ type HealthLine = {
   latencyMs: number;
 };
 
+const requiredMysqlTables = [
+  "users",
+  "entreprises",
+  "contacts",
+  "objectifs_mensuels",
+  "ca_mensuel",
+];
+
 async function checkMysql(): Promise<HealthLine> {
   const startedAt = performance.now();
 
   try {
     await pool.query("SELECT 1");
+    const [rows] = await pool.query(
+      `SELECT table_name
+       FROM information_schema.tables
+       WHERE table_schema = DATABASE()
+         AND table_name IN (?)`,
+      [requiredMysqlTables],
+    );
+    const existingTables = new Set(
+      (rows as Array<{ TABLE_NAME?: string; table_name?: string }>).map(
+        (row) => row.TABLE_NAME ?? row.table_name,
+      ),
+    );
+    const missingTables = requiredMysqlTables.filter(
+      (table) => !existingTables.has(table),
+    );
+
+    if (missingTables.length > 0) {
+      return {
+        name: "mysql",
+        status: "error",
+        message: `schema incomplete: ${missingTables.join(", ")}`,
+        latencyMs: Math.round(performance.now() - startedAt),
+      };
+    }
+
     return {
       name: "mysql",
       status: "ok",
-      message: "connected",
+      message: "connected, schema ready",
       latencyMs: Math.round(performance.now() - startedAt),
     };
   } catch {

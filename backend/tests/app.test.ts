@@ -24,6 +24,20 @@ vi.mock("../src/middleware/auth.js", () => ({
 
 import { createApp } from "../src/app.js";
 
+const mysqlTables = [
+  "users",
+  "entreprises",
+  "contacts",
+  "objectifs_mensuels",
+  "ca_mensuel",
+];
+
+function mockMysqlReady() {
+  poolMock.query
+    .mockResolvedValueOnce([[]])
+    .mockResolvedValueOnce([mysqlTables.map((table_name) => ({ table_name }))]);
+}
+
 describe("app", () => {
   beforeEach(() => {
     poolMock.query.mockReset();
@@ -40,7 +54,7 @@ describe("app", () => {
   });
 
   it("returns detailed health ok on root when dependencies respond", async () => {
-    poolMock.query.mockResolvedValueOnce([[]]);
+    mockMysqlReady();
     mongoMock.connectMongo.mockResolvedValueOnce(undefined);
 
     const response = await request(createApp()).get("/");
@@ -52,7 +66,7 @@ describe("app", () => {
     expect(response.body.uptimeSeconds).toEqual(expect.any(Number));
     expect(response.body.lines).toEqual([
       expect.stringMatching(/^api: ok \(running, 0ms\)$/),
-      expect.stringMatching(/^mysql: ok \(connected, \d+ms\)$/),
+      expect.stringMatching(/^mysql: ok \(connected, schema ready, \d+ms\)$/),
       expect.stringMatching(/^mongo: ok \(connected, \d+ms\)$/),
     ]);
     expect(response.body.checks).toEqual([
@@ -60,7 +74,7 @@ describe("app", () => {
       {
         name: "mysql",
         status: "ok",
-        message: "connected",
+        message: "connected, schema ready",
         latencyMs: expect.any(Number),
       },
       {
@@ -69,6 +83,25 @@ describe("app", () => {
         message: "connected",
         latencyMs: expect.any(Number),
       },
+    ]);
+  });
+
+  it("returns detailed health error when MySQL schema is incomplete", async () => {
+    poolMock.query
+      .mockResolvedValueOnce([[]])
+      .mockResolvedValueOnce([[{ table_name: "users" }]]);
+    mongoMock.connectMongo.mockResolvedValueOnce(undefined);
+
+    const response = await request(createApp()).get("/");
+
+    expect(response.status).toBe(503);
+    expect(response.body.status).toBe("error");
+    expect(response.body.lines).toEqual([
+      expect.stringMatching(/^api: ok \(running, 0ms\)$/),
+      expect.stringMatching(
+        /^mysql: error \(schema incomplete: entreprises, contacts, objectifs_mensuels, ca_mensuel, \d+ms\)$/,
+      ),
+      expect.stringMatching(/^mongo: ok \(connected, \d+ms\)$/),
     ]);
   });
 
@@ -88,7 +121,7 @@ describe("app", () => {
   });
 
   it("returns health ok when dependencies respond", async () => {
-    poolMock.query.mockResolvedValueOnce([[]]);
+    mockMysqlReady();
     mongoMock.connectMongo.mockResolvedValueOnce(undefined);
 
     const response = await request(createApp()).get("/health");
