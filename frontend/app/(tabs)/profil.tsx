@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Platform,
   Modal,
+  useWindowDimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -38,9 +39,11 @@ type ExportType = "prospects" | "rdvs" | "notes" | "ca" | "objectifs";
 export default function ProfilModal() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
   const logout = useAuthStore((state) => state.logout);
   const token = useAuthStore((state) => state.token);
   const appVersion = Constants.expoConfig?.version ?? "1.0.0";
+  const isDesktop = width >= 900;
   const [editMode, setEditMode] = useState(false);
   const [passwordMode, setPasswordMode] = useState(false);
 
@@ -387,7 +390,13 @@ export default function ProfilModal() {
         className="flex-1"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 190 }}
+        contentContainerStyle={{
+          alignSelf: "center",
+          maxWidth: 920,
+          paddingBottom: isDesktop ? 56 : 190,
+          paddingHorizontal: isDesktop ? 32 : 20,
+          width: "100%",
+        }}
         refreshControl={
           <RefreshControl
             onRefresh={() => refetch()}
