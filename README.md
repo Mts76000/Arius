@@ -46,6 +46,20 @@ docker compose down -v
 docker compose up --build
 ```
 
+## Données de démo
+
+Pour remplir MySQL et MongoDB avec des fixtures :
+
+```bash
+cd backend
+npm run seed
+```
+
+Compte créé :
+
+- Email : `demo@arius.local`
+- Mot de passe : `password123`
+
 ## Lancer hors Docker
 
 Backend :
