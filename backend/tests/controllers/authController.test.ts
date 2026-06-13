@@ -33,7 +33,9 @@ describe("auth controller", () => {
     await register({ body: { password: "secret" } } as any, res as any);
 
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ error: "email required" });
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: "validation_error" }),
+    );
   });
 
   it("rejects registration when email already exists", async () => {

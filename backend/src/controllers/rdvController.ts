@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
-import { Rdv, RdvStatus } from "../models/rdv.js";
+import { Rdv } from "../models/rdv.js";
 
 // Zod schemas
 const CreateRdvSchema = z.object({
@@ -21,9 +21,6 @@ const UpdateRdvSchema = z.object({
   duree_minutes: z.number().int().min(1, "Durée invalide").optional(),
   statut: z.enum(["planifie", "termine", "annule"]).optional(),
 });
-
-type CreateRdvInput = z.infer<typeof CreateRdvSchema>;
-type UpdateRdvInput = z.infer<typeof UpdateRdvSchema>;
 
 export async function listMyRdvs(req: Request, res: Response) {
   try {
