@@ -147,6 +147,27 @@ describe("app", () => {
       .field("entrepriseId", "e1");
 
     expect(response.status).toBe(400);
-    expect(response.body).toEqual({ error: "Aucun fichier uploadé" });
+    expect(response.body).toEqual({
+      success: false,
+      error: "validation_error",
+      message: "Aucun fichier uploade",
+    });
+  });
+
+  it("rejects invalid logo file types", async () => {
+    const response = await request(createApp())
+      .post("/v1/upload")
+      .field("entrepriseId", "e1")
+      .attach("image", Buffer.from("not-an-image"), {
+        filename: "logo.txt",
+        contentType: "text/plain",
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: "validation_error",
+      message: "Format d'image non autorisé",
+    });
   });
 });
