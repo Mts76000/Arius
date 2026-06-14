@@ -7,11 +7,14 @@
     "android": "expo start --android",
     "ios": "expo start --ios --localhost --port 8084",
     "web": "expo start --web",
+    "web:export": "expo export --platform web",
     "lint": "expo lint",
     "format": "prettier --write .",
     "test": "vitest run",
+    "test:e2e": "pnpm web:export && playwright test",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "types:api": "openapi-typescript ../shared/openapi.json -o shared/openapiTypes.ts"
   },
   "dependencies": {
     "@expo/dom-webview": "~55.0.6",
@@ -49,13 +52,16 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "@testing-library/react-native": "^14.0.0",
     "@types/react": "~19.2.14",
     "@vitest/coverage-v8": "^4.1.8",
     "eslint": "^9.39.4",
     "eslint-config-expo": "~55.0.1",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.8.4",
     "react-test-renderer": "^19.2.0",
+    "serve": "^14.2.6",
     "typescript": "~5.9.3",
     "vitest": "^4.1.8"
   },

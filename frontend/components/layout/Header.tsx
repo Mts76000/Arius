@@ -24,6 +24,10 @@ const routeTitleRules: RouteTitleRule[] = [
     match: (path) => path.includes("/profil"),
   },
   {
+    title: "Confidentialité",
+    match: (path) => path.includes("/privacy"),
+  },
+  {
     title: "Modifier Entreprise",
     match: (path) => path.includes("/entreprises/") && path.endsWith("/edit"),
   },

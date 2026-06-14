@@ -1,6 +1,9 @@
 # OS / editor
 .DS_Store
 .vscode/
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
 
 # Dependencies
 node_modules/
@@ -13,6 +16,8 @@ frontend/dist/
 coverage/
 backend/coverage/
 frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
 
 # Expo
 frontend/.expo/

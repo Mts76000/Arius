@@ -90,6 +90,7 @@ npm test
 npm run db:generate
 npm run db:migrate
 npm run db:seed
+npm run openapi:export
 ```
 
 ## Frontend web
@@ -140,7 +141,19 @@ Frontend :
 cd frontend
 pnpm lint
 pnpm test
+pnpm test:e2e
 ```
+
+## OpenAPI et types
+
+```bash
+cd backend
+npm run openapi:export
+cd ../frontend
+pnpm types:api
+```
+
+Le fichier `shared/openapi.json` sert de contrat API versionné. Les types frontend générés sont dans `frontend/shared/openapiTypes.ts`.
 
 ## Variables Resend
 
@@ -150,4 +163,13 @@ Le mot de passe oublié utilise Resend côté backend :
 FRONTEND_URL=http://localhost:8081
 RESEND_API_KEY=ta_cle_resend
 RESEND_FROM_EMAIL=contact@example.com
+```
+
+## Monitoring optionnel
+
+En production, les logs HTTP sortent en JSON structuré avec redaction des headers sensibles. Pour capturer les erreurs serveur dans Sentry :
+
+```env
+SENTRY_DSN=https://...
+SENTRY_TRACES_SAMPLE_RATE=0
 ```
