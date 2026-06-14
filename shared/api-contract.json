@@ -1,0 +1,5 @@
+{
+  "entrepriseStatus": ["client", "prospect", "fournisseur", "a_reactiver"],
+  "noteType": ["appel", "reunion", "email", "info", "autre"],
+  "rdvStatus": ["planifie", "termine", "annule"]
+}

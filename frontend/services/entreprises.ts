@@ -1,10 +1,11 @@
 import { api } from "./api";
+import type { EntrepriseStatus } from "@/shared/apiTypes";
 
 export interface Entreprise {
   id: string;
   user_id: string;
   nom: string;
-  statut: "client" | "prospect" | "fournisseur" | "a_reactiver";
+  statut: EntrepriseStatus;
   rue: string | null;
   code_postal: string | null;
   ville: string | null;
@@ -18,7 +19,7 @@ export interface Entreprise {
 
 export interface CreateEntrepriseInput {
   nom: string;
-  statut: "client" | "prospect" | "fournisseur" | "a_reactiver";
+  statut: EntrepriseStatus;
   rue?: string;
   code_postal?: string;
   ville?: string;
@@ -29,7 +30,7 @@ export interface CreateEntrepriseInput {
 
 export interface UpdateEntrepriseInput {
   nom?: string;
-  statut?: "client" | "prospect" | "fournisseur" | "a_reactiver";
+  statut?: EntrepriseStatus;
   rue?: string;
   code_postal?: string;
   ville?: string;
@@ -40,7 +41,7 @@ export interface UpdateEntrepriseInput {
 
 export interface GetEntreprisesParams {
   recherche?: string;
-  statut?: "client" | "prospect" | "fournisseur" | "a_reactiver";
+  statut?: EntrepriseStatus;
   page?: number;
   limite?: number;
 }

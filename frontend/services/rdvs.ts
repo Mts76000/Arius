@@ -1,6 +1,6 @@
 import { api } from "./api";
-
-export type RdvStatus = "planifie" | "termine" | "annule";
+import type { RdvStatus } from "@/shared/apiTypes";
+export type { RdvStatus } from "@/shared/apiTypes";
 
 export interface Rdv {
   _id: string;

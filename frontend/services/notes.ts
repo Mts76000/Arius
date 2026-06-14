@@ -1,6 +1,6 @@
 import { api } from "./api";
-
-export type NoteType = "appel" | "reunion" | "email" | "info" | "autre";
+import type { NoteType } from "@/shared/apiTypes";
+export type { NoteType } from "@/shared/apiTypes";
 
 export interface Note {
   _id: string;
