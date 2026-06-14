@@ -7,6 +7,11 @@ import {
   update,
   remove,
 } from "../controllers/entrepriseController.js";
+import { validateBody } from "../middleware/validate.js";
+import {
+  createEntrepriseSchema,
+  updateEntrepriseSchema,
+} from "../validation/entrepriseSchemas.js";
 
 const router = Router();
 
@@ -103,8 +108,8 @@ const router = Router();
  */
 router.get("/", requireAuth, list);
 router.get("/:id", requireAuth, get);
-router.post("/", requireAuth, create);
-router.put("/:id", requireAuth, update);
+router.post("/", requireAuth, validateBody(createEntrepriseSchema), create);
+router.put("/:id", requireAuth, validateBody(updateEntrepriseSchema), update);
 router.delete("/:id", requireAuth, remove);
 
 export default router;
