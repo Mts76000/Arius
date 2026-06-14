@@ -29,6 +29,16 @@ interface FormSectionProps {
   className?: string;
 }
 
+interface FormActionsProps {
+  cancelLabel?: string;
+  submitLabel: string;
+  savingLabel?: string;
+  onCancel: () => void;
+  onSubmit: () => void;
+  isSaving?: boolean;
+  submitDisabled?: boolean;
+}
+
 interface ChoiceChipProps {
   label: string;
   selected: boolean;
@@ -136,6 +146,32 @@ export function FormSection({ children, className }: FormSectionProps) {
       }`}
     >
       {children}
+    </View>
+  );
+}
+
+export function FormActions({
+  cancelLabel = "Annuler",
+  submitLabel,
+  savingLabel = "En cours...",
+  onCancel,
+  onSubmit,
+  isSaving = false,
+  submitDisabled = false,
+}: FormActionsProps) {
+  return (
+    <View className="mt-2 flex-row gap-3">
+      <View className="flex-1">
+        <AppButton title={cancelLabel} onPress={onCancel} variant="secondary" />
+      </View>
+      <View className="flex-1">
+        <AppButton
+          title={isSaving ? savingLabel : submitLabel}
+          onPress={onSubmit}
+          isLoading={isSaving}
+          disabled={submitDisabled}
+        />
+      </View>
     </View>
   );
 }

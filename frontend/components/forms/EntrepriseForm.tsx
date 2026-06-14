@@ -13,10 +13,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ValidationRules, hasErrors, FormErrors } from "@/utils/validation";
 import type { CreateEntrepriseInput } from "@/services/entreprises";
 import { useAuthStore } from "@/store/authStore";
-import { AppButton } from "@/components/ui/AppButton";
 import { EntrepriseAvatar } from "@/components/ui/EntrepriseAvatar";
 import { FormInput } from "@/components/forms/FormInput";
-import { ChoiceChip, Form, FormGroup } from "@/components/forms/Form";
+import {
+  ChoiceChip,
+  Form,
+  FormActions,
+  FormGroup,
+} from "@/components/forms/Form";
 import { ENTREPRISE_STATUS_OPTIONS } from "@/components/forms/formDefinitions";
 import Constants from "expo-constants";
 
@@ -345,18 +349,12 @@ export function EntrepriseForm({
             </View>
           </View>
         </FormGroup>
-        <View className="mt-2 flex-row gap-3">
-          <View className="flex-1">
-            <AppButton title="Annuler" onPress={onCancel} variant="secondary" />
-          </View>
-          <View className="flex-1">
-            <AppButton
-              title={isLoading ? "En cours..." : submitLabel}
-              onPress={handleSubmit}
-              isLoading={isLoading}
-            />
-          </View>
-        </View>
+        <FormActions
+          submitLabel={submitLabel}
+          onCancel={onCancel}
+          onSubmit={handleSubmit}
+          isSaving={isLoading}
+        />
       </Form>
       {Platform.OS === "web" && (
         <input
