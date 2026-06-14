@@ -2,8 +2,6 @@
 
 CRM mobile-first pour gérer entreprises, contacts, notes, rendez-vous, devis, objectifs et chiffre d'affaires.
 
-Pour comprendre le projet en détail avant l'oral, lis aussi [`explication.md`](./explication.md).
-
 ## Stack
 
 - Backend : Node 20, Express, TypeScript, MySQL, MongoDB, JWT
