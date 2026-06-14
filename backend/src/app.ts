@@ -44,26 +44,42 @@ export function createApp() {
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
-  // Logs HTTP simplifiés
-  app.use(
-    pinoHttp({
-      level: "info",
-      transport: {
-        target: "pino-pretty",
-        options: {
-          colorize: true,
-          translateTime: "HH:MM:ss",
-          ignore: "pid,hostname",
-          messageFormat:
-            "{req.method} {req.url} → {res.statusCode} ({responseTime}ms)",
-        },
-      },
-      customLogLevel: (_req, res, err) => {
-        if (res.statusCode >= 400 && res.statusCode < 500) return "warn";
-        if (res.statusCode >= 500 || err) return "error";
-        return "silent"; // Ne log que les erreurs
-      },
+  const httpLoggerOptions = {
+    level: env.nodeEnv === "production" ? "info" : "debug",
+    redact: [
+      "req.headers.authorization",
+      "req.headers.cookie",
+      "req.headers['x-api-key']",
+    ],
+    genReqId: (req: any) =>
+      req.headers["x-request-id"]?.toString() ?? crypto.randomUUID(),
+    customProps: (req: any) => ({
+      requestId: req.id,
     }),
+    customLogLevel: (_req: any, res: any, err: any) => {
+      if (res.statusCode >= 500 || err) return "error";
+      if (res.statusCode >= 400) return "warn";
+      return env.nodeEnv === "production" ? "info" : "silent";
+    },
+    ...(env.nodeEnv === "production"
+      ? {}
+      : {
+          transport: {
+            target: "pino-pretty",
+            options: {
+              colorize: true,
+              translateTime: "HH:MM:ss",
+              ignore: "pid,hostname",
+              messageFormat:
+                "{req.method} {req.url} → {res.statusCode} ({responseTime}ms)",
+            },
+          },
+        }),
+  };
+
+  // Logs HTTP: lisibles en dev, structurés en production.
+  app.use(
+    pinoHttp(httpLoggerOptions),
   );
 
   // Servir les fichiers uploadés

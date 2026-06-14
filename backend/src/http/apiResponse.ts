@@ -1,5 +1,6 @@
 import { Response } from "express";
 import { ZodError } from "zod";
+import { captureException } from "../monitoring.js";
 
 export type ApiErrorCode =
   | "validation_error"
@@ -37,6 +38,9 @@ export function sendValidationError(res: Response, error: ZodError) {
   );
 }
 
-export function sendInternalError(res: Response) {
+export function sendInternalError(res: Response, error?: unknown) {
+  if (error) {
+    captureException(error);
+  }
   return sendError(res, 500, "internal_error", "Erreur serveur");
 }

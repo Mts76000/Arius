@@ -21,4 +21,6 @@ export const env = {
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:8081",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",
+  sentryDsn: process.env.SENTRY_DSN ?? "",
+  sentryTracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE ?? 0),
 };

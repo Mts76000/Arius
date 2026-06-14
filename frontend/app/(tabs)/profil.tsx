@@ -748,6 +748,16 @@ export default function ProfilModal() {
                 toute liberté.
               </Text>
             </View>
+
+            <AppButton
+              title="Politique de confidentialité"
+              onPress={() => router.push("/(tabs)/privacy" as any)}
+              variant="secondary"
+              icon={
+                <Ionicons name="document-text-outline" size={16} color="#334155" />
+              }
+              className="rounded-xl border border-grayLight bg-[#F8FAFC]"
+            />
           </View>
 
           {/* Aide */}
