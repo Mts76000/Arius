@@ -8,6 +8,13 @@ import {
   register,
   resetPassword,
 } from "../controllers/authController.js";
+import { validateBody } from "../middleware/validate.js";
+import {
+  forgotPasswordSchema,
+  loginSchema,
+  registerSchema,
+  resetPasswordSchema,
+} from "../validation/authSchemas.js";
 
 const router = Router();
 
@@ -43,7 +50,7 @@ const passwordResetLimiter = rateLimit({
  *       400:
  *         description: Payload invalide
  */
-router.post("/register", register);
+router.post("/register", validateBody(registerSchema), register);
 
 /**
  * @openapi
@@ -63,7 +70,7 @@ router.post("/register", register);
  *       401:
  *         description: Identifiants invalides
  */
-router.post("/login", login);
+router.post("/login", validateBody(loginSchema), login);
 
 /**
  * @openapi
@@ -86,7 +93,12 @@ router.post("/login", login);
  *       200:
  *         description: Demande prise en compte
  */
-router.post("/forgot-password", passwordResetLimiter, forgotPassword);
+router.post(
+  "/forgot-password",
+  passwordResetLimiter,
+  validateBody(forgotPasswordSchema),
+  forgotPassword,
+);
 
 /**
  * @openapi
@@ -113,7 +125,12 @@ router.post("/forgot-password", passwordResetLimiter, forgotPassword);
  *       400:
  *         description: Token invalide ou expiré
  */
-router.post("/reset-password", passwordResetLimiter, resetPassword);
+router.post(
+  "/reset-password",
+  passwordResetLimiter,
+  validateBody(resetPasswordSchema),
+  resetPassword,
+);
 
 /**
  * @openapi

@@ -7,9 +7,7 @@ const nullableString = z
   .transform((value) => value || null);
 
 const logoSchema = z
-  .string()
-  .optional()
-  .or(z.literal(""))
+  .union([z.string(), z.null(), z.undefined()])
   .refine(
     (value) =>
       !value || value.startsWith("/uploads/") || /^https?:\/\//i.test(value),
