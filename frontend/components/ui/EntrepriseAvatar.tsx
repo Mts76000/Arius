@@ -63,7 +63,7 @@ export function EntrepriseAvatar({
         />
       ) : initials ? (
         <Text
-          className="font-extrabold uppercase text-primary"
+          className="font-semibold uppercase text-primary"
           style={{ fontSize: Math.max(12, Math.round(size * 0.34)) }}
           numberOfLines={1}
         >

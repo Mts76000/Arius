@@ -26,6 +26,7 @@ import { createApp } from "../src/app.js";
 
 const mysqlTables = [
   "users",
+  "password_reset_tokens",
   "entreprises",
   "contacts",
   "objectifs_mensuels",
@@ -99,7 +100,7 @@ describe("app", () => {
     expect(response.body.lines).toEqual([
       expect.stringMatching(/^api: ok \(running, 0ms\)$/),
       expect.stringMatching(
-        /^mysql: error \(schema incomplete: entreprises, contacts, objectifs_mensuels, ca_mensuel, \d+ms\)$/,
+        /^mysql: error \(schema incomplete: password_reset_tokens, entreprises, contacts, objectifs_mensuels, ca_mensuel, \d+ms\)$/,
       ),
       expect.stringMatching(/^mongo: ok \(connected, \d+ms\)$/),
     ]);

@@ -38,6 +38,29 @@ describe("authService", () => {
     });
   });
 
+  it("requests and applies password reset", async () => {
+    apiMock.post
+      .mockResolvedValueOnce({ data: { message: "sent" } })
+      .mockResolvedValueOnce({ data: { message: "reset" } });
+
+    await expect(authService.forgotPassword("a@b.com")).resolves.toEqual({
+      message: "sent",
+    });
+    await expect(
+      authService.resetPassword("token", "new-secret"),
+    ).resolves.toEqual({ message: "reset" });
+
+    expect(apiMock.post).toHaveBeenNthCalledWith(
+      1,
+      "/v1/auth/forgot-password",
+      { email: "a@b.com" },
+    );
+    expect(apiMock.post).toHaveBeenNthCalledWith(2, "/v1/auth/reset-password", {
+      token: "token",
+      password: "new-secret",
+    });
+  });
+
   it("loads current user with bearer token", async () => {
     apiMock.get.mockResolvedValueOnce({ data: { id: "user-1" } });
 

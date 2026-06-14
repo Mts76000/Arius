@@ -93,7 +93,7 @@ export const EntrepriseHeader: React.FC<EntrepriseHeaderProps> = ({
             className={`-mt-2 self-center rounded-full px-3.5 py-1.5 ${getStatutStyle(entreprise.statut)}`}
           >
             <Text
-              className={`text-m font-bold capitalize ${getStatutTextStyle(entreprise.statut)}`}
+              className={`text-sm font-semibold capitalize ${getStatutTextStyle(entreprise.statut)}`}
             >
               {getStatutLabel(entreprise.statut)}
             </Text>
@@ -101,11 +101,11 @@ export const EntrepriseHeader: React.FC<EntrepriseHeaderProps> = ({
         </View>
 
         <View className="flex flex-col gap-2 justify-center items-center">
-          <Text className="text-3xl  font-bold capitalize " numberOfLines={2}>
+          <Text className="text-xl font-semibold capitalize text-slate-900" numberOfLines={2}>
             {entreprise.nom}
           </Text>
           {entreprise.description ? (
-            <Text className="w-1/2 text-lg capitalize text-center font-medium text-gray">
+            <Text className="w-4/5 text-sm capitalize text-center text-gray">
               {entreprise.description}
             </Text>
           ) : null}

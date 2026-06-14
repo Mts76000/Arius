@@ -35,14 +35,14 @@ export function ContactCard({
       <View className="flex-row items-center justify-between gap-3">
         <View className="flex-1 flex-row items-center gap-3">
           <View className="h-12 w-12 items-center justify-center rounded-full border border-primary/25 bg-primary/15">
-            <Text className="text-base font-extrabold uppercase text-primary">
+            <Text className="text-base font-semibold uppercase text-primary">
               {initials || "?"}
             </Text>
           </View>
 
           <View className="flex-1 gap-1">
             <View className="flex-row items-center gap-2">
-              <Text className="text-base font-bold " numberOfLines={1}>
+              <Text className="text-base font-semibold" numberOfLines={1}>
                 {fullName || lastName}
               </Text>
               {contact.contact_principal ? (
@@ -96,7 +96,7 @@ export function ContactCard({
           >
             <Ionicons name="phone-portrait-outline" size={20} color="#34C759" />
 
-            <Text className="text-left text-slate-700">
+            <Text className="text-sm text-left text-slate-700">
               {contact.tel_mobile}
             </Text>
           </TouchableOpacity>
@@ -108,7 +108,7 @@ export function ContactCard({
             className="max-w-full self-start flex-row items-center gap-2"
           >
             <Ionicons name="call-outline" size={20} color="#A855F7" />
-            <Text className="text-left text-slate-700">
+            <Text className="text-sm text-left text-slate-700">
               {contact.tel_direct}
             </Text>
           </TouchableOpacity>
@@ -121,7 +121,7 @@ export function ContactCard({
           >
             <Ionicons name="mail-outline" size={20} color="#0ea5e9" />
             <Text
-              className="max-w-[88%] text-left  text-slate-700"
+              className="max-w-[88%] text-sm text-left text-slate-700"
               numberOfLines={1}
             >
               {contact.email}

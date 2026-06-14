@@ -8,11 +8,8 @@ import path from "path";
 import fs from "fs";
 import multer from "multer";
 import { fileURLToPath } from "url";
-import mongoose from "mongoose";
-import { pool } from "./db/mysql.js";
 import { env } from "./config/env.js";
 import { swaggerSpec } from "./config/swagger.js";
-import { connectMongo } from "./db/mongo.js";
 import authRoutes from "./routes/auth.js";
 import entreprisesRoutes from "./routes/entreprises.js";
 import contactsRoutes from "./routes/contacts.js";
@@ -24,114 +21,10 @@ import caRoutes from "./routes/ca.js";
 import profilRoutes from "./routes/profil.js";
 import exportRoutes from "./routes/export.js";
 import { requireAuth } from "./middleware/auth.js";
+import { runHealthChecks } from "./services/healthService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-type HealthLine = {
-  name: "api" | "mysql" | "mongo";
-  status: "ok" | "error";
-  message: string;
-  latencyMs: number;
-};
-
-const requiredMysqlTables = [
-  "users",
-  "entreprises",
-  "contacts",
-  "objectifs_mensuels",
-  "ca_mensuel",
-];
-
-async function checkMysql(): Promise<HealthLine> {
-  const startedAt = performance.now();
-
-  try {
-    await pool.query("SELECT 1");
-    const [rows] = await pool.query(
-      `SELECT table_name
-       FROM information_schema.tables
-       WHERE table_schema = DATABASE()
-         AND table_name IN (?)`,
-      [requiredMysqlTables],
-    );
-    const existingTables = new Set(
-      (rows as Array<{ TABLE_NAME?: string; table_name?: string }>).map(
-        (row) => row.TABLE_NAME ?? row.table_name,
-      ),
-    );
-    const missingTables = requiredMysqlTables.filter(
-      (table) => !existingTables.has(table),
-    );
-
-    if (missingTables.length > 0) {
-      return {
-        name: "mysql",
-        status: "error",
-        message: `schema incomplete: ${missingTables.join(", ")}`,
-        latencyMs: Math.round(performance.now() - startedAt),
-      };
-    }
-
-    return {
-      name: "mysql",
-      status: "ok",
-      message: "connected, schema ready",
-      latencyMs: Math.round(performance.now() - startedAt),
-    };
-  } catch {
-    return {
-      name: "mysql",
-      status: "error",
-      message: "disconnected",
-      latencyMs: Math.round(performance.now() - startedAt),
-    };
-  }
-}
-
-async function checkMongo(): Promise<HealthLine> {
-  const startedAt = performance.now();
-
-  try {
-    await connectMongo();
-    if (mongoose.connection.db) {
-      await mongoose.connection.db.admin().ping();
-    }
-    return {
-      name: "mongo",
-      status: "ok",
-      message: "connected",
-      latencyMs: Math.round(performance.now() - startedAt),
-    };
-  } catch {
-    return {
-      name: "mongo",
-      status: "error",
-      message: "disconnected",
-      latencyMs: Math.round(performance.now() - startedAt),
-    };
-  }
-}
-
-function checkApi(): HealthLine {
-  return { name: "api", status: "ok", message: "running", latencyMs: 0 };
-}
-
-function buildHealthPayload(checks: HealthLine[]) {
-  const isOk = checks.every((check) => check.status === "ok");
-
-  return {
-    status: isOk ? "ok" : "error",
-    service: "arius-api",
-    timestamp: new Date().toISOString(),
-    uptimeSeconds: Math.round(process.uptime()),
-    lines: checks.map(
-      (check) =>
-        `${check.name}: ${check.status} (${check.message}, ${check.latencyMs}ms)`,
-    ),
-    checks,
-  };
-}
 
 export function createApp() {
   const app = express();
@@ -345,13 +238,9 @@ export function createApp() {
    *           application/json:
    *             schema:
    *               $ref: '#/components/schemas/HealthResponse'
-   */
+  */
   app.get(["/", "/health"], async (_req, res) => {
-    const checks = [
-      checkApi(),
-      ...(await Promise.all([checkMysql(), checkMongo()])),
-    ];
-    const payload = buildHealthPayload(checks);
+    const payload = await runHealthChecks();
 
     res.status(payload.status === "ok" ? 200 : 503).json(payload);
   });

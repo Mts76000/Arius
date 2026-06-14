@@ -60,7 +60,7 @@ export default function HomeScreen() {
 
   const quickActionCardBase = "flex-1  rounded-3xl p-4 shadow-base gap-7 ";
   const quickActionIconBase = "rounded-xl w-9 h-9 items-center justify-center";
-  const quickActionTextBase = "font-medium  leading-4";
+  const quickActionTextBase = "text-sm font-medium leading-4 text-slate-900";
 
   const formatShortDate = (value: string) => {
     return new Intl.DateTimeFormat("fr-FR", {
@@ -131,7 +131,9 @@ export default function HomeScreen() {
       >
         <View className="flex flex-col gap-5">
           <View>
-            <Text className="text-xl font-semibold">Actions rapides</Text>
+            <Text className="text-lg font-semibold text-slate-900">
+              Actions rapides
+            </Text>
 
             <View className="my-4 gap-3">
               <View className="flex-row items-stretch gap-3">
@@ -208,7 +210,7 @@ export default function HomeScreen() {
             <View className="flex flex-row justify-between align-middle">
               <View className="flex flex-row items-center gap-2">
                 <Ionicons name="time-outline" size={20} color="#007aff" />
-                <Text className="text-xl font-semibold">
+                <Text className="text-lg font-semibold text-slate-900">
                   Rendez-vous à venir
                 </Text>
               </View>
@@ -229,7 +231,7 @@ export default function HomeScreen() {
             </View>
             {upcomingRdvs.length === 0 ? (
               <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">
-                <Text className="text-lg font-bold text-slate-900">
+                <Text className="text-base font-semibold text-slate-900">
                   Aucun RDV planifié
                 </Text>
                 <Text className="mt-1 text-center text-sm text-slate-500">
@@ -248,7 +250,7 @@ export default function HomeScreen() {
                     <View className="flex flex-col gap-4">
                       <View>
                         <View className="flex flex-row justify-between items-center ">
-                          <Text className="font-semibold text-lg text-gray">
+                          <Text className="text-sm font-medium text-gray">
                             {formatShortDate(rdv.date_prevue)}
                           </Text>
                           <View
@@ -258,14 +260,16 @@ export default function HomeScreen() {
                             }}
                           >
                             <Text
-                              className={`${statusConfig.badgeTextClass} font-bold`}
+                              className={`${statusConfig.badgeTextClass} text-xs font-bold`}
                               style={{ color: statusConfig.badgeTextColor }}
                             >
                               {statusConfig.label}
                             </Text>
                           </View>
                         </View>
-                        <Text className="text-lg font-bold">{rdv.titre}</Text>
+                        <Text className="text-sm font-semibold text-slate-900">
+                          {rdv.titre}
+                        </Text>
                       </View>
                       <View className="bg-grayLight h-[0.3px]"></View>
                       <View className="flex flex-row gap-2 items-center ">
@@ -274,11 +278,11 @@ export default function HomeScreen() {
                           size={15}
                           color="#4B5563"
                         />
-                        <Text className="text-lg capitalize text-gray">
+                        <Text className="text-sm capitalize text-gray">
                           {getEntrepriseNameById(rdv.entreprise_id)}
                         </Text>
-                        <Text className="text-lg text-gray">-</Text>
-                        <Text className="text-lg capitalize text-gray">
+                        <Text className="text-sm text-gray">-</Text>
+                        <Text className="text-sm capitalize text-gray">
                           {getContactDisplayName(rdv.contact_id)}
                         </Text>
                       </View>

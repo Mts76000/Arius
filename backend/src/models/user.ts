@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import { pool } from "../db/mysql.js";
 import { env } from "../config/env.js";
@@ -71,6 +72,70 @@ export async function anonymizeUser(userId: string): Promise<void> {
      WHERE id = ?`,
     [getAnonymizedEmail(userId), now, userId],
   );
+}
+
+export async function updateUserPassword(
+  userId: string,
+  hashedPassword: string,
+): Promise<void> {
+  const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+  await pool.execute("UPDATE users SET password = ?, updated_at = ? WHERE id = ?", [
+    hashedPassword,
+    now,
+    userId,
+  ]);
+}
+
+function hashPasswordResetToken(token: string): string {
+  return crypto.createHash("sha256").update(token).digest("hex");
+}
+
+export async function generatePasswordResetToken(
+  userId: string,
+): Promise<string> {
+  const { v4: uuidv4 } = await import("uuid");
+  const token = crypto.randomBytes(32).toString("hex");
+  const tokenHash = hashPasswordResetToken(token);
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000)
+    .toISOString()
+    .slice(0, 19)
+    .replace("T", " ");
+
+  await pool.execute(
+    `INSERT INTO password_reset_tokens (id, user_id, token_hash, expires_at)
+     VALUES (?, ?, ?, ?)`,
+    [uuidv4(), userId, tokenHash, expiresAt],
+  );
+
+  return token;
+}
+
+export async function verifyPasswordResetToken(
+  token: string,
+): Promise<{ sub: string }> {
+  const tokenHash = hashPasswordResetToken(token);
+  const [rows] = await pool.execute(
+    `SELECT id, user_id
+     FROM password_reset_tokens
+     WHERE token_hash = ?
+       AND used_at IS NULL
+       AND expires_at > NOW()
+     LIMIT 1`,
+    [tokenHash],
+  );
+  const resetToken = (rows as Array<{ id: string; user_id: string }>)[0];
+
+  if (!resetToken) {
+    throw new Error("invalid reset token");
+  }
+
+  const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+  await pool.execute(
+    "UPDATE password_reset_tokens SET used_at = ? WHERE id = ?",
+    [now, resetToken.id],
+  );
+
+  return { sub: resetToken.user_id };
 }
 
 export async function hashPassword(password: string): Promise<string> {

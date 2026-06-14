@@ -9,6 +9,7 @@ import {
   RefreshControl,
   Platform,
   Modal,
+  useWindowDimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -38,9 +39,11 @@ type ExportType = "prospects" | "rdvs" | "notes" | "ca" | "objectifs";
 export default function ProfilModal() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { width } = useWindowDimensions();
   const logout = useAuthStore((state) => state.logout);
   const token = useAuthStore((state) => state.token);
   const appVersion = Constants.expoConfig?.version ?? "1.0.0";
+  const isDesktop = width >= 900;
   const [editMode, setEditMode] = useState(false);
   const [passwordMode, setPasswordMode] = useState(false);
 
@@ -387,7 +390,13 @@ export default function ProfilModal() {
         className="flex-1"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 190 }}
+        contentContainerStyle={{
+          alignSelf: "center",
+          maxWidth: 920,
+          paddingBottom: isDesktop ? 56 : 190,
+          paddingHorizontal: isDesktop ? 32 : 20,
+          width: "100%",
+        }}
         refreshControl={
           <RefreshControl
             onRefresh={() => refetch()}
@@ -398,16 +407,16 @@ export default function ProfilModal() {
         <View className="flex-col gap-6 mt-4">
           <View className="flex-row  bg-white  rounded-3xl p-6 gap-6   shadow-base">
             <View className="h-[60px] w-[60px] items-center justify-center rounded-xl bg-primary">
-              <Text className="text-2xl font-bold text-white uppercase">
+              <Text className="text-xl font-semibold text-white uppercase">
                 {profilData?.prenom?.charAt(0)}
                 {profilData?.nom?.charAt(0)}
               </Text>
             </View>
             <View className="flex-col gap-2">
-              <Text className="text-xl font-semibold capitalize">
+              <Text className="text-lg font-semibold capitalize text-slate-900">
                 {profilData?.prenom || "Utilisateur"} {profilData?.nom || ""}
               </Text>
-              <Text className="text-lg text-gray">{profilData?.email}</Text>
+              <Text className="text-sm text-gray">{profilData?.email}</Text>
             </View>
           </View>
 
@@ -422,7 +431,7 @@ export default function ProfilModal() {
                   color="#34C759"
                 />
                 <View className="flex-1">
-                  <Text className="font-semibold text-xl">
+                  <Text className="text-lg font-semibold text-slate-900">
                     Informations Personnelles
                   </Text>
                   <Text className="text-gray text-sm">
@@ -481,7 +490,7 @@ export default function ProfilModal() {
                 <View className="rounded-2xl border border-grayLight bg-[#F8FAFC] p-4 flex-row items-center justify-between">
                   <View className="flex-col gap-1">
                     <Text className="text-gray">Prénom</Text>
-                    <Text className="font-semibold text-base">
+                    <Text className="text-base font-medium text-slate-900">
                       {profilData?.prenom || "-"}
                     </Text>
                   </View>
@@ -490,7 +499,7 @@ export default function ProfilModal() {
                 <View className="rounded-2xl border border-grayLight bg-[#F8FAFC] p-4 flex-row items-center justify-between">
                   <View className="flex-col gap-1">
                     <Text className="text-gray">Nom</Text>
-                    <Text className="font-semibold text-base">
+                    <Text className="text-base font-medium text-slate-900">
                       {profilData?.nom || "-"}
                     </Text>
                   </View>
@@ -522,7 +531,7 @@ export default function ProfilModal() {
               />
 
               <View className="flex-col gap-2 flex-1">
-                <Text className="font-semibold text-xl">Sécurité</Text>
+                <Text className="text-lg font-semibold text-slate-900">Sécurité</Text>
 
                 <Text className="text-gray">
                   Gérer votre mot de passe et la sécurité du compte
@@ -634,7 +643,7 @@ export default function ProfilModal() {
               />
 
               <View className="flex-col gap-2 flex-1">
-                <Text className="font-semibold text-xl">
+                <Text className="text-lg font-semibold text-slate-900">
                   Confidentialité & données
                 </Text>
 
@@ -683,7 +692,7 @@ export default function ProfilModal() {
                   <Ionicons name="archive-outline" size={20} color="white" />
                 </View>
                 <View className="flex-1 pr-2">
-                  <Text className="text-white font-semibold text-base">
+                <Text className="text-base font-semibold text-white">
                     Export complet
                   </Text>
                   <Text className="text-white/80 text-sm">
@@ -722,7 +731,9 @@ export default function ProfilModal() {
                         color={item.iconColor}
                       />
                     </View>
-                    <Text className="font-medium text-base">{item.label}</Text>
+                    <Text className="text-base font-medium text-slate-900">
+                      {item.label}
+                    </Text>
                   </View>
                   <Ionicons name="download-outline" size={18} color="#94A3B8" />
                 </TouchableOpacity>
@@ -753,7 +764,7 @@ export default function ProfilModal() {
                 color="#007aff"
               />
               <View className="flex-1 gap-2">
-                <Text className="font-semibold text-xl">Aide</Text>
+                <Text className="text-lg font-semibold text-slate-900">Aide</Text>
                 <Text className="text-gray">
                   En cas de problème, contactez l’administrateur du projet avec
                   votre email de compte.
@@ -801,7 +812,7 @@ export default function ProfilModal() {
         <View className="flex-1 justify-center bg-black/40 px-5">
           <View className="rounded-3xl bg-white p-5 gap-4">
             <View className="gap-2">
-              <Text className="text-xl font-bold text-slate-900">
+              <Text className="text-lg font-semibold text-slate-900">
                 Confirmer la suppression
               </Text>
               <Text className="text-gray">

@@ -147,14 +147,14 @@ export default function EntreprisesScreen() {
             <View className="flex-row items-start justify-between gap-3">
               <View className="flex-1">
                 <Text
-                  className="text-xl font-bold leading-6 text-slate-900"
+                  className="text-base font-semibold leading-5 text-slate-900"
                   numberOfLines={2}
                 >
                   {item.nom}
                 </Text>
                 <View className="mt-2 flex-row items-center gap-2">
                   <Ionicons name="person-outline" size={18} color="#6b7280" />
-                  <Text className="text-base text-gray">
+                  <Text className="text-sm text-gray">
                     {contactCount} {contactCount > 1 ? "contacts" : "contact"}
                   </Text>
                 </View>
@@ -175,7 +175,7 @@ export default function EntreprisesScreen() {
 
         <View className="mt-4 flex-row items-center gap-2">
           <Ionicons name="navigate-outline" size={18} color="#9ca3af" />
-          <Text className="text-base text-gray" numberOfLines={1}>
+          <Text className="text-sm text-gray" numberOfLines={1}>
             {item.code_postal ? `${item.code_postal} ` : ""}
             {item.ville || "Ville non renseignée"}
           </Text>

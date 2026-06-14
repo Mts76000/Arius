@@ -7,6 +7,7 @@ import {
   contacts as contactsTable,
   entreprises as entreprisesTable,
   objectifsMensuels,
+  passwordResetTokens,
   users,
 } from "../db/schema.js";
 import { pool } from "../db/mysql.js";
@@ -66,6 +67,9 @@ async function cleanDemoData() {
   await db
     .delete(entreprisesTable)
     .where(eq(entreprisesTable.userId, DEMO_USER_ID));
+  await db
+    .delete(passwordResetTokens)
+    .where(eq(passwordResetTokens.userId, DEMO_USER_ID));
   await db.delete(users).where(eq(users.id, DEMO_USER_ID));
 }
 
@@ -177,9 +181,16 @@ async function seedObjectifsAndCA(entreprises: SeedEntreprise[]) {
 
   await db.insert(objectifsMensuels).values(objectifs);
   await db.insert(caMensuel).values(chiffresAffaires);
+
+  return {
+    objectifs: objectifs.length,
+    ca: chiffresAffaires.length,
+  };
 }
 
 async function seedNotes(entreprises: SeedEntreprise[]) {
+  let total = 0;
+
   for (const entreprise of entreprises) {
     const notes = Array.from(
       { length: faker.number.int({ min: 2, max: 5 }) },
@@ -195,7 +206,10 @@ async function seedNotes(entreprises: SeedEntreprise[]) {
     );
 
     await Note.insertMany(notes);
+    total += notes.length;
   }
+
+  return total;
 }
 
 async function seedRdvs(entreprises: SeedEntreprise[], contacts: SeedContact[]) {
@@ -224,6 +238,8 @@ async function seedRdvs(entreprises: SeedEntreprise[], contacts: SeedContact[]) 
   });
 
   await Rdv.insertMany(rdvs);
+
+  return rdvs.length;
 }
 
 async function seedDevis(entreprises: SeedEntreprise[]) {
@@ -242,6 +258,8 @@ async function seedDevis(entreprises: SeedEntreprise[]) {
   );
 
   await Devis.insertMany(devis);
+
+  return devis.length;
 }
 
 async function main() {
@@ -251,14 +269,25 @@ async function main() {
   await seedUser();
   const entreprises = await seedEntreprises();
   const contacts = await seedContacts(entreprises);
-  await seedObjectifsAndCA(entreprises);
-  await seedNotes(entreprises);
-  await seedRdvs(entreprises, contacts);
-  await seedDevis(entreprises);
+  const finances = await seedObjectifsAndCA(entreprises);
+  const notes = await seedNotes(entreprises);
+  const rdvs = await seedRdvs(entreprises, contacts);
+  const devis = await seedDevis(entreprises);
 
   console.log("Fixtures Arius creees avec succes.");
   console.log(`Email: ${DEMO_EMAIL}`);
   console.log(`Mot de passe: ${DEMO_PASSWORD}`);
+  console.log(
+    [
+      `Entreprises: ${entreprises.length}`,
+      `Contacts: ${contacts.length}`,
+      `Objectifs: ${finances.objectifs}`,
+      `CA: ${finances.ca}`,
+      `Notes: ${notes}`,
+      `RDV: ${rdvs}`,
+      `Devis: ${devis}`,
+    ].join(" | "),
+  );
 }
 
 main()

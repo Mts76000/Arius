@@ -204,7 +204,7 @@ export default function CAScreen() {
               </TouchableOpacity>
 
               <View className="items-center flex-1 px-2">
-                <Text className="text-2xl font-bold text-black">
+                <Text className="text-lg font-semibold text-slate-900">
                   {MOIS_LABELS[selectedMois - 1]} {selectedAnnee}
                 </Text>
               </View>
@@ -225,7 +225,7 @@ export default function CAScreen() {
                   CA du mois
                 </Text>
               </View>
-              <Text className="text-2xl font-bold text-slate-900">
+              <Text className="text-lg font-semibold text-slate-900">
                 {formatEuro(stats?.ca_total || 0)}
               </Text>
             </View>
@@ -236,7 +236,7 @@ export default function CAScreen() {
                   Objectif
                 </Text>
               </View>
-              <Text className="text-2xl font-bold text-slate-900">
+              <Text className="text-lg font-semibold text-slate-900">
                 {stats?.objectif !== null
                   ? formatEuro(stats?.objectif || 0)
                   : "Non défini"}
@@ -247,7 +247,7 @@ export default function CAScreen() {
           {progression !== null && (
             <View className="bg-white rounded-3xl p-5 shadow-base">
               <View className="mb-4 flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-black">
+                <Text className="text-base font-semibold text-slate-900">
                   Progression mensuelle
                 </Text>
                 <View className="flex-row items-center gap-1">
@@ -257,7 +257,7 @@ export default function CAScreen() {
                     color={progressionMeta.color}
                   />
                   <Text
-                    className="text-base font-bold"
+                    className="text-base font-semibold"
                     style={{ color: progressionMeta.color }}
                   >
                     {progression.toFixed(1)}%
@@ -299,7 +299,7 @@ export default function CAScreen() {
           <View>
             <View className="mb-3 flex-row items-center mt-3 gap-3">
               <View>
-                <Text className="text-xl font-semibold text-black  tracking-wide">
+                <Text className="text-lg font-semibold text-slate-900">
                   CA par entreprise
                 </Text>
               </View>
@@ -320,7 +320,7 @@ export default function CAScreen() {
 
             {entreprisesFiltrees.length > 0 ? (
               <View className="gap-3">
-                {entreprisesFiltrees.map((entreprise, index) => (
+                        {entreprisesFiltrees.map((entreprise) => (
                   <TouchableOpacity
                     key={entreprise.entreprise_id}
                     onPress={() =>
@@ -332,7 +332,7 @@ export default function CAScreen() {
                       <View className="flex-1">
                         <View className="flex-row items-center gap-2 mb-1">
                           <Text
-                            className="text-base font-semibold text-slate-900 flex-1"
+                            className="text-base font-medium text-slate-900 flex-1"
                             numberOfLines={1}
                           >
                             {entreprise.entreprise_nom}
@@ -340,7 +340,7 @@ export default function CAScreen() {
                         </View>
                       </View>
 
-                      <Text className="text-base font-bold text-primary">
+                      <Text className="text-base font-semibold text-primary">
                         {formatEuro(entreprise.ca_total || 0)}
                       </Text>
                     </View>
@@ -349,7 +349,7 @@ export default function CAScreen() {
               </View>
             ) : (
               <View className="items-center justify-center rounded-3xl bg-white px-6 py-10 shadow-base">
-                <Text className="mb-1 text-lg font-semibold text-slate-900">
+                <Text className="mb-1 text-base font-semibold text-slate-900">
                   Aucun résultat
                 </Text>
                 <Text className="text-center text-sm text-slate-600">

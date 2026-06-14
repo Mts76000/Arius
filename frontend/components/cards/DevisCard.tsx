@@ -29,7 +29,7 @@ export function DevisCard({
         <View className="flex-1 flex-row items-start gap-3">
           <View className="flex-1 gap-1">
             <Text
-              className="text-base font-bold text-slate-900 capitalize"
+              className="text-base font-semibold text-slate-900 capitalize"
               numberOfLines={1}
             >
               {devis.nom}
