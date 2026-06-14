@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { NOTE_TYPES } from "../shared/apiTypes.js";
+import { queryIntWithDefault } from "./queryHelpers.js";
 
 export const noteTypeSchema = z.enum(NOTE_TYPES);
 
@@ -23,14 +24,8 @@ export const updateNoteSchema = z.object({
 export const listNotesQuerySchema = z.object({
   type: noteTypeSchema.optional(),
   tag: z.string().optional(),
-  page: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : 1)),
-  limite: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : 20)),
+  page: queryIntWithDefault(1, { min: 1 }),
+  limite: queryIntWithDefault(20, { min: 1, max: 100 }),
 });
 
 export const searchNotesQuerySchema = z.object({
@@ -42,8 +37,5 @@ export const noteTemplatesQuerySchema = z.object({
 });
 
 export const dashboardNotesQuerySchema = z.object({
-  jours_seuil: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : 7)),
+  jours_seuil: queryIntWithDefault(7, { min: 1 }),
 });

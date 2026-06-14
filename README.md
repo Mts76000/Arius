@@ -2,6 +2,8 @@
 
 CRM mobile-first pour gérer entreprises, contacts, notes, rendez-vous, devis, objectifs et chiffre d'affaires.
 
+Pour comprendre le projet en détail avant l'oral, lis aussi [`explication.md`](./explication.md).
+
 ## Stack
 
 - Backend : Node 20, Express, TypeScript, MySQL, MongoDB, JWT
@@ -173,3 +175,24 @@ En production, les logs HTTP sortent en JSON structuré avec redaction des heade
 SENTRY_DSN=https://...
 SENTRY_TRACES_SAMPLE_RATE=0
 ```
+
+## Mise en ligne
+
+L'app mobile ne se déploie pas comme un site web : elle se lance en simulateur ou se distribue ensuite via EAS/TestFlight/App Store.
+
+Pour le référentiel, on peut mettre en ligne :
+
+- l'API backend ;
+- la version web exportée du frontend.
+
+Avec Coolify, l'idée est de connecter le repo GitHub, configurer les variables d'environnement de production, brancher MySQL/MongoDB, puis déployer automatiquement après push.
+
+Points importants en production :
+
+- `NODE_ENV=production`
+- vrai `JWT_SECRET`
+- `FRONTEND_URL` vers le domaine web
+- `EXPO_PUBLIC_API_URL` vers le domaine API
+- `RESEND_API_KEY` si le reset password doit envoyer de vrais emails
+- `SENTRY_DSN` si le monitoring est activé
+- ne pas exposer Adminer ou mongo-express publiquement sans protection

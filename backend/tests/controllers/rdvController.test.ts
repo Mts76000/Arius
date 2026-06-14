@@ -97,6 +97,33 @@ describe("rdv controller", () => {
     });
   });
 
+  it("accepts already parsed numeric pagination from query validation", async () => {
+    rdvStatics.aggregate.mockResolvedValueOnce([{ _id: "r1" }]);
+    rdvStatics.countDocuments.mockResolvedValueOnce(1);
+    const res = mockResponse();
+
+    await listMyRdvs(
+      {
+        userId: "user-1",
+        validatedQuery: {
+          de: "2026-06-14T13:38:34.385Z",
+          page: 1,
+          limite: 3,
+        },
+      } as any,
+      res as any,
+    );
+
+    expect(rdvStatics.aggregate).toHaveBeenCalledWith(
+      expect.arrayContaining([{ $skip: 0 }, { $limit: 3 }]),
+    );
+    expect(res.status).not.toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      rdvs: [{ _id: "r1" }],
+      pagination: { page: 1, limite: 3, total: 1 },
+    });
+  });
+
   it("lists RDVs for an entreprise scoped to the current user", async () => {
     rdvStatics.aggregate.mockResolvedValueOnce([]);
     rdvStatics.countDocuments.mockResolvedValueOnce(0);

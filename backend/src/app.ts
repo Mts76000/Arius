@@ -43,6 +43,14 @@ export function createApp() {
   app.use(cors());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
+  app.use(
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      limit: 300,
+      standardHeaders: true,
+      legacyHeaders: false,
+    }),
+  );
 
   const httpLoggerOptions = {
     level: env.nodeEnv === "production" ? "info" : "debug",
@@ -238,15 +246,6 @@ export function createApp() {
         sendInternalError(res);
       }
     },
-  );
-
-  app.use(
-    rateLimit({
-      windowMs: 15 * 60 * 1000,
-      limit: 300,
-      standardHeaders: true,
-      legacyHeaders: false,
-    }),
   );
 
   /**

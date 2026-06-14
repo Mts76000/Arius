@@ -47,7 +47,7 @@ const sections = [
     title: "Contact",
     items: [
       "Pour toute demande sur les données personnelles, contactez l'administrateur du projet.",
-      "En production, cette section doit indiquer l'email officiel du responsable de traitement.",
+      "lamottemathis@gmail.com",
     ],
   },
 ];
@@ -79,10 +79,10 @@ export default function PrivacyScreen() {
                 Politique de confidentialité
               </Text>
               <Text className="text-sm leading-6 text-gray">
-                Arius traite uniquement les données nécessaires au fonctionnement
-                du CRM. Cette page résume les informations utiles pour comprendre
-                les traitements, les durées de conservation et les droits
-                disponibles dans {"l'application"}.
+                Arius traite uniquement les données nécessaires au fonctionnement du
+                CRM. Cette page résume les informations utiles pour comprendre les
+                traitements, les durées de conservation et les droits disponibles dans{" "}
+                {"l'application"}.
               </Text>
             </View>
           </View>
@@ -100,9 +100,7 @@ export default function PrivacyScreen() {
               {section.items.map((item) => (
                 <View key={item} className="flex-row items-start gap-3">
                   <View className="mt-2 h-1.5 w-1.5 rounded-full bg-primary" />
-                  <Text className="flex-1 text-sm leading-6 text-gray">
-                    {item}
-                  </Text>
+                  <Text className="flex-1 text-sm leading-6 text-gray">{item}</Text>
                 </View>
               ))}
             </View>

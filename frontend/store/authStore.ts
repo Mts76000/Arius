@@ -140,7 +140,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const user = await authService.getMe(token);
       set({ user });
-    } catch (error) {
+    } catch {
       set({ token: null, user: null });
       await storage.removeItem(STORAGE_KEY);
     }

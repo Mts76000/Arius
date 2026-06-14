@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalQueryInt, requiredQueryInt } from "./queryHelpers.js";
 
 export const createCASchema = z.object({
   entreprise_id: z.string().min(1),
@@ -12,22 +13,16 @@ export const updateCASchema = z.object({
 });
 
 export const caQuerySchema = z.object({
-  annee: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : undefined)),
-  mois: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : undefined)),
+  annee: optionalQueryInt({ min: 2000, max: 2100 }),
+  mois: optionalQueryInt({ min: 1, max: 12 }),
   entreprise_id: z.string().optional(),
 });
 
 export const caStatsQuerySchema = z.object({
-  annee: z.string().transform((value) => parseInt(value)),
-  mois: z.string().transform((value) => parseInt(value)),
+  annee: requiredQueryInt({ min: 2000, max: 2100 }),
+  mois: requiredQueryInt({ min: 1, max: 12 }),
 });
 
 export const caEntrepriseQuerySchema = z.object({
-  annee: z.string().transform((value) => parseInt(value)),
+  annee: requiredQueryInt({ min: 2000, max: 2100 }),
 });

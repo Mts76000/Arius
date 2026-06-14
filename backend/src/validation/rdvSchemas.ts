@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { RDV_STATUSES } from "../shared/apiTypes.js";
+import { queryIntWithDefault } from "./queryHelpers.js";
 
 export const rdvStatusSchema = z.enum(RDV_STATUSES);
 
@@ -22,14 +23,8 @@ export const updateRdvSchema = z.object({
 });
 
 const paginationQuery = {
-  page: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : 1)),
-  limite: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : 20)),
+  page: queryIntWithDefault(1, { min: 1 }),
+  limite: queryIntWithDefault(20, { min: 1, max: 100 }),
 };
 
 export const listMyRdvsQuerySchema = z.object({
