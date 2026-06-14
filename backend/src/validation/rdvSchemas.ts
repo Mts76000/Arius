@@ -20,3 +20,27 @@ export const updateRdvSchema = z.object({
   duree_minutes: z.number().int().min(1, "Durée invalide").optional(),
   statut: rdvStatusSchema.optional(),
 });
+
+const paginationQuery = {
+  page: z
+    .string()
+    .optional()
+    .transform((value) => (value ? parseInt(value) : 1)),
+  limite: z
+    .string()
+    .optional()
+    .transform((value) => (value ? parseInt(value) : 20)),
+};
+
+export const listMyRdvsQuerySchema = z.object({
+  statut: rdvStatusSchema.optional(),
+  de: z.string().optional(),
+  a: z.string().optional(),
+  ...paginationQuery,
+});
+
+export const listEntrepriseRdvsQuerySchema = z.object({
+  de: z.string().optional(),
+  a: z.string().optional(),
+  ...paginationQuery,
+});

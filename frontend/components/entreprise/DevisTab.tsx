@@ -2,7 +2,6 @@ import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
-  ActivityIndicator,
   TouchableOpacity,
   Alert,
   Platform,
@@ -12,6 +11,7 @@ import { useDevis, useUploadDevis, useDeleteDevis } from "@/hooks/useDevis";
 import { devisService } from "@/services/devis";
 import { DevisModal } from "@/components/modals/DevisModal";
 import { DevisCard } from "@/components/cards/DevisCard";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 interface DevisTabProps {
   entrepriseId: string;
@@ -102,7 +102,7 @@ export function DevisTab({ entrepriseId }: DevisTabProps) {
       <View className="mt-5">
         {isLoading ? (
           <View className="bg-white rounded-3xl p-5 flex-col gap-4">
-            <ActivityIndicator size="small" color="#0ea5e9" />
+            <AppSpinner />
           </View>
         ) : error ? (
           <View className="rounded-2xl border border-red-100 bg-red-50 p-4">

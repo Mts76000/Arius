@@ -33,4 +33,4 @@ Elles s'appliquent sur une base existante avec :
 npm run db:migrate
 ```
 
-Le fichier `src/db/schema.sql` reste present pour initialiser rapidement une base Docker vide au premier demarrage du volume MySQL. Il doit rester synchronise avec le schema Drizzle.
+Docker lance aussi `npm run db:migrate` avant l'API. Le fichier SQL manuel n'est plus utilise : pour modifier MySQL, on change `src/db/schema.ts`, puis on genere une migration Drizzle.

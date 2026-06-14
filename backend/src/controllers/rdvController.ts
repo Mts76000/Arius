@@ -3,16 +3,27 @@ import { v4 as uuidv4 } from "uuid";
 import { Rdv } from "../models/rdv.js";
 import {
   createRdvSchema,
+  listEntrepriseRdvsQuerySchema,
+  listMyRdvsQuerySchema,
   updateRdvSchema,
 } from "../validation/rdvSchemas.js";
+import {
+  sendError,
+  sendInternalError,
+  sendValidationError,
+} from "../http/apiResponse.js";
 
 export async function listMyRdvs(req: Request, res: Response) {
   try {
-    const { statut, de, a, page = "1", limite = "20" } = req.query;
+    const parsedQuery = listMyRdvsQuerySchema.safeParse(
+      req.validatedQuery ?? req.query,
+    );
+    if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
+    const { statut, de, a, page = 1, limite = 20 } = parsedQuery.data;
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
     const filter: any = { user_id: userId };
@@ -26,18 +37,15 @@ export async function listMyRdvs(req: Request, res: Response) {
     if (de || a) {
       filter.date_prevue = {};
       if (de) {
-        filter.date_prevue.$gte = new Date(de as string);
+        filter.date_prevue.$gte = new Date(de);
       }
       if (a) {
-        filter.date_prevue.$lte = new Date(a as string);
+        filter.date_prevue.$lte = new Date(a);
       }
     }
 
-    const pageNum = Math.max(1, parseInt(page as string) || 1);
-    const limiteNum = Math.min(
-      100,
-      Math.max(1, parseInt(limite as string) || 20),
-    );
+    const pageNum = Math.max(1, page || 1);
+    const limiteNum = Math.min(100, Math.max(1, limite || 20));
     const skip = (pageNum - 1) * limiteNum;
 
     const startOfToday = new Date();
@@ -84,18 +92,22 @@ export async function listMyRdvs(req: Request, res: Response) {
     });
   } catch (error) {
     console.error("Erreur listMyRdvs:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }
 
 export async function listByEntreprise(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const { de, a, page = "1", limite = "20" } = req.query;
+    const parsedQuery = listEntrepriseRdvsQuerySchema.safeParse(
+      req.validatedQuery ?? req.query,
+    );
+    if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
+    const { de, a, page = 1, limite = 20 } = parsedQuery.data;
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
     const filter: any = { entreprise_id: id, user_id: userId };
@@ -103,18 +115,15 @@ export async function listByEntreprise(req: Request, res: Response) {
     if (de || a) {
       filter.date_prevue = {};
       if (de) {
-        filter.date_prevue.$gte = new Date(de as string);
+        filter.date_prevue.$gte = new Date(de);
       }
       if (a) {
-        filter.date_prevue.$lte = new Date(a as string);
+        filter.date_prevue.$lte = new Date(a);
       }
     }
 
-    const pageNum = Math.max(1, parseInt(page as string) || 1);
-    const limiteNum = Math.min(
-      100,
-      Math.max(1, parseInt(limite as string) || 20),
-    );
+    const pageNum = Math.max(1, page || 1);
+    const limiteNum = Math.min(100, Math.max(1, limite || 20));
     const skip = (pageNum - 1) * limiteNum;
 
     const startOfToday = new Date();
@@ -161,7 +170,7 @@ export async function listByEntreprise(req: Request, res: Response) {
     });
   } catch (error) {
     console.error("Erreur listByEntreprise:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }
 
@@ -171,19 +180,19 @@ export async function get(req: Request, res: Response) {
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
     const rdv = await Rdv.findOne({ _id: id, user_id: userId });
 
     if (!rdv) {
-      return res.status(404).json({ error: "RDV introuvable" });
+      return sendError(res, 404, "not_found", "RDV introuvable");
     }
 
     res.json(rdv);
   } catch (error) {
     console.error("Erreur get:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }
 
@@ -192,13 +201,13 @@ export async function create(req: Request, res: Response) {
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
-    const validation = createRdvSchema.safeParse(req.body);
+    const validation = createRdvSchema.safeParse(req.validatedBody ?? req.body);
 
     if (!validation.success) {
-      return res.status(400).json({ errors: validation.error.errors });
+      return sendValidationError(res, validation.error);
     }
 
     const {
@@ -228,7 +237,7 @@ export async function create(req: Request, res: Response) {
     res.status(201).json(rdv);
   } catch (error) {
     console.error("Erreur create:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }
 
@@ -238,13 +247,13 @@ export async function update(req: Request, res: Response) {
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
-    const validation = updateRdvSchema.safeParse(req.body);
+    const validation = updateRdvSchema.safeParse(req.validatedBody ?? req.body);
 
     if (!validation.success) {
-      return res.status(400).json({ error: validation.error.errors });
+      return sendValidationError(res, validation.error);
     }
 
     const updateData = validation.data;
@@ -259,13 +268,13 @@ export async function update(req: Request, res: Response) {
     );
 
     if (!rdv) {
-      return res.status(404).json({ error: "RDV introuvable" });
+      return sendError(res, 404, "not_found", "RDV introuvable");
     }
 
     res.json(rdv);
   } catch (error) {
     console.error("Erreur update:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }
 
@@ -275,18 +284,18 @@ export async function remove(req: Request, res: Response) {
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
     const result = await Rdv.deleteOne({ _id: id, user_id: userId });
 
     if (result.deletedCount === 0) {
-      return res.status(404).json({ error: "RDV introuvable" });
+      return sendError(res, 404, "not_found", "RDV introuvable");
     }
 
     res.json({ message: "RDV supprimé" });
   } catch (error) {
     console.error("Erreur remove:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }

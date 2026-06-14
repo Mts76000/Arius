@@ -1,8 +1,9 @@
 import React from "react";
-import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Rdv, RdvStatus } from "@/services/rdvs";
 import { Contact } from "@/services/contacts";
 import { RdvCard } from "@/components/cards/RdvCard";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 interface PaginationData {
   page: number;
@@ -141,7 +142,7 @@ export const RdvsTab: React.FC<RdvsTabProps> = ({
         </TouchableOpacity>
       </View>
       {rdvsLoading ? (
-        <ActivityIndicator size="small" color="#0ea5e9" />
+        <AppSpinner />
       ) : rdvs && rdvs.length > 0 ? (
         <View className="bg-white rounded-3xl p-5 mt-5 flex-col gap-4 ">
           {groupedRdvs.map((group, groupIndex) => (

@@ -1,13 +1,8 @@
-import {
-  ActivityIndicator,
-  Text,
-  TouchableOpacity,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { usePathname, useRouter, useSegments } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "@/store/authStore";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 interface UserData {
   id: string;
@@ -131,7 +126,7 @@ export function Header() {
         className="h-[50px] w-[50px] items-center justify-center rounded-full bg-primary"
       >
         {!user ? (
-          <ActivityIndicator size="small" />
+          <AppSpinner color="light" />
         ) : (
           <Text className="text-lg font-semibold text-white">{initials}</Text>
         )}

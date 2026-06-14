@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { Contact } from "@/services/contacts";
 import type { Entreprise } from "@/services/entreprises";
 import { ContactCard } from "@/components/cards/ContactCard";
 import { Ionicons } from "@expo/vector-icons";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 interface InfosTabProps {
   entreprise: Entreprise;
@@ -68,7 +69,7 @@ export const InfosTab: React.FC<InfosTabProps> = ({
         </View>
 
         {contactsLoading ? (
-          <ActivityIndicator size="small" color="#2563eb" />
+          <AppSpinner />
         ) : contacts && contacts.length > 0 ? (
           <View className="bg-white rounded-3xl p-5 mt-5 flex-col gap-4 ">
             {contacts.map((contact) => (

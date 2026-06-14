@@ -4,6 +4,10 @@ import { Devis } from "../models/devis.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import {
+  sendError,
+  sendInternalError,
+} from "../http/apiResponse.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,7 +19,7 @@ export async function listByEntreprise(req: Request, res: Response) {
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
     const filter: any = { entreprise_id: id, user_id: userId };
@@ -29,7 +33,7 @@ export async function listByEntreprise(req: Request, res: Response) {
     res.json({ devis });
   } catch (error) {
     console.error("Erreur listByEntreprise:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }
 
@@ -39,19 +43,19 @@ export async function get(req: Request, res: Response) {
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
     const devis = await Devis.findOne({ _id: id, user_id: userId });
 
     if (!devis) {
-      return res.status(404).json({ error: "Devis introuvable" });
+      return sendError(res, 404, "not_found", "Devis introuvable");
     }
 
     res.json(devis);
   } catch (error) {
     console.error("Erreur get:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }
 
@@ -61,22 +65,23 @@ export async function upload(req: Request, res: Response) {
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
     if (!req.file) {
-      return res.status(400).json({ error: "Fichier requis" });
+      return sendError(res, 400, "validation_error", "Fichier requis");
     }
 
     const { nom, notes } = req.body;
 
     if (!nom || (typeof nom === "string" && nom.trim().length < 3)) {
       if (req.file) fs.rmSync(req.file.path, { force: true });
-      return res
-        .status(400)
-        .json({
-          error: `Nom du devis requis (min 3 caractères). Reçu: ${nom}`,
-        });
+      return sendError(
+        res,
+        400,
+        "validation_error",
+        `Nom du devis requis (min 3 caractères). Reçu: ${nom}`,
+      );
     }
 
     const devis = new Devis({
@@ -99,7 +104,7 @@ export async function upload(req: Request, res: Response) {
     if (req.file) {
       fs.rmSync(req.file.path, { force: true });
     }
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }
 
@@ -109,13 +114,13 @@ export async function remove(req: Request, res: Response) {
     const userId = (req as any).userId;
 
     if (!userId) {
-      return res.status(401).json({ error: "Non authentifié" });
+      return sendError(res, 401, "unauthorized", "Non authentifie");
     }
 
     const devis = await Devis.findOne({ _id: id, user_id: userId });
 
     if (!devis) {
-      return res.status(404).json({ error: "Devis introuvable" });
+      return sendError(res, 404, "not_found", "Devis introuvable");
     }
 
     const uploadsDir = path.join(
@@ -139,6 +144,6 @@ export async function remove(req: Request, res: Response) {
     res.json({ message: "Devis supprimé" });
   } catch (error) {
     console.error("Erreur remove:", error);
-    res.status(500).json({ error: "Erreur serveur" });
+    sendInternalError(res);
   }
 }

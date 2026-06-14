@@ -59,7 +59,7 @@ docker compose down -v
 docker compose up --build
 ```
 
-Le schéma MySQL initial est chargé depuis `backend/src/db/schema.sql`.
+Sur une base neuve, Docker applique les migrations Drizzle avant de lancer l'API.
 
 ## Backend hors Docker
 
@@ -87,7 +87,8 @@ Commandes utiles :
 npm run lint
 npm run build
 npm test
-npm run db:push
+npm run db:generate
+npm run db:migrate
 npm run db:seed
 ```
 
@@ -105,7 +106,7 @@ pnpm web
 Garde Docker lancé pour l'API, MySQL et MongoDB :
 
 ```bash
-docker compose up --build
+docker compose up --build mysql mongo adminer mongo-express backend
 ```
 
 Puis lance l'app depuis le projet frontend :
@@ -115,6 +116,8 @@ cd frontend
 pnpm install
 pnpm ios
 ```
+
+Le script iOS utilise `localhost` et le port Expo `8084` pour éviter le conflit avec le frontend Docker exposé sur `8081`.
 
 Prérequis : Xcode installé avec au moins un simulateur iOS.
 

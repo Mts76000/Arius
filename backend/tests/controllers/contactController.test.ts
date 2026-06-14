@@ -48,7 +48,11 @@ describe("contact controller", () => {
 
     expect(contactModel.getContactsByEntreprise).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ error: "Entreprise non trouvée" });
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "not_found",
+      message: "Entreprise introuvable",
+    });
   });
 
   it("validates email before creating a contact", async () => {
@@ -67,7 +71,10 @@ describe("contact controller", () => {
     expect(contactModel.createContact).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
-      error: expect.objectContaining({
+      success: false,
+      error: "validation_error",
+      message: "Payload invalide",
+      details: expect.objectContaining({
         fieldErrors: expect.objectContaining({ email: ["Email invalide"] }),
       }),
     });
@@ -112,6 +119,10 @@ describe("contact controller", () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ error: "Contact non trouvé" });
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "not_found",
+      message: "Contact introuvable",
+    });
   });
 });

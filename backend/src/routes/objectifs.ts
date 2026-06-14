@@ -6,6 +6,12 @@ import {
   updateObjectifHandler,
   deleteObjectifHandler,
 } from "../controllers/objectifController.js";
+import { validateBody, validateQuery } from "../middleware/validate.js";
+import {
+  createObjectifSchema,
+  objectifQuerySchema,
+  updateObjectifSchema,
+} from "../validation/objectifSchemas.js";
 
 const router = Router();
 
@@ -70,9 +76,24 @@ const router = Router();
  *       204:
  *         description: Objectif supprime
  */
-router.get("/", requireAuth, getObjectifsHandler);
-router.post("/", requireAuth, createObjectifHandler);
-router.put("/:id", requireAuth, updateObjectifHandler);
+router.get(
+  "/",
+  requireAuth,
+  validateQuery(objectifQuerySchema),
+  getObjectifsHandler,
+);
+router.post(
+  "/",
+  requireAuth,
+  validateBody(createObjectifSchema),
+  createObjectifHandler,
+);
+router.put(
+  "/:id",
+  requireAuth,
+  validateBody(updateObjectifSchema),
+  updateObjectifHandler,
+);
 router.delete("/:id", requireAuth, deleteObjectifHandler);
 
 export default router;

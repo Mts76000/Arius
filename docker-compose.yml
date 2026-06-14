@@ -10,7 +10,6 @@ services:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./backend/src/db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
       interval: 10s
@@ -77,6 +76,7 @@ services:
         condition: service_healthy
       mongo:
         condition: service_started
+    command: sh -c "npm run db:migrate && npm run dev"
 
   frontend:
     build:

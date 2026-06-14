@@ -1,5 +1,5 @@
 import type { Response } from "express";
-import XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { pool } from "../db/mysql.js";
 import { Note } from "../models/note.js";
 import { Rdv } from "../models/rdv.js";
@@ -133,7 +133,9 @@ export async function streamRgpdExport(
     "Objectif HT": item.objectif_ht,
   }));
 
-  const workbook = XLSX.utils.book_new();
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Arius";
+  workbook.created = new Date();
   const sheets: Record<string, any[]> = {
     prospects,
     rdvs: rdvSheets,
@@ -150,11 +152,18 @@ export async function streamRgpdExport(
 
   Object.entries(selectedSheets).forEach(([name, data]) => {
     if (!data) return;
-    const sheet = XLSX.utils.json_to_sheet(data);
-    XLSX.utils.book_append_sheet(workbook, sheet, name);
+    const sheet = workbook.addWorksheet(name);
+    const columns = Object.keys(data[0] ?? {});
+
+    sheet.columns = columns.map((column) => ({
+      header: column,
+      key: column,
+      width: Math.min(Math.max(column.length + 4, 14), 32),
+    }));
+    sheet.addRows(data);
   });
 
-  const buffer = XLSX.write(workbook, { bookType: "xlsx", type: "buffer" });
+  const buffer = Buffer.from(await workbook.xlsx.writeBuffer());
 
   res.setHeader(
     "Content-Type",

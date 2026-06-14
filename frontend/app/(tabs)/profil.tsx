@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
   RefreshControl,
   Platform,
@@ -24,8 +23,8 @@ import { useAuthStore } from "@/store/authStore";
 import { api } from "@/services/api";
 import { exportService } from "@/services/export";
 import { AppButton } from "@/components/ui/AppButton";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 import { Ionicons } from "@expo/vector-icons";
-import Constants from "expo-constants";
 
 interface ProfilData {
   id: string;
@@ -42,7 +41,6 @@ export default function ProfilModal() {
   const { width } = useWindowDimensions();
   const logout = useAuthStore((state) => state.logout);
   const token = useAuthStore((state) => state.token);
-  const appVersion = Constants.expoConfig?.version ?? "1.0.0";
   const isDesktop = width >= 900;
   const [editMode, setEditMode] = useState(false);
   const [passwordMode, setPasswordMode] = useState(false);
@@ -369,9 +367,7 @@ export default function ProfilModal() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color={"#0ea5e9"} />
-      </View>
+      <AppSpinner size="large" centered />
     );
   }
 
@@ -780,14 +776,6 @@ export default function ProfilModal() {
                 Créez une entreprise, ajoutez un contact, planifiez un
                 rendez-vous puis notez le compte-rendu.
               </Text>
-            </View>
-          </View>
-
-          {/* Version */}
-          <View className="rounded-3xl border border-grayLight bg-white px-5 py-4 shadow-sm">
-            <View className="flex-row items-center justify-between">
-              <Text className="font-semibold text-slate-900">Arius</Text>
-              <Text className="text-gray">Version {appVersion}</Text>
             </View>
           </View>
 

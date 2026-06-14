@@ -128,8 +128,8 @@ describe("profil controller", () => {
         userId: "user-1",
         body: {
           ancienMotdepasse: "old",
-          nouveauMotdepasse: "newpass",
-          confirmation: "newpass",
+          nouveauMotdepasse: "Newpass1",
+          confirmation: "Newpass1",
         },
       } as any,
       res as any,
@@ -152,7 +152,7 @@ describe("profil controller", () => {
         userId: "user-1",
         body: {
           ancienMotdepasse: "old",
-          nouveauMotdepasse: "newpass",
+          nouveauMotdepasse: "Newpass1",
           confirmation: "other",
         },
       } as any,

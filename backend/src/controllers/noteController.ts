@@ -2,8 +2,17 @@ import { Request, Response } from "express";
 import * as NoteModel from "../models/note.js";
 import {
   createNoteSchema,
+  dashboardNotesQuerySchema,
+  listNotesQuerySchema,
+  noteTemplatesQuerySchema,
+  searchNotesQuerySchema,
   updateNoteSchema,
 } from "../validation/noteSchemas.js";
+import {
+  sendError,
+  sendInternalError,
+  sendValidationError,
+} from "../http/apiResponse.js";
 
 const normalizeNoteType = (value: unknown) => {
   if (typeof value !== "string") return value;
@@ -52,15 +61,19 @@ export async function listByEntreprise(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
     const { id: entrepriseId } = req.params;
-    const { type, tag, page, limite } = req.query;
+    const parsedQuery = listNotesQuerySchema.safeParse(
+      req.validatedQuery ?? req.query,
+    );
+    if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
+    const { type, tag, page, limite } = parsedQuery.data;
 
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const filters = {
       type: type as NoteModel.NoteType | undefined,
       tag: tag as string | undefined,
-      page: page ? parseInt(page as string) : 1,
-      limite: limite ? parseInt(limite as string) : 20,
+      page,
+      limite,
     };
 
     const result = await NoteModel.getNotesByEntreprise(
@@ -71,7 +84,7 @@ export async function listByEntreprise(req: Request, res: Response) {
 
     res.json(result);
   } catch {
-    res.status(500).json({ error: "Failed to fetch notes" });
+    sendInternalError(res);
   }
 }
 
@@ -80,38 +93,35 @@ export async function get(req: Request, res: Response) {
     const userId = (req as any).userId as string;
     const { id } = req.params;
 
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const note = await NoteModel.getNoteById(id as string, userId);
     if (!note) {
-      return res.status(404).json({ error: "Note not found" });
+      return sendError(res, 404, "not_found", "Note introuvable");
     }
 
     res.json(note);
   } catch {
-    res.status(500).json({ error: "Failed to fetch note" });
+    sendInternalError(res);
   }
 }
 
 export async function create(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const parsed = createNoteSchema.safeParse(
-      normalizeCreateNotePayload(req.body),
+      normalizeCreateNotePayload(req.validatedBody ?? req.body),
     );
     if (!parsed.success) {
-      return res.status(400).json({
-        error: parsed.error.errors,
-        message: "Payload note invalide",
-      });
+      return sendValidationError(res, parsed.error);
     }
 
     const note = await NoteModel.createNote(userId, parsed.data);
     res.status(201).json(note);
   } catch {
-    res.status(500).json({ error: "Failed to create note" });
+    sendInternalError(res);
   }
 }
 
@@ -120,21 +130,21 @@ export async function update(req: Request, res: Response) {
     const userId = (req as any).userId as string;
     const { id } = req.params;
 
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
-    const parsed = updateNoteSchema.safeParse(req.body);
+    const parsed = updateNoteSchema.safeParse(req.validatedBody ?? req.body);
     if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.errors });
+      return sendValidationError(res, parsed.error);
     }
 
     const note = await NoteModel.updateNote(id as string, userId, parsed.data);
     if (!note) {
-      return res.status(404).json({ error: "Note not found" });
+      return sendError(res, 404, "not_found", "Note introuvable");
     }
 
     res.json(note);
   } catch {
-    res.status(500).json({ error: "Failed to update note" });
+    sendInternalError(res);
   }
 }
 
@@ -143,71 +153,72 @@ export async function remove(req: Request, res: Response) {
     const userId = (req as any).userId as string;
     const { id } = req.params;
 
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const deleted = await NoteModel.deleteNote(id as string, userId);
     if (!deleted) {
-      return res.status(404).json({ error: "Note not found" });
+      return sendError(res, 404, "not_found", "Note introuvable");
     }
 
     res.json({ success: true });
   } catch {
-    res.status(500).json({ error: "Failed to delete note" });
+    sendInternalError(res);
   }
 }
 
 export async function search(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    const { q } = req.query;
+    const parsedQuery = searchNotesQuerySchema.safeParse(
+      req.validatedQuery ?? req.query,
+    );
+    if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
+    const { q } = parsedQuery.data;
 
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
-    if (!q || typeof q !== "string") {
-      return res.status(400).json({ error: "Query required" });
-    }
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const notes = await NoteModel.searchNotes(userId, q);
     res.json(notes);
   } catch {
-    res.status(500).json({ error: "Search failed" });
+    sendInternalError(res);
   }
 }
 
 export async function getTemplates(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    const { type } = req.query;
+    const parsedQuery = noteTemplatesQuerySchema.safeParse(
+      req.validatedQuery ?? req.query,
+    );
+    if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
+    const { type } = parsedQuery.data;
 
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
-    if (
-      !type ||
-      !["appel", "reunion", "email", "info", "autre"].includes(type as string)
-    ) {
-      return res.status(400).json({ error: "Valid type required" });
-    }
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const templates = await NoteModel.getTemplatesByType(
       userId,
-      type as NoteModel.NoteType,
+      type,
     );
     res.json(templates);
   } catch {
-    res.status(500).json({ error: "Failed to fetch templates" });
+    sendInternalError(res);
   }
 }
 
 export async function getDashboard(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    const { jours_seuil } = req.query;
+    const parsedQuery = dashboardNotesQuerySchema.safeParse(
+      req.validatedQuery ?? req.query,
+    );
+    if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
+    const { jours_seuil } = parsedQuery.data;
 
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
-    const threshold = jours_seuil ? parseInt(jours_seuil as string) : 7;
-
-    const data = await NoteModel.getNotesForDashboard(userId, threshold);
+    const data = await NoteModel.getNotesForDashboard(userId, jours_seuil);
     res.json(data);
   } catch {
-    res.status(500).json({ error: "Dashboard fetch failed" });
+    sendInternalError(res);
   }
 }
