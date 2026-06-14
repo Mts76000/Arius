@@ -44,7 +44,7 @@ Le deploiement et la demarche DevOps seront documentes comme perimetre a finalis
   - modele MongoDB;
   - middleware auth;
   - test automatise.
-- Script SQL `backend/src/db/schema.sql`.
+- Schema MySQL Drizzle `backend/src/db/schema.ts` et migrations `backend/drizzle/`.
 - Resultats de commandes: `npm run build`, `npm test`, `pnpm lint`, `pnpm test`.
 - Diagrammes:
   - cas d'utilisation;
