@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import { streamRgpdExport } from "../services/exportService.js";
+import { sendError, sendInternalError } from "../http/apiResponse.js";
 
 export async function downloadExport(req: Request, res: Response) {
   const userId = (req as any).userId;
 
   if (!userId) {
-    return res.status(401).json({ error: "Non authentifié" });
+    return sendError(res, 401, "unauthorized", "Non authentifie");
   }
 
   const typeRaw = req.query.type;
@@ -21,9 +22,7 @@ export async function downloadExport(req: Request, res: Response) {
   } catch (error) {
     console.error("Erreur export RGPD:", error);
     if (!res.headersSent) {
-      res
-        .status(500)
-        .json({ error: "Erreur lors de la génération de l'export" });
+      sendInternalError(res);
     }
   }
 }

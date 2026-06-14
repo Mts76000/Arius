@@ -61,6 +61,10 @@ describe("requireAuth middleware", () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ error: "Invalid or expired token" });
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "unauthorized",
+      message: "Token invalide ou expire",
+    });
   });
 });

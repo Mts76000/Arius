@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { getUserById, isAnonymizedUser, verifyJwt } from "../models/user.js";
+import { sendError } from "../http/apiResponse.js";
 
 interface AuthenticatedRequest extends Request {
   userId?: string;
@@ -12,21 +13,21 @@ export async function requireAuth(
 ) {
   const header = req.headers["authorization"];
   if (!header || Array.isArray(header)) {
-    return res.status(401).json({ error: "Missing Authorization header" });
+    return sendError(res, 401, "unauthorized", "Token manquant");
   }
   const [scheme, token] = header.split(" ");
   if (scheme !== "Bearer" || !token) {
-    return res.status(401).json({ error: "Invalid Authorization format" });
+    return sendError(res, 401, "unauthorized", "Format Authorization invalide");
   }
   try {
     const payload = verifyJwt(token);
     const user = await getUserById(payload.sub);
     if (!user || isAnonymizedUser(user)) {
-      return res.status(401).json({ error: "Invalid or expired token" });
+      return sendError(res, 401, "unauthorized", "Token invalide ou expire");
     }
     req.userId = payload.sub;
     next();
   } catch {
-    return res.status(401).json({ error: "Invalid or expired token" });
+    return sendError(res, 401, "unauthorized", "Token invalide ou expire");
   }
 }

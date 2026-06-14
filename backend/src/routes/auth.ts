@@ -15,6 +15,7 @@ import {
   registerSchema,
   resetPasswordSchema,
 } from "../validation/authSchemas.js";
+import { sendError } from "../http/apiResponse.js";
 
 const router = Router();
 
@@ -23,7 +24,13 @@ const passwordResetLimiter = rateLimit({
   limit: 5,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: "too_many_password_reset_requests" },
+  handler: (_req, res) =>
+    sendError(
+      res,
+      429,
+      "too_many_requests",
+      "Trop de demandes de reinitialisation, reessaie plus tard",
+    ),
 });
 
 /**

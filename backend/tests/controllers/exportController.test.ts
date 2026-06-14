@@ -56,7 +56,9 @@ describe("export controller", () => {
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({
-      error: "Erreur lors de la génération de l'export",
+      success: false,
+      error: "internal_error",
+      message: "Erreur serveur",
     });
   });
 });

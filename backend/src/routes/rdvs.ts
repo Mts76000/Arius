@@ -8,6 +8,13 @@ import {
   update,
   remove,
 } from "../controllers/rdvController.js";
+import { validateBody, validateQuery } from "../middleware/validate.js";
+import {
+  createRdvSchema,
+  listEntrepriseRdvsQuerySchema,
+  listMyRdvsQuerySchema,
+  updateRdvSchema,
+} from "../validation/rdvSchemas.js";
 
 const router = Router();
 
@@ -103,11 +110,21 @@ const router = Router();
  *       204:
  *         description: RDV supprime
  */
-router.get("/rdvs", requireAuth, listMyRdvs);
-router.get("/entreprises/:id/rdvs", requireAuth, listByEntreprise);
+router.get(
+  "/rdvs",
+  requireAuth,
+  validateQuery(listMyRdvsQuerySchema),
+  listMyRdvs,
+);
+router.get(
+  "/entreprises/:id/rdvs",
+  requireAuth,
+  validateQuery(listEntrepriseRdvsQuerySchema),
+  listByEntreprise,
+);
 router.get("/rdvs/:id", requireAuth, get);
-router.post("/rdvs", requireAuth, create);
-router.put("/rdvs/:id", requireAuth, update);
+router.post("/rdvs", requireAuth, validateBody(createRdvSchema), create);
+router.put("/rdvs/:id", requireAuth, validateBody(updateRdvSchema), update);
 router.delete("/rdvs/:id", requireAuth, remove);
 
 export default router;

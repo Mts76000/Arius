@@ -13,6 +13,16 @@ import {
 import { Note } from "../models/note.js";
 import { Rdv } from "../models/rdv.js";
 import { Devis } from "../models/devis.js";
+import {
+  sendError,
+  sendInternalError,
+  sendValidationError,
+} from "../http/apiResponse.js";
+import {
+  anonymizeAccountSchema,
+  changePasswordSchema,
+  updateProfilSchema,
+} from "../validation/profilSchemas.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,12 +30,12 @@ const __dirname = path.dirname(__filename);
 export async function getProfil(req: Request, res: Response) {
   try {
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const user = await getUserById(userId);
-    if (!user) return res.status(404).json({ error: "user not found" });
+    if (!user) return sendError(res, 404, "not_found", "Utilisateur introuvable");
     if (isAnonymizedUser(user))
-      return res.status(410).json({ error: "account anonymized" });
+      return sendError(res, 410, "forbidden", "Compte anonymise");
 
     return res.json({
       id: user.id,
@@ -36,29 +46,22 @@ export async function getProfil(req: Request, res: Response) {
     });
   } catch (e) {
     console.error("getProfil error:", e);
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function updateProfil(req: Request, res: Response) {
   try {
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
-
-    const { prenom, nom } = req.body ?? {};
-
-    // Validation
-    if (!prenom || typeof prenom !== "string")
-      return res
-        .status(400)
-        .json({ error: "prenom required and must be string" });
-    if (!nom || typeof nom !== "string")
-      return res.status(400).json({ error: "nom required and must be string" });
-
-    if (prenom.length < 2 || prenom.length > 50)
-      return res.status(400).json({ error: "prenom must be 2-50 characters" });
-    if (nom.length < 2 || nom.length > 50)
-      return res.status(400).json({ error: "nom must be 2-50 characters" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
+    const parsedBody = updateProfilSchema.safeParse(
+      req.validatedBody ?? req.body ?? {},
+    );
+    if (!parsedBody.success) return sendValidationError(res, parsedBody.error);
+    const { prenom, nom } = parsedBody.data as {
+      prenom?: string | null;
+      nom: string;
+    };
 
     // Update user
     const now = new Date().toISOString().slice(0, 19).replace("T", " ");
@@ -76,32 +79,39 @@ export async function updateProfil(req: Request, res: Response) {
     });
   } catch (e) {
     console.error("updateProfil error:", e);
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function anonymiserCompte(req: Request, res: Response) {
   try {
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
-    const motdepasse = req.body?.motdepasse ?? req.body?.password;
-
-    if (!motdepasse || typeof motdepasse !== "string") {
-      return res.status(400).json({ error: "password required" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
+    const parsedBody = anonymizeAccountSchema.safeParse(
+      req.validatedBody ?? req.body ?? {},
+    );
+    if (!parsedBody.success) return sendValidationError(res, parsedBody.error);
+    const body = parsedBody.data as {
+      password?: string;
+      motdepasse?: string;
+    };
+    const motdepasse = body.motdepasse ?? body.password;
+    if (!motdepasse) {
+      return sendError(res, 400, "validation_error", "Mot de passe requis");
     }
 
     const user = await getUserById(userId);
-    if (!user) return res.status(404).json({ error: "user not found" });
+    if (!user) return sendError(res, 404, "not_found", "Utilisateur introuvable");
     if (isAnonymizedUser(user)) {
-      return res.status(410).json({ error: "account already anonymized" });
+      return sendError(res, 410, "forbidden", "Compte deja anonymise");
     }
     if (!user.password) {
-      return res.status(400).json({ error: "password unavailable" });
+      return sendError(res, 400, "validation_error", "Mot de passe indisponible");
     }
 
     const isValid = await comparePassword(motdepasse, user.password);
     if (!isValid) {
-      return res.status(400).json({ error: "invalid password" });
+      return sendError(res, 400, "invalid_credentials", "Mot de passe invalide");
     }
 
     const [entrepriseRows] = await pool.execute(
@@ -144,44 +154,43 @@ export async function anonymiserCompte(req: Request, res: Response) {
     return res.json({ message: "account deleted and anonymized successfully" });
   } catch (e) {
     console.error("anonymiserCompte error:", e);
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function changerMotdepasse(req: Request, res: Response) {
   try {
     const userId = (req as any).userId;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
+    const parsedBody = changePasswordSchema.safeParse(
+      req.validatedBody ?? req.body ?? {},
+    );
+    if (!parsedBody.success) return sendValidationError(res, parsedBody.error);
     const { ancienMotdepasse, nouveauMotdepasse, confirmation } =
-      req.body ?? {};
-
-    // Validation
-    if (!ancienMotdepasse || typeof ancienMotdepasse !== "string")
-      return res.status(400).json({ error: "ancienMotdepasse required" });
-    if (!nouveauMotdepasse || typeof nouveauMotdepasse !== "string")
-      return res.status(400).json({ error: "nouveauMotdepasse required" });
-    if (!confirmation || typeof confirmation !== "string")
-      return res.status(400).json({ error: "confirmation required" });
+      parsedBody.data;
 
     if (nouveauMotdepasse !== confirmation)
-      return res.status(400).json({ error: "passwords do not match" });
-
-    // Validation mot de passe (min 6 caractères)
-    if (nouveauMotdepasse.length < 6) {
-      return res.status(400).json({
-        error: "password must be at least 6 characters",
-      });
-    }
+      return sendError(
+        res,
+        400,
+        "validation_error",
+        "Les mots de passe ne correspondent pas",
+      );
 
     const user = await getUserById(userId);
     if (!user || !user.password)
-      return res.status(401).json({ error: "invalid credentials" });
+      return sendError(res, 401, "invalid_credentials", "Identifiants invalides");
 
     // Vérifier ancien mot de passe
     const isValid = await comparePassword(ancienMotdepasse, user.password);
     if (!isValid)
-      return res.status(400).json({ error: "invalid old password" });
+      return sendError(
+        res,
+        400,
+        "invalid_credentials",
+        "Ancien mot de passe invalide",
+      );
 
     // Hacher et mettre à jour
     const hashed = await hashPassword(nouveauMotdepasse);
@@ -194,6 +203,6 @@ export async function changerMotdepasse(req: Request, res: Response) {
     return res.json({ message: "password updated successfully" });
   } catch (e) {
     console.error("changerMotdepasse error:", e);
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
