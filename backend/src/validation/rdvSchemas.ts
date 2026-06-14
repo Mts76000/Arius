@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { RDV_STATUSES } from "../shared/apiTypes.js";
 
-export const rdvStatusSchema = z.enum(["planifie", "termine", "annule"]);
+export const rdvStatusSchema = z.enum(RDV_STATUSES);
 
 export const createRdvSchema = z.object({
   titre: z.string().min(3, "Titre requis (min 3 caractères)"),

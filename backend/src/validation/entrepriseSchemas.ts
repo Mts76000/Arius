@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ENTREPRISE_STATUSES } from "../shared/apiTypes.js";
 
 const nullableString = z
   .string()
@@ -19,7 +20,7 @@ const logoSchema = z
 
 export const createEntrepriseSchema = z.object({
   nom: z.string().min(1, "Nom requis"),
-  statut: z.enum(["client", "prospect", "fournisseur", "a_reactiver"]),
+  statut: z.enum(ENTREPRISE_STATUSES),
   rue: nullableString,
   code_postal: nullableString.pipe(z.string().max(10).nullable()),
   ville: nullableString.pipe(z.string().max(100).nullable()),

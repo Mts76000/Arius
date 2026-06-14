@@ -1,6 +1,7 @@
 import { z } from "zod";
+import { NOTE_TYPES } from "../shared/apiTypes.js";
 
-export const noteTypeSchema = z.enum(["appel", "reunion", "email", "info", "autre"]);
+export const noteTypeSchema = z.enum(NOTE_TYPES);
 
 export const createNoteSchema = z.object({
   entreprise_id: z.string().min(1),
