@@ -14,7 +14,8 @@
     "seed": "tsx src/scripts/seed.ts",
     "db:seed": "tsx src/scripts/seed.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:migrate:drizzle": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "lint": "eslint .",
     "format": "prettier --write ."

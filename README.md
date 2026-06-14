@@ -59,7 +59,7 @@ docker compose down -v
 docker compose up --build
 ```
 
-Le schéma MySQL initial est chargé depuis `backend/src/db/schema.sql`.
+Sur une base neuve, Docker applique les migrations Drizzle avant de lancer l'API.
 
 ## Backend hors Docker
 
@@ -87,7 +87,8 @@ Commandes utiles :
 npm run lint
 npm run build
 npm test
-npm run db:push
+npm run db:generate
+npm run db:migrate
 npm run db:seed
 ```
 
