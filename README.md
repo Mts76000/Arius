@@ -59,7 +59,7 @@ docker compose down -v
 docker compose up --build
 ```
 
-Le schéma MySQL initial est chargé depuis `backend/src/db/schema.sql`.
+Sur une base neuve, Docker applique les migrations Drizzle avant de lancer l'API.
 
 ## Backend hors Docker
 
@@ -87,8 +87,10 @@ Commandes utiles :
 npm run lint
 npm run build
 npm test
-npm run db:push
+npm run db:generate
+npm run db:migrate
 npm run db:seed
+npm run openapi:export
 ```
 
 ## Frontend web
@@ -105,7 +107,7 @@ pnpm web
 Garde Docker lancé pour l'API, MySQL et MongoDB :
 
 ```bash
-docker compose up --build
+docker compose up --build mysql mongo adminer mongo-express backend
 ```
 
 Puis lance l'app depuis le projet frontend :
@@ -115,6 +117,8 @@ cd frontend
 pnpm install
 pnpm ios
 ```
+
+Le script iOS utilise `localhost` et le port Expo `8084` pour éviter le conflit avec le frontend Docker exposé sur `8081`.
 
 Prérequis : Xcode installé avec au moins un simulateur iOS.
 
@@ -137,7 +141,19 @@ Frontend :
 cd frontend
 pnpm lint
 pnpm test
+pnpm test:e2e
 ```
+
+## OpenAPI et types
+
+```bash
+cd backend
+npm run openapi:export
+cd ../frontend
+pnpm types:api
+```
+
+Le fichier `shared/openapi.json` sert de contrat API versionné. Les types frontend générés sont dans `frontend/shared/openapiTypes.ts`.
 
 ## Variables Resend
 
@@ -148,3 +164,33 @@ FRONTEND_URL=http://localhost:8081
 RESEND_API_KEY=ta_cle_resend
 RESEND_FROM_EMAIL=contact@example.com
 ```
+
+## Monitoring optionnel
+
+En production, les logs HTTP sortent en JSON structuré avec redaction des headers sensibles. Pour capturer les erreurs serveur dans Sentry :
+
+```env
+SENTRY_DSN=https://...
+SENTRY_TRACES_SAMPLE_RATE=0
+```
+
+## Mise en ligne
+
+L'app mobile ne se déploie pas comme un site web : elle se lance en simulateur ou se distribue ensuite via EAS/TestFlight/App Store.
+
+Pour le référentiel, on peut mettre en ligne :
+
+- l'API backend ;
+- la version web exportée du frontend.
+
+Avec Coolify, l'idée est de connecter le repo GitHub, configurer les variables d'environnement de production, brancher MySQL/MongoDB, puis déployer automatiquement après push.
+
+Points importants en production :
+
+- `NODE_ENV=production`
+- vrai `JWT_SECRET`
+- `FRONTEND_URL` vers le domaine web
+- `EXPO_PUBLIC_API_URL` vers le domaine API
+- `RESEND_API_KEY` si le reset password doit envoyer de vrais emails
+- `SENTRY_DSN` si le monitoring est activé
+- ne pas exposer Adminer ou mongo-express publiquement sans protection

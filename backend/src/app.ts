@@ -6,6 +6,7 @@ import pinoHttp from "pino-http";
 import swaggerUi from "swagger-ui-express";
 import path from "path";
 import fs from "fs";
+import crypto from "node:crypto";
 import multer from "multer";
 import { fileURLToPath } from "url";
 import { env } from "./config/env.js";
@@ -22,6 +23,7 @@ import profilRoutes from "./routes/profil.js";
 import exportRoutes from "./routes/export.js";
 import { requireAuth } from "./middleware/auth.js";
 import { runHealthChecks } from "./services/healthService.js";
+import { sendError, sendInternalError } from "./http/apiResponse.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,27 +43,51 @@ export function createApp() {
   app.use(cors());
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
-
-  // Logs HTTP simplifiés
   app.use(
-    pinoHttp({
-      level: "info",
-      transport: {
-        target: "pino-pretty",
-        options: {
-          colorize: true,
-          translateTime: "HH:MM:ss",
-          ignore: "pid,hostname",
-          messageFormat:
-            "{req.method} {req.url} → {res.statusCode} ({responseTime}ms)",
-        },
-      },
-      customLogLevel: (_req, res, err) => {
-        if (res.statusCode >= 400 && res.statusCode < 500) return "warn";
-        if (res.statusCode >= 500 || err) return "error";
-        return "silent"; // Ne log que les erreurs
-      },
+    rateLimit({
+      windowMs: 15 * 60 * 1000,
+      limit: 300,
+      standardHeaders: true,
+      legacyHeaders: false,
     }),
+  );
+
+  const httpLoggerOptions = {
+    level: env.nodeEnv === "production" ? "info" : "debug",
+    redact: [
+      "req.headers.authorization",
+      "req.headers.cookie",
+      "req.headers['x-api-key']",
+    ],
+    genReqId: (req: any) =>
+      req.headers["x-request-id"]?.toString() ?? crypto.randomUUID(),
+    customProps: (req: any) => ({
+      requestId: req.id,
+    }),
+    customLogLevel: (_req: any, res: any, err: any) => {
+      if (res.statusCode >= 500 || err) return "error";
+      if (res.statusCode >= 400) return "warn";
+      return env.nodeEnv === "production" ? "info" : "silent";
+    },
+    ...(env.nodeEnv === "production"
+      ? {}
+      : {
+          transport: {
+            target: "pino-pretty",
+            options: {
+              colorize: true,
+              translateTime: "HH:MM:ss",
+              ignore: "pid,hostname",
+              messageFormat:
+                "{req.method} {req.url} → {res.statusCode} ({responseTime}ms)",
+            },
+          },
+        }),
+  };
+
+  // Logs HTTP: lisibles en dev, structurés en production.
+  app.use(
+    pinoHttp(httpLoggerOptions),
   );
 
   // Servir les fichiers uploadés
@@ -73,6 +99,32 @@ export function createApp() {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
 
+  const allowedLogoMimes: Record<string, string> = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+  };
+
+  function getSafeLogoDir(entrepriseId: string) {
+    if (!/^[a-zA-Z0-9_-]{1,80}$/.test(entrepriseId)) {
+      throw new Error("entrepriseId invalid");
+    }
+
+    const logoDir = path.resolve(
+      uploadsDir,
+      "entreprises",
+      entrepriseId,
+      "logos",
+    );
+    const allowedRoot = path.resolve(uploadsDir, "entreprises");
+
+    if (!logoDir.startsWith(`${allowedRoot}${path.sep}`)) {
+      throw new Error("invalid upload path");
+    }
+
+    return logoDir;
+  }
+
   const storage = multer.diskStorage({
     destination: (req: any, _file, cb) => {
       const { entrepriseId } = req.body;
@@ -80,14 +132,17 @@ export function createApp() {
         return cb(new Error("entrepriseId required"), "");
       }
       const id = Array.isArray(entrepriseId) ? entrepriseId[0] : entrepriseId;
-      const logoDir = path.join(uploadsDir, "entreprises", id, "logos");
-      fs.mkdirSync(logoDir, { recursive: true });
-      cb(null, logoDir);
+      try {
+        const logoDir = getSafeLogoDir(String(id));
+        fs.mkdirSync(logoDir, { recursive: true });
+        cb(null, logoDir);
+      } catch (error) {
+        cb(error as Error, "");
+      }
     },
     filename: (_req, file, cb) => {
-      const timestamp = Date.now();
-      const ext = path.extname(file.originalname);
-      cb(null, `logo_${timestamp}${ext}`);
+      const ext = allowedLogoMimes[file.mimetype];
+      cb(null, `logo_${crypto.randomUUID()}${ext}`);
     },
   });
 
@@ -95,8 +150,12 @@ export function createApp() {
     storage,
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (_req, file, cb) => {
-      const allowedMimes = ["image/jpeg", "image/png", "image/webp"];
-      if (allowedMimes.includes(file.mimetype)) {
+      const originalExt = path.extname(file.originalname).toLowerCase();
+      const expectedExt = allowedLogoMimes[file.mimetype];
+      const acceptedExts =
+        file.mimetype === "image/jpeg" ? [".jpg", ".jpeg"] : [expectedExt];
+
+      if (expectedExt && acceptedExts.includes(originalExt)) {
         cb(null, true);
       } else {
         cb(new Error("Format d'image non autorisé"));
@@ -136,15 +195,33 @@ export function createApp() {
   app.post(
     "/v1/upload",
     requireAuth,
-    upload.single("image"),
     async (req: any, res: any) => {
+      await new Promise<void>((resolve) => {
+        upload.single("image")(req, res, (error: unknown) => {
+          if (error) {
+            const message =
+              error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE"
+                ? "Logo trop lourd, taille max 5 MB"
+                : error instanceof Error
+                  ? error.message
+                  : "Upload invalide";
+            sendError(res, 400, "validation_error", message);
+            resolve();
+            return;
+          }
+          resolve();
+        });
+      });
+
+      if (res.headersSent) return;
+
       if (!req.file) {
-        return res.status(400).json({ error: "Aucun fichier uploadé" });
+        return sendError(res, 400, "validation_error", "Aucun fichier uploade");
       }
 
       let { entrepriseId } = req.body;
       if (!entrepriseId) {
-        return res.status(400).json({ error: "entrepriseId requis" });
+        return sendError(res, 400, "validation_error", "entrepriseId requis");
       }
 
       // Convertir en string si tableau
@@ -153,53 +230,22 @@ export function createApp() {
       }
 
       try {
-        // Assurer qu'il y a une extension
-        const originalPath = req.file.path;
+        const logoDir = getSafeLogoDir(String(entrepriseId));
+        const filename = req.file.filename;
 
-        let filename = req.file.filename;
-        const ext = path.extname(filename);
-
-        if (!ext) {
-          // Si pas d'extension, l'ajouter selon le mimetype
-          let extFromMime = ".jpg";
-          if (req.file.mimetype === "image/png") {
-            extFromMime = ".png";
-          } else if (req.file.mimetype === "image/webp") {
-            extFromMime = ".webp";
-          } else if (
-            req.file.mimetype === "image/heic" ||
-            req.file.mimetype === "image/heif"
-          ) {
-            extFromMime = ".heic";
+        for (const entry of fs.readdirSync(logoDir)) {
+          if (entry !== filename) {
+            fs.rmSync(path.join(logoDir, entry), { force: true });
           }
-          filename = filename + extFromMime;
-
-          // Renommer le fichier
-          const logoDir = path.join(
-            uploadsDir,
-            "entreprises",
-            entrepriseId,
-            "logos",
-          );
-          const newPath = path.join(logoDir, filename);
-          fs.renameSync(originalPath, newPath);
         }
+
         const fileUrl = `/uploads/entreprises/${entrepriseId}/logos/${filename}`;
         res.json({ url: fileUrl });
       } catch (error) {
         console.error("Upload processing error:", error);
-        res.status(500).json({ error: "Erreur lors du traitement de l'image" });
+        sendInternalError(res);
       }
     },
-  );
-
-  app.use(
-    rateLimit({
-      windowMs: 15 * 60 * 1000,
-      limit: 300,
-      standardHeaders: true,
-      legacyHeaders: false,
-    }),
   );
 
   /**

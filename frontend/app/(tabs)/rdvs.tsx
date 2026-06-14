@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   TouchableOpacity,
   Alert,
   Platform,
@@ -18,6 +17,7 @@ import {
 } from "@/hooks/useRdvs";
 import { useEntreprises } from "@/hooks/useEntreprises";
 import { useContacts } from "@/hooks/useContacts";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 import { Rdv, CreateRdvInput, RdvStatus } from "@/services/rdvs";
 import { Contact } from "@/services/contacts";
 import { RdvCard } from "@/components/cards/RdvCard";
@@ -535,7 +535,7 @@ export default function RdvsScreen() {
         {/* RDVs List */}
         {isLoading ? (
           <View className="flex-1 justify-center items-center py-20">
-            <ActivityIndicator size="large" color="#007aff" />
+            <AppSpinner size="large" />
           </View>
         ) : sortedRdvs.length > 0 ? (
           <View className=" bg-white rounded-3xl p-5  flex-col gap-4">

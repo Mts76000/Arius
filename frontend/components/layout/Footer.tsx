@@ -230,6 +230,7 @@ export function FooterTabs() {
         />
       ))}
       <Tabs.Screen name="profil" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="privacy" options={{ href: null, headerShown: false }} />
     </Tabs>
   );
 }

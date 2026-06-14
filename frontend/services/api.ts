@@ -4,6 +4,8 @@ import { useAuthStore } from "../store/authStore";
 
 const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
 
+// Axios expose bien create sur l'export par defaut.
+// eslint-disable-next-line import/no-named-as-default-member
 export const api = axios.create({
   baseURL,
   timeout: 10000,

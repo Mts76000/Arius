@@ -11,6 +11,11 @@ import {
   createContactSchema,
   updateContactSchema,
 } from "../validation/contactSchemas.js";
+import {
+  sendError,
+  sendInternalError,
+  sendValidationError,
+} from "../http/apiResponse.js";
 
 export async function listContactsByEntreprise(req: Request, res: Response) {
   try {
@@ -18,20 +23,20 @@ export async function listContactsByEntreprise(req: Request, res: Response) {
     const { entreprise_id } = req.params;
 
     if (!entreprise_id || typeof entreprise_id !== "string") {
-      return res.status(400).json({ error: "ID entreprise invalide" });
+      return sendError(res, 400, "validation_error", "ID entreprise invalide");
     }
 
     // Vérifier que l'entreprise appartient à l'utilisateur
     const entreprise = await getEntrepriseById(entreprise_id, userId);
     if (!entreprise) {
-      return res.status(404).json({ error: "Entreprise non trouvée" });
+      return sendError(res, 404, "not_found", "Entreprise introuvable");
     }
 
     const contacts = await getContactsByEntreprise(entreprise_id, userId);
     return res.json(contacts);
   } catch (error) {
     console.error("Error listing contacts:", error);
-    return res.status(500).json({ error: "Erreur serveur" });
+    return sendInternalError(res);
   }
 }
 
@@ -41,18 +46,18 @@ export async function getContact(req: Request, res: Response) {
     const { id } = req.params;
 
     if (!id || typeof id !== "string") {
-      return res.status(400).json({ error: "ID contact invalide" });
+      return sendError(res, 400, "validation_error", "ID contact invalide");
     }
 
     const contact = await getContactById(id, userId);
     if (!contact) {
-      return res.status(404).json({ error: "Contact non trouvé" });
+      return sendError(res, 404, "not_found", "Contact introuvable");
     }
 
     return res.json(contact);
   } catch (error) {
     console.error("Error getting contact:", error);
-    return res.status(500).json({ error: "Erreur serveur" });
+    return sendInternalError(res);
   }
 }
 
@@ -62,18 +67,20 @@ export async function createContactHandler(req: Request, res: Response) {
     const { entreprise_id } = req.params;
 
     if (!entreprise_id || typeof entreprise_id !== "string") {
-      return res.status(400).json({ error: "ID entreprise invalide" });
+      return sendError(res, 400, "validation_error", "ID entreprise invalide");
     }
 
     // Vérifier que l'entreprise appartient à l'utilisateur
     const entreprise = await getEntrepriseById(entreprise_id, userId);
     if (!entreprise) {
-      return res.status(404).json({ error: "Entreprise non trouvée" });
+      return sendError(res, 404, "not_found", "Entreprise introuvable");
     }
 
-    const parsed = createContactSchema.safeParse(req.body);
+    const parsed = createContactSchema.safeParse(
+      req.validatedBody ?? req.body,
+    );
     if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.flatten() });
+      return sendValidationError(res, parsed.error);
     }
 
     const contact = await createContact(userId, {
@@ -84,7 +91,7 @@ export async function createContactHandler(req: Request, res: Response) {
     return res.status(201).json(contact);
   } catch (error) {
     console.error("Error creating contact:", error);
-    return res.status(500).json({ error: "Erreur serveur" });
+    return sendInternalError(res);
   }
 }
 
@@ -94,23 +101,25 @@ export async function updateContactHandler(req: Request, res: Response) {
     const { id } = req.params;
 
     if (!id || typeof id !== "string") {
-      return res.status(400).json({ error: "ID contact invalide" });
+      return sendError(res, 400, "validation_error", "ID contact invalide");
     }
 
-    const parsed = updateContactSchema.safeParse(req.body);
+    const parsed = updateContactSchema.safeParse(
+      req.validatedBody ?? req.body,
+    );
     if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.flatten() });
+      return sendValidationError(res, parsed.error);
     }
 
     const contact = await updateContact(id, userId, parsed.data);
     if (!contact) {
-      return res.status(404).json({ error: "Contact non trouvé" });
+      return sendError(res, 404, "not_found", "Contact introuvable");
     }
 
     return res.json(contact);
   } catch (error) {
     console.error("Error updating contact:", error);
-    return res.status(500).json({ error: "Erreur serveur" });
+    return sendInternalError(res);
   }
 }
 
@@ -120,17 +129,17 @@ export async function deleteContactHandler(req: Request, res: Response) {
     const { id } = req.params;
 
     if (!id || typeof id !== "string") {
-      return res.status(400).json({ error: "ID contact invalide" });
+      return sendError(res, 400, "validation_error", "ID contact invalide");
     }
 
     const deleted = await deleteContact(id, userId);
     if (!deleted) {
-      return res.status(404).json({ error: "Contact non trouvé" });
+      return sendError(res, 404, "not_found", "Contact introuvable");
     }
 
     return res.status(204).send();
   } catch (error) {
     console.error("Error deleting contact:", error);
-    return res.status(500).json({ error: "Erreur serveur" });
+    return sendInternalError(res);
   }
 }

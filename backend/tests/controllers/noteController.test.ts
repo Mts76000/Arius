@@ -90,6 +90,15 @@ describe("note controller", () => {
 
     expect(noteModel.getTemplatesByType).not.toHaveBeenCalled();
     expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({ error: "Valid type required" });
+    expect(res.json).toHaveBeenCalledWith({
+      success: false,
+      error: "validation_error",
+      message: "Payload invalide",
+      details: expect.objectContaining({
+        fieldErrors: expect.objectContaining({
+          type: expect.arrayContaining([expect.any(String)]),
+        }),
+      }),
+    });
   });
 });

@@ -1,11 +1,15 @@
 # OS / editor
 .DS_Store
 .vscode/
+!.github/
+!.github/workflows/
+!.github/workflows/*.yml
 
 # Dependencies
 node_modules/
 backend/node_modules/
 frontend/node_modules/
+frontend/.pnpm-store/
 
 # Build outputs
 backend/dist/
@@ -13,6 +17,8 @@ frontend/dist/
 coverage/
 backend/coverage/
 frontend/coverage/
+frontend/test-results/
+frontend/playwright-report/
 
 # Expo
 frontend/.expo/
@@ -33,3 +39,6 @@ backend/uploads/
 # Local notes
 aFaire.md
 AMELIORATIONS_PROJET.md
+
+# Private local notes
+explication.md

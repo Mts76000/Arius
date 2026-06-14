@@ -36,7 +36,7 @@ describe("ca routes", () => {
   }
 
   it("routes stats before id routes", async () => {
-    const response = await request(app()).get("/v1/ca/stats");
+    const response = await request(app()).get("/v1/ca/stats?annee=2026&mois=6");
 
     expect(response.body).toEqual({ handler: "stats" });
     expect(controllerMock.getCAStatsHandler).toHaveBeenCalledOnce();
@@ -47,16 +47,27 @@ describe("ca routes", () => {
     await expect(request(app()).get("/v1/ca")).resolves.toMatchObject({
       body: { handler: "list" },
     });
-    await expect(request(app()).post("/v1/ca").send({})).resolves.toMatchObject({
+    await expect(
+      request(app()).post("/v1/ca").send({
+        entreprise_id: "e1",
+        annee: 2026,
+        mois: 6,
+        ca_ht: 100,
+      }),
+    ).resolves.toMatchObject({
       body: { handler: "create" },
     });
-    await expect(request(app()).put("/v1/ca/ca1").send({})).resolves.toMatchObject({
+    await expect(
+      request(app()).put("/v1/ca/ca1").send({ ca_ht: 120 }),
+    ).resolves.toMatchObject({
       body: { handler: "update" },
     });
     await expect(request(app()).delete("/v1/ca/ca1")).resolves.toMatchObject({
       body: { handler: "delete" },
     });
-    await expect(request(app()).get("/v1/ca/entreprise/e1")).resolves.toMatchObject({
+    await expect(
+      request(app()).get("/v1/ca/entreprise/e1?annee=2026"),
+    ).resolves.toMatchObject({
       body: { handler: "entreprise" },
     });
   });

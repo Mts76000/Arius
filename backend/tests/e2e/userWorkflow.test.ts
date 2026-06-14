@@ -49,10 +49,12 @@ const rdvStatics = vi.hoisted(() => ({
 }));
 
 const RdvMock = vi.hoisted(() => {
-  const ctor = vi.fn().mockImplementation((data) => ({
-    ...data,
-    save: rdvStatics.save,
-  }));
+  const ctor = vi.fn().mockImplementation(function MockRdv(data) {
+    return {
+      ...data,
+      save: rdvStatics.save,
+    };
+  });
   Object.assign(ctor, rdvStatics);
   return ctor;
 });
@@ -87,7 +89,9 @@ describe("E2E user workflow", () => {
     Object.values(noteModel).forEach((mock) => mock.mockReset());
     Object.values(rdvStatics).forEach((mock) => mock.mockReset());
     RdvMock.mockClear();
-    RdvMock.mockImplementation((data) => ({ ...data, save: rdvStatics.save }));
+    RdvMock.mockImplementation(function MockRdv(data) {
+      return { ...data, save: rdvStatics.save };
+    });
     exportService.streamRgpdExport.mockClear();
 
     userModel.getUserByEmail.mockResolvedValue(null);

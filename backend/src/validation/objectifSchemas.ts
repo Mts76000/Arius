@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { optionalQueryInt } from "./queryHelpers.js";
 
 export const createObjectifSchema = z.object({
   annee: z.number().int().min(2000).max(2100),
@@ -11,8 +12,5 @@ export const updateObjectifSchema = z.object({
 });
 
 export const objectifQuerySchema = z.object({
-  annee: z
-    .string()
-    .optional()
-    .transform((value) => (value ? parseInt(value) : undefined)),
+  annee: optionalQueryInt({ min: 2000, max: 2100 }),
 });

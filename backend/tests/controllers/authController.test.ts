@@ -64,7 +64,13 @@ describe("auth controller", () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(409);
-    expect(res.json).toHaveBeenCalledWith({ error: "email already in use" });
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: "conflict",
+        message: "Email deja utilise",
+      }),
+    );
   });
 
   it("registers a user and returns a token", async () => {
@@ -109,7 +115,13 @@ describe("auth controller", () => {
     );
 
     expect(res.status).toHaveBeenCalledWith(401);
-    expect(res.json).toHaveBeenCalledWith({ error: "invalid credentials" });
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        error: "invalid_credentials",
+        message: "Identifiants invalides",
+      }),
+    );
   });
 
   it("returns the current user without leaking password fields", async () => {

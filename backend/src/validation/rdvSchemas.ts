@@ -1,6 +1,8 @@
 import { z } from "zod";
+import { RDV_STATUSES } from "../shared/apiTypes.js";
+import { queryIntWithDefault } from "./queryHelpers.js";
 
-export const rdvStatusSchema = z.enum(["planifie", "termine", "annule"]);
+export const rdvStatusSchema = z.enum(RDV_STATUSES);
 
 export const createRdvSchema = z.object({
   titre: z.string().min(3, "Titre requis (min 3 caractères)"),
@@ -18,4 +20,22 @@ export const updateRdvSchema = z.object({
   date_prevue: z.string().datetime().optional(),
   duree_minutes: z.number().int().min(1, "Durée invalide").optional(),
   statut: rdvStatusSchema.optional(),
+});
+
+const paginationQuery = {
+  page: queryIntWithDefault(1, { min: 1 }),
+  limite: queryIntWithDefault(20, { min: 1, max: 100 }),
+};
+
+export const listMyRdvsQuerySchema = z.object({
+  statut: rdvStatusSchema.optional(),
+  de: z.string().optional(),
+  a: z.string().optional(),
+  ...paginationQuery,
+});
+
+export const listEntrepriseRdvsQuerySchema = z.object({
+  de: z.string().optional(),
+  a: z.string().optional(),
+  ...paginationQuery,
 });

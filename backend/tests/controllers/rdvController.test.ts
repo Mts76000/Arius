@@ -10,10 +10,12 @@ const rdvStatics = vi.hoisted(() => ({
 }));
 
 const RdvMock = vi.hoisted(() => {
-  const ctor = vi.fn().mockImplementation((data) => ({
+  const ctor = vi.fn().mockImplementation(function MockRdv(data) {
+    return {
     ...data,
     save: rdvStatics.save,
-  }));
+    };
+  });
   Object.assign(ctor, rdvStatics);
   return ctor;
 });
@@ -44,10 +46,12 @@ function mockResponse() {
 describe("rdv controller", () => {
   beforeEach(() => {
     RdvMock.mockClear();
-    RdvMock.mockImplementation((data) => ({
-      ...data,
-      save: rdvStatics.save,
-    }));
+    RdvMock.mockImplementation(function MockRdv(data) {
+      return {
+        ...data,
+        save: rdvStatics.save,
+      };
+    });
     Object.values(rdvStatics).forEach((mock) => mock.mockReset());
     vi.spyOn(console, "error").mockImplementation(() => {});
   });
@@ -90,6 +94,33 @@ describe("rdv controller", () => {
     expect(res.json).toHaveBeenCalledWith({
       rdvs: [{ _id: "r1" }],
       pagination: { page: 2, limite: 10, total: 1 },
+    });
+  });
+
+  it("accepts already parsed numeric pagination from query validation", async () => {
+    rdvStatics.aggregate.mockResolvedValueOnce([{ _id: "r1" }]);
+    rdvStatics.countDocuments.mockResolvedValueOnce(1);
+    const res = mockResponse();
+
+    await listMyRdvs(
+      {
+        userId: "user-1",
+        validatedQuery: {
+          de: "2026-06-14T13:38:34.385Z",
+          page: 1,
+          limite: 3,
+        },
+      } as any,
+      res as any,
+    );
+
+    expect(rdvStatics.aggregate).toHaveBeenCalledWith(
+      expect.arrayContaining([{ $skip: 0 }, { $limit: 3 }]),
+    );
+    expect(res.status).not.toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      rdvs: [{ _id: "r1" }],
+      pagination: { page: 1, limite: 3, total: 1 },
     });
   });
 

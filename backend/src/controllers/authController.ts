@@ -18,21 +18,25 @@ import {
 } from "../validation/authSchemas.js";
 import { sendPasswordResetEmail } from "../services/emailService.js";
 import { env } from "../config/env.js";
+import {
+  sendError,
+  sendInternalError,
+  sendValidationError,
+} from "../http/apiResponse.js";
 
 export async function register(req: Request, res: Response) {
   try {
-    const parsed = registerSchema.safeParse(req.body ?? {});
+    const parsed = registerSchema.safeParse(
+      req.validatedBody ?? req.body ?? {},
+    );
     if (!parsed.success) {
-      return res.status(400).json({
-        error: "validation_error",
-        details: parsed.error.flatten(),
-      });
+      return sendValidationError(res, parsed.error);
     }
     const { email, password, prenom, nom } = parsed.data;
 
     const existing = await getUserByEmail(email);
     if (existing)
-      return res.status(409).json({ error: "email already in use" });
+      return sendError(res, 409, "conflict", "Email deja utilise");
 
     const hashed = await hashPassword(password);
     const user = await createUser({
@@ -44,41 +48,49 @@ export async function register(req: Request, res: Response) {
     const token = generateJwt(user.id);
     return res.status(201).json({ token });
   } catch {
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function login(req: Request, res: Response) {
   try {
-    const parsed = loginSchema.safeParse(req.body ?? {});
+    const parsed = loginSchema.safeParse(req.validatedBody ?? req.body ?? {});
     if (!parsed.success) {
-      return res.status(400).json({
-        error: "validation_error",
-        details: parsed.error.flatten(),
-      });
+      return sendValidationError(res, parsed.error);
     }
     const { email, password } = parsed.data;
 
     const user = await getUserByEmail(email);
     if (!user || !user.password)
-      return res.status(401).json({ error: "invalid credentials" });
+      return sendError(
+        res,
+        401,
+        "invalid_credentials",
+        "Identifiants invalides",
+      );
     const ok = await comparePassword(password, user.password);
-    if (!ok) return res.status(401).json({ error: "invalid credentials" });
+    if (!ok) {
+      return sendError(
+        res,
+        401,
+        "invalid_credentials",
+        "Identifiants invalides",
+      );
+    }
     const token = generateJwt(user.id);
     return res.status(200).json({ token });
   } catch {
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function forgotPassword(req: Request, res: Response) {
   try {
-    const parsed = forgotPasswordSchema.safeParse(req.body ?? {});
+    const parsed = forgotPasswordSchema.safeParse(
+      req.validatedBody ?? req.body ?? {},
+    );
     if (!parsed.success) {
-      return res.status(400).json({
-        error: "validation_error",
-        details: parsed.error.flatten(),
-      });
+      return sendValidationError(res, parsed.error);
     }
 
     const { email } = parsed.data;
@@ -95,18 +107,17 @@ export async function forgotPassword(req: Request, res: Response) {
         "Si un compte existe avec cet email, un lien de réinitialisation a été envoyé.",
     });
   } catch {
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function resetPassword(req: Request, res: Response) {
   try {
-    const parsed = resetPasswordSchema.safeParse(req.body ?? {});
+    const parsed = resetPasswordSchema.safeParse(
+      req.validatedBody ?? req.body ?? {},
+    );
     if (!parsed.success) {
-      return res.status(400).json({
-        error: "validation_error",
-        details: parsed.error.flatten(),
-      });
+      return sendValidationError(res, parsed.error);
     }
 
     const { token, password } = parsed.data;
@@ -114,7 +125,12 @@ export async function resetPassword(req: Request, res: Response) {
     const user = await getUserById(userId);
 
     if (!user) {
-      return res.status(400).json({ error: "invalid_reset_token" });
+      return sendError(
+        res,
+        400,
+        "invalid_reset_token",
+        "Lien invalide ou expire",
+      );
     }
 
     const hashed = await hashPassword(password);
@@ -122,16 +138,21 @@ export async function resetPassword(req: Request, res: Response) {
 
     return res.status(200).json({ message: "password_reset_success" });
   } catch {
-    return res.status(400).json({ error: "invalid_reset_token" });
+    return sendError(
+      res,
+      400,
+      "invalid_reset_token",
+      "Lien invalide ou expire",
+    );
   }
 }
 
 export async function me(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string | undefined;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
     const user = await getUserById(userId);
-    if (!user) return res.status(404).json({ error: "not_found" });
+    if (!user) return sendError(res, 404, "not_found", "Utilisateur introuvable");
     return res.status(200).json({
       id: user.id,
       email: user.email,
@@ -139,6 +160,6 @@ export async function me(req: Request, res: Response) {
       nom: user.nom,
     });
   } catch {
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }

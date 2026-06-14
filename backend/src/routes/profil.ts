@@ -6,6 +6,12 @@ import {
   updateProfil,
   changerMotdepasse,
 } from "../controllers/profilController.js";
+import { validateBody } from "../middleware/validate.js";
+import {
+  anonymizeAccountSchema,
+  changePasswordSchema,
+  updateProfilSchema,
+} from "../validation/profilSchemas.js";
 
 const router = Router();
 
@@ -56,8 +62,23 @@ const router = Router();
  *         $ref: '#/components/responses/Unauthorized'
  */
 router.get("/profil", requireAuth, getProfil);
-router.patch("/profil", requireAuth, updateProfil);
-router.post("/changer-motdepasse", requireAuth, changerMotdepasse);
-router.post("/anonymiser-compte", requireAuth, anonymiserCompte);
+router.patch(
+  "/profil",
+  requireAuth,
+  validateBody(updateProfilSchema),
+  updateProfil,
+);
+router.post(
+  "/changer-motdepasse",
+  requireAuth,
+  validateBody(changePasswordSchema),
+  changerMotdepasse,
+);
+router.post(
+  "/anonymiser-compte",
+  requireAuth,
+  validateBody(anonymizeAccountSchema),
+  anonymiserCompte,
+);
 
 export default router;

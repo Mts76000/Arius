@@ -1,0 +1,1824 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Arius API",
+    "version": "0.1.0",
+    "description": "Documentation OpenAPI de l'API Arius CRM: authentification, entreprises, contacts, notes, RDVs, devis, objectifs, chiffre d'affaires, profil et export RGPD."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Etat de l'API et des dependances"
+    },
+    {
+      "name": "Auth",
+      "description": "Authentification et utilisateur courant"
+    },
+    {
+      "name": "Entreprises",
+      "description": "Gestion des entreprises"
+    },
+    {
+      "name": "Contacts",
+      "description": "Gestion des contacts"
+    },
+    {
+      "name": "Notes",
+      "description": "Gestion des notes"
+    },
+    {
+      "name": "RDVs",
+      "description": "Gestion des rendez-vous"
+    },
+    {
+      "name": "Devis",
+      "description": "Gestion des devis PDF"
+    },
+    {
+      "name": "Objectifs",
+      "description": "Objectifs de chiffre d'affaires"
+    },
+    {
+      "name": "CA",
+      "description": "Chiffre d'affaires"
+    },
+    {
+      "name": "Profil",
+      "description": "Profil et parametres utilisateur"
+    },
+    {
+      "name": "Export",
+      "description": "Export des donnees utilisateur"
+    },
+    {
+      "name": "Upload",
+      "description": "Upload de fichiers"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Message d'erreur"
+          }
+        }
+      },
+      "HealthCheck": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "enum": [
+              "api",
+              "mysql",
+              "mongo"
+            ],
+            "example": "mysql"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ],
+            "example": "ok"
+          },
+          "message": {
+            "type": "string",
+            "example": "connected"
+          },
+          "latencyMs": {
+            "type": "number",
+            "example": 4
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "error"
+            ],
+            "example": "ok"
+          },
+          "service": {
+            "type": "string",
+            "example": "arius-api"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2026-06-13T12:00:00.000Z"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "example": 42
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "api: ok (running, 0ms)",
+              "mysql: ok (connected, 4ms)",
+              "mongo: ok (connected, 6ms)"
+            ]
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/HealthCheck"
+            }
+          }
+        }
+      },
+      "AuthCredentials": {
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "EntrepriseInput": {
+        "type": "object",
+        "properties": {
+          "nom": {
+            "type": "string",
+            "example": "Acme SAS"
+          },
+          "secteur": {
+            "type": "string",
+            "example": "Industrie"
+          },
+          "adresse": {
+            "type": "string",
+            "example": "10 rue de Paris"
+          },
+          "telephone": {
+            "type": "string",
+            "example": "+33123456789"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "site_web": {
+            "type": "string",
+            "example": "https://example.com"
+          }
+        }
+      },
+      "ContactInput": {
+        "type": "object",
+        "properties": {
+          "prenom": {
+            "type": "string",
+            "example": "Ada"
+          },
+          "nom": {
+            "type": "string",
+            "example": "Lovelace"
+          },
+          "poste": {
+            "type": "string",
+            "example": "CTO"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "telephone": {
+            "type": "string",
+            "example": "+33123456789"
+          }
+        }
+      },
+      "NoteInput": {
+        "type": "object",
+        "properties": {
+          "entreprise_id": {
+            "type": "string"
+          },
+          "titre": {
+            "type": "string",
+            "example": "Compte rendu appel"
+          },
+          "contenu": {
+            "type": "string",
+            "example": "Client interesse par l'offre."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "prospect",
+              "relance"
+            ]
+          }
+        }
+      },
+      "RdvInput": {
+        "type": "object",
+        "properties": {
+          "entreprise_id": {
+            "type": "string"
+          },
+          "titre": {
+            "type": "string",
+            "example": "Demo produit"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "statut": {
+            "type": "string",
+            "example": "planifie"
+          }
+        }
+      },
+      "ObjectifInput": {
+        "type": "object",
+        "properties": {
+          "mois": {
+            "type": "string",
+            "example": "2026-06"
+          },
+          "montant": {
+            "type": "number",
+            "example": 50000
+          }
+        }
+      },
+      "CAInput": {
+        "type": "object",
+        "properties": {
+          "entreprise_id": {
+            "type": "string"
+          },
+          "montant": {
+            "type": "number",
+            "example": 12000
+          },
+          "date": {
+            "type": "string",
+            "format": "date"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Authentification requise ou token invalide",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Ressource introuvable",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/v1/upload": {
+      "post": {
+        "summary": "Upload le logo d'une entreprise",
+        "tags": [
+          "Upload"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "entrepriseId",
+                  "image"
+                ],
+                "properties": {
+                  "entrepriseId": {
+                    "type": "string"
+                  },
+                  "image": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Logo uploade"
+          },
+          "400": {
+            "description": "Payload invalide"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Verifie l'etat complet de l'API",
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "API et dependances disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Une dependance est indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Verifie l'etat complet de l'API",
+        "tags": [
+          "Health"
+        ],
+        "responses": {
+          "200": {
+            "description": "API et dependances disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Une dependance est indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/rdvs": {
+      "get": {
+        "summary": "Liste les RDVs de l'utilisateur",
+        "tags": [
+          "RDVs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des RDVs"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cree un RDV",
+        "tags": [
+          "RDVs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RdvInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "RDV cree"
+          }
+        }
+      }
+    },
+    "/v1/entreprises/{id}/rdvs": {
+      "get": {
+        "summary": "Liste les RDVs d'une entreprise",
+        "tags": [
+          "RDVs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des RDVs"
+          }
+        }
+      }
+    },
+    "/v1/rdvs/{id}": {
+      "get": {
+        "summary": "Recupere un RDV",
+        "tags": [
+          "RDVs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "RDV trouve"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Met a jour un RDV",
+        "tags": [
+          "RDVs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RdvInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "RDV mis a jour"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime un RDV",
+        "tags": [
+          "RDVs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "RDV supprime"
+          }
+        }
+      }
+    },
+    "/v1/utilisateurs/profil": {
+      "get": {
+        "summary": "Recupere le profil utilisateur",
+        "tags": [
+          "Profil"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profil utilisateur"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Met a jour le profil utilisateur",
+        "tags": [
+          "Profil"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Profil mis a jour"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/utilisateurs/changer-motdepasse": {
+      "post": {
+        "summary": "Change le mot de passe utilisateur",
+        "tags": [
+          "Profil"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mot de passe change"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/utilisateurs/anonymiser-compte": {
+      "post": {
+        "summary": "Anonymise le compte utilisateur",
+        "tags": [
+          "Profil"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Compte anonymise"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/objectifs": {
+      "get": {
+        "summary": "Liste les objectifs",
+        "tags": [
+          "Objectifs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des objectifs"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cree un objectif",
+        "tags": [
+          "Objectifs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectifInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Objectif cree"
+          }
+        }
+      }
+    },
+    "/v1/objectifs/{id}": {
+      "put": {
+        "summary": "Met a jour un objectif",
+        "tags": [
+          "Objectifs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectifInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Objectif mis a jour"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime un objectif",
+        "tags": [
+          "Objectifs"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Objectif supprime"
+          }
+        }
+      }
+    },
+    "/v1/entreprises/{id}/notes": {
+      "get": {
+        "summary": "Liste les notes d'une entreprise",
+        "tags": [
+          "Notes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des notes"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/notes": {
+      "post": {
+        "summary": "Cree une note",
+        "tags": [
+          "Notes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Note creee"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/notes/{id}": {
+      "get": {
+        "summary": "Recupere une note",
+        "tags": [
+          "Notes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Note trouvee"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Met a jour une note",
+        "tags": [
+          "Notes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NoteInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Note mise a jour"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime une note",
+        "tags": [
+          "Notes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Note supprimee"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/notes/search": {
+      "get": {
+        "summary": "Recherche des notes",
+        "tags": [
+          "Notes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Resultats de recherche"
+          }
+        }
+      }
+    },
+    "/v1/templates/notes": {
+      "get": {
+        "summary": "Liste les templates de notes",
+        "tags": [
+          "Notes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Templates disponibles"
+          }
+        }
+      }
+    },
+    "/v1/dashboard/clients-suivi": {
+      "get": {
+        "summary": "Recupere les donnees de suivi clients",
+        "tags": [
+          "Notes"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Donnees du dashboard"
+          }
+        }
+      }
+    },
+    "/v1/export/rgpd": {
+      "get": {
+        "summary": "Telecharge l'export RGPD des donnees utilisateur",
+        "tags": [
+          "Export"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Fichier d'export RGPD",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/entreprises": {
+      "get": {
+        "summary": "Liste les entreprises de l'utilisateur",
+        "tags": [
+          "Entreprises"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des entreprises"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cree une entreprise",
+        "tags": [
+          "Entreprises"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntrepriseInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entreprise creee"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/entreprises/{id}": {
+      "get": {
+        "summary": "Recupere une entreprise",
+        "tags": [
+          "Entreprises"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Entreprise trouvee"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Met a jour une entreprise",
+        "tags": [
+          "Entreprises"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EntrepriseInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entreprise mise a jour"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime une entreprise",
+        "tags": [
+          "Entreprises"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entreprise supprimee"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/v1/entreprises/{id}/devis": {
+      "get": {
+        "summary": "Liste les devis d'une entreprise",
+        "tags": [
+          "Devis"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des devis"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Upload un devis PDF pour une entreprise",
+        "tags": [
+          "Devis"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Devis uploade"
+          },
+          "400": {
+            "description": "Fichier invalide"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/devis/{id}": {
+      "get": {
+        "summary": "Recupere un devis",
+        "tags": [
+          "Devis"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Devis trouve"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime un devis",
+        "tags": [
+          "Devis"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Devis supprime"
+          }
+        }
+      }
+    },
+    "/v1/entreprises/{entreprise_id}/contacts": {
+      "get": {
+        "summary": "Liste les contacts d'une entreprise",
+        "tags": [
+          "Contacts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entreprise_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste des contacts"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cree un contact pour une entreprise",
+        "tags": [
+          "Contacts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entreprise_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Contact cree"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/contacts/{id}": {
+      "get": {
+        "summary": "Recupere un contact",
+        "tags": [
+          "Contacts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Contact trouve"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      },
+      "put": {
+        "summary": "Met a jour un contact",
+        "tags": [
+          "Contacts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Contact mis a jour"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime un contact",
+        "tags": [
+          "Contacts"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Contact supprime"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/v1/ca": {
+      "get": {
+        "summary": "Liste les entrees de chiffre d'affaires",
+        "tags": [
+          "CA"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Liste du chiffre d'affaires"
+          }
+        }
+      },
+      "post": {
+        "summary": "Cree une entree de chiffre d'affaires",
+        "tags": [
+          "CA"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CAInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Entree creee"
+          }
+        }
+      }
+    },
+    "/v1/ca/stats": {
+      "get": {
+        "summary": "Recupere les statistiques de chiffre d'affaires",
+        "tags": [
+          "CA"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Statistiques CA"
+          }
+        }
+      }
+    },
+    "/v1/ca/entreprise/{entreprise_id}": {
+      "get": {
+        "summary": "Recupere le chiffre d'affaires d'une entreprise",
+        "tags": [
+          "CA"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "entreprise_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CA de l'entreprise"
+          }
+        }
+      }
+    },
+    "/v1/ca/{id}": {
+      "put": {
+        "summary": "Met a jour une entree de chiffre d'affaires",
+        "tags": [
+          "CA"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CAInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Entree mise a jour"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Supprime une entree de chiffre d'affaires",
+        "tags": [
+          "CA"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Entree supprimee"
+          }
+        }
+      }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "summary": "Cree un compte utilisateur",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/AuthCredentials"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "nom": {
+                        "type": "string",
+                        "example": "Marie Dupont"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Compte cree"
+          },
+          "400": {
+            "description": "Payload invalide"
+          }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "summary": "Connecte un utilisateur",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthCredentials"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Connexion reussie"
+          },
+          "401": {
+            "description": "Identifiants invalides"
+          }
+        }
+      }
+    },
+    "/v1/auth/forgot-password": {
+      "post": {
+        "summary": "Envoie un lien de réinitialisation de mot de passe",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Demande prise en compte"
+          }
+        }
+      }
+    },
+    "/v1/auth/reset-password": {
+      "post": {
+        "summary": "Réinitialise le mot de passe avec un token temporaire",
+        "tags": [
+          "Auth"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "password"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mot de passe modifié"
+          },
+          "400": {
+            "description": "Token invalide ou expiré"
+          }
+        }
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "summary": "Retourne l'utilisateur courant",
+        "tags": [
+          "Auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilisateur courant"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    }
+  }
+}

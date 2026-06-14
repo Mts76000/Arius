@@ -1,9 +1,10 @@
 import React from "react";
-import { Alert, ActivityIndicator, View, Text } from "react-native";
+import { Alert, View, Text } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useEntreprise, useUpdateEntreprise } from "@/hooks/useEntreprises";
 import { EntrepriseForm } from "@/components/forms/EntrepriseForm";
 import type { CreateEntrepriseInput } from "@/services/entreprises";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 export default function EditEntrepriseScreen() {
   const router = useRouter();
@@ -22,9 +23,7 @@ export default function EditEntrepriseScreen() {
 
   if (isLoading) {
     return (
-      <View>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
+      <AppSpinner size="large" centered />
     );
   }
 

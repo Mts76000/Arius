@@ -7,6 +7,11 @@ import {
   updateContactHandler,
   deleteContactHandler,
 } from "../controllers/contactController.js";
+import { validateBody } from "../middleware/validate.js";
+import {
+  createContactSchema,
+  updateContactSchema,
+} from "../validation/contactSchemas.js";
 
 const router = Router();
 
@@ -117,12 +122,18 @@ router.get(
 router.post(
   "/entreprises/:entreprise_id/contacts",
   requireAuth,
+  validateBody(createContactSchema),
   createContactHandler,
 );
 
 // Routes pour un contact spécifique
 router.get("/contacts/:id", requireAuth, getContact);
-router.put("/contacts/:id", requireAuth, updateContactHandler);
+router.put(
+  "/contacts/:id",
+  requireAuth,
+  validateBody(updateContactSchema),
+  updateContactHandler,
+);
 router.delete("/contacts/:id", requireAuth, deleteContactHandler);
 
 export default router;

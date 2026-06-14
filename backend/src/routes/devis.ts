@@ -5,6 +5,7 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 import { requireAuth } from "../middleware/auth.js";
 import * as devisController from "../controllers/devisController.js";
+import { sendError } from "../http/apiResponse.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -134,9 +135,19 @@ router.post(
   uploadPdf.single("file"),
   (err: any, req: any, res: any, next: any) => {
     if (err instanceof multer.MulterError) {
-      return res.status(400).json({ error: `Erreur upload: ${err.message}` });
+      return sendError(
+        res,
+        400,
+        "validation_error",
+        `Erreur upload: ${err.message}`,
+      );
     } else if (err) {
-      return res.status(400).json({ error: err.message || "Erreur upload" });
+      return sendError(
+        res,
+        400,
+        "validation_error",
+        err.message || "Erreur upload",
+      );
     }
     next();
   },

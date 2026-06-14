@@ -10,6 +10,15 @@ import {
   getTemplates,
   getDashboard,
 } from "../controllers/noteController.js";
+import { validateBody, validateQuery } from "../middleware/validate.js";
+import {
+  createNoteSchema,
+  dashboardNotesQuerySchema,
+  listNotesQuerySchema,
+  noteTemplatesQuerySchema,
+  searchNotesQuerySchema,
+  updateNoteSchema,
+} from "../validation/noteSchemas.js";
 
 const router = Router();
 
@@ -107,10 +116,15 @@ const router = Router();
  *       401:
  *         $ref: '#/components/responses/Unauthorized'
  */
-router.get("/entreprises/:id/notes", requireAuth, listByEntreprise);
+router.get(
+  "/entreprises/:id/notes",
+  requireAuth,
+  validateQuery(listNotesQuerySchema),
+  listByEntreprise,
+);
 router.get("/notes/:id", requireAuth, get);
-router.post("/notes", requireAuth, create);
-router.put("/notes/:id", requireAuth, update);
+router.post("/notes", requireAuth, validateBody(createNoteSchema), create);
+router.put("/notes/:id", requireAuth, validateBody(updateNoteSchema), update);
 router.delete("/notes/:id", requireAuth, remove);
 
 /**
@@ -148,8 +162,23 @@ router.delete("/notes/:id", requireAuth, remove);
  *       200:
  *         description: Donnees du dashboard
  */
-router.get("/notes/search", requireAuth, search);
-router.get("/templates/notes", requireAuth, getTemplates);
-router.get("/dashboard/clients-suivi", requireAuth, getDashboard);
+router.get(
+  "/notes/search",
+  requireAuth,
+  validateQuery(searchNotesQuerySchema),
+  search,
+);
+router.get(
+  "/templates/notes",
+  requireAuth,
+  validateQuery(noteTemplatesQuerySchema),
+  getTemplates,
+);
+router.get(
+  "/dashboard/clients-suivi",
+  requireAuth,
+  validateQuery(dashboardNotesQuerySchema),
+  getDashboard,
+);
 
 export default router;

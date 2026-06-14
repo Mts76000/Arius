@@ -10,11 +10,16 @@ import {
   createEntrepriseSchema,
   updateEntrepriseSchema,
 } from "../validation/entrepriseSchemas.js";
+import {
+  sendError,
+  sendInternalError,
+  sendValidationError,
+} from "../http/apiResponse.js";
 
 export async function list(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const { recherche, statut, page, limite } = req.query;
 
@@ -29,40 +34,39 @@ export async function list(req: Request, res: Response) {
     return res.status(200).json({ entreprises, total });
   } catch (error) {
     console.error("Error listing entreprises:", error);
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function get(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const { id } = req.params;
     const entreprise = await getEntrepriseById(id as string, userId);
 
     if (!entreprise) {
-      return res.status(404).json({ error: "entreprise_not_found" });
+      return sendError(res, 404, "not_found", "Entreprise introuvable");
     }
 
     return res.status(200).json(entreprise);
   } catch (error) {
     console.error("Error getting entreprise:", error);
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function create(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
-    const parsed = createEntrepriseSchema.safeParse(req.body);
+    const parsed = createEntrepriseSchema.safeParse(
+      req.validatedBody ?? req.body,
+    );
     if (!parsed.success) {
-      return res.status(400).json({
-        error: "validation_error",
-        details: parsed.error.flatten(),
-      });
+      return sendValidationError(res, parsed.error);
     }
 
     const entreprise = await createEntreprise(userId, parsed.data);
@@ -75,29 +79,29 @@ export async function create(req: Request, res: Response) {
       message.includes("statut") &&
       (message.includes("Incorrect") || message.includes("Data truncated"))
     ) {
-      return res.status(400).json({
-        error: "invalid_statut",
-        message:
-          "Statut invalide. Vérifie que la colonne enum `statut` inclut 'a_reactiver'.",
-      });
+      return sendError(
+        res,
+        400,
+        "validation_error",
+        "Statut invalide. Verifie que la colonne enum `statut` inclut 'a_reactiver'.",
+      );
     }
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function update(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const { id } = req.params;
-    const parsed = updateEntrepriseSchema.safeParse(req.body);
+    const parsed = updateEntrepriseSchema.safeParse(
+      req.validatedBody ?? req.body,
+    );
 
     if (!parsed.success) {
-      return res.status(400).json({
-        error: "validation_error",
-        details: parsed.error.flatten(),
-      });
+      return sendValidationError(res, parsed.error);
     }
 
     const entreprise = await updateEntreprise(
@@ -107,7 +111,7 @@ export async function update(req: Request, res: Response) {
     );
 
     if (!entreprise) {
-      return res.status(404).json({ error: "entreprise_not_found" });
+      return sendError(res, 404, "not_found", "Entreprise introuvable");
     }
 
     return res.status(200).json(entreprise);
@@ -119,31 +123,32 @@ export async function update(req: Request, res: Response) {
       message.includes("statut") &&
       (message.includes("Incorrect") || message.includes("Data truncated"))
     ) {
-      return res.status(400).json({
-        error: "invalid_statut",
-        message:
-          "Statut invalide. Vérifie que la colonne enum `statut` inclut 'a_reactiver'.",
-      });
+      return sendError(
+        res,
+        400,
+        "validation_error",
+        "Statut invalide. Verifie que la colonne enum `statut` inclut 'a_reactiver'.",
+      );
     }
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }
 
 export async function remove(req: Request, res: Response) {
   try {
     const userId = (req as any).userId as string;
-    if (!userId) return res.status(401).json({ error: "unauthorized" });
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const { id } = req.params;
     const deleted = await deleteEntreprise(id as string, userId);
 
     if (!deleted) {
-      return res.status(404).json({ error: "entreprise_not_found" });
+      return sendError(res, 404, "not_found", "Entreprise introuvable");
     }
 
     return res.status(204).send();
   } catch (error) {
     console.error("Error deleting entreprise:", error);
-    return res.status(500).json({ error: "internal_error" });
+    return sendInternalError(res);
   }
 }

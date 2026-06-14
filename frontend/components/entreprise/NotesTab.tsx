@@ -3,12 +3,12 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   TextInput,
   ScrollView,
 } from "react-native";
 import { Note, NoteType } from "@/services/notes";
 import { NoteCard } from "@/components/cards/NoteCard";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 interface NotesTabProps {
   notes: Note[] | undefined;
@@ -119,7 +119,7 @@ export const NotesTab: React.FC<NotesTabProps> = ({
       <View className="mt-5">
         {notesLoading ? (
           <View className="bg-white rounded-3xl p-5 flex-col gap-4">
-            <ActivityIndicator size="small" color="#0ea5e9" />
+            <AppSpinner />
           </View>
         ) : filteredNotes && filteredNotes.length > 0 ? (
           <View className="bg-white rounded-3xl p-5 flex-col gap-4">

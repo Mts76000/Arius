@@ -8,10 +8,12 @@ const devisStatics = vi.hoisted(() => ({
 }));
 
 const DevisMock = vi.hoisted(() => {
-  const ctor = vi.fn().mockImplementation((data) => ({
-    ...data,
-    save: devisStatics.save,
-  }));
+  const ctor = vi.fn().mockImplementation(function MockDevis(data) {
+    return {
+      ...data,
+      save: devisStatics.save,
+    };
+  });
   Object.assign(ctor, devisStatics);
   return ctor;
 });
@@ -42,10 +44,12 @@ function mockResponse() {
 describe("devis controller", () => {
   beforeEach(() => {
     DevisMock.mockClear();
-    DevisMock.mockImplementation((data) => ({
-      ...data,
-      save: devisStatics.save,
-    }));
+    DevisMock.mockImplementation(function MockDevis(data) {
+      return {
+        ...data,
+        save: devisStatics.save,
+      };
+    });
     Object.values(devisStatics).forEach((mock) => mock.mockReset());
     Object.values(fsMock).forEach((mock) => mock.mockReset());
     vi.spyOn(console, "error").mockImplementation(() => {});

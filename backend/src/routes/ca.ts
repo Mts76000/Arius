@@ -8,6 +8,14 @@ import {
   getCAStatsHandler,
   getCAEntrepriseHandler,
 } from "../controllers/caController.js";
+import { validateBody, validateQuery } from "../middleware/validate.js";
+import {
+  caEntrepriseQuerySchema,
+  caQuerySchema,
+  caStatsQuerySchema,
+  createCASchema,
+  updateCASchema,
+} from "../validation/caSchemas.js";
 
 const router = Router();
 
@@ -96,14 +104,24 @@ const router = Router();
  *       204:
  *         description: Entree supprimee
  */
-router.get("/", requireAuth, getCAHandler);
-router.post("/", requireAuth, createCAHandler);
+router.get("/", requireAuth, validateQuery(caQuerySchema), getCAHandler);
+router.post("/", requireAuth, validateBody(createCASchema), createCAHandler);
 
 // CA Stats & Analytics
-router.get("/stats", requireAuth, getCAStatsHandler);
-router.get("/entreprise/:entreprise_id", requireAuth, getCAEntrepriseHandler);
+router.get(
+  "/stats",
+  requireAuth,
+  validateQuery(caStatsQuerySchema),
+  getCAStatsHandler,
+);
+router.get(
+  "/entreprise/:entreprise_id",
+  requireAuth,
+  validateQuery(caEntrepriseQuerySchema),
+  getCAEntrepriseHandler,
+);
 
-router.put("/:id", requireAuth, updateCAHandler);
+router.put("/:id", requireAuth, validateBody(updateCASchema), updateCAHandler);
 router.delete("/:id", requireAuth, deleteCAHandler);
 
 export default router;
