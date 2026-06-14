@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  ActivityIndicator,
   TextInput,
   RefreshControl,
   ScrollView,
@@ -17,6 +16,7 @@ import type { Entreprise } from "@/services/entreprises";
 
 import { AppButton } from "@/components/ui/AppButton";
 import { BtnPlus } from "@/components/ui/BtnPlus";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 import { EntrepriseAvatar } from "@/components/ui/EntrepriseAvatar";
 
 const STATUS_OPTIONS = [
@@ -260,9 +260,7 @@ export default function EntreprisesScreen() {
       </View>
 
       {isLoading && !data ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color={"#0ea5e9"} />
-        </View>
+        <AppSpinner size="large" centered />
       ) : (
         <FlatList
           data={entreprises}

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TouchableOpacity,
-  ActivityIndicator,
   Alert,
   ScrollView,
 } from "react-native";
@@ -19,6 +18,7 @@ import { CAModal } from "@/components/modals/CAModal";
 import { CAMensuel } from "@/services/ca";
 import { Entreprise } from "@/services/entreprises";
 import { ActionMenu } from "@/components/ui/ActionMenu";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 const MOIS_LABELS = [
   "Janvier",
@@ -155,9 +155,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#0ea5e9" />
-      </View>
+      <AppSpinner size="large" centered />
     );
   }
 

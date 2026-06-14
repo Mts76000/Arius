@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  ActivityIndicator,
   Alert,
   RefreshControl,
   useWindowDimensions,
@@ -20,6 +19,7 @@ import { ObjectifModal } from "@/components/modals/ObjectifModal";
 import { CAModal } from "@/components/modals/CAModal";
 import { AppButton } from "@/components/ui/AppButton";
 import { BtnPlus } from "@/components/ui/BtnPlus";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 const MOIS_LABELS = [
   "Janvier",
@@ -172,9 +172,7 @@ export default function CAScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#007aff" />
-      </View>
+      <AppSpinner size="large" centered />
     );
   }
 

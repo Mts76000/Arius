@@ -1,5 +1,6 @@
 import React from "react";
-import { ActivityIndicator, Pressable, Text } from "react-native";
+import { Pressable, Text } from "react-native";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 interface AppButtonProps {
   title: string;
@@ -59,7 +60,7 @@ export function AppButton({
       accessibilityRole="button"
       className={containerClassName}
     >
-      {isLoading ? <ActivityIndicator color="#ffffff" /> : icon}
+      {isLoading ? <AppSpinner color="light" /> : icon}
       {!isLoading && (
         <Text
           className={`text-base font-semibold ${customTextClassName ?? textClassName[variant]}`}

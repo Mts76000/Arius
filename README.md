@@ -106,7 +106,7 @@ pnpm web
 Garde Docker lancé pour l'API, MySQL et MongoDB :
 
 ```bash
-docker compose up --build
+docker compose up --build mysql mongo adminer mongo-express backend
 ```
 
 Puis lance l'app depuis le projet frontend :
@@ -116,6 +116,8 @@ cd frontend
 pnpm install
 pnpm ios
 ```
+
+Le script iOS utilise `localhost` et le port Expo `8084` pour éviter le conflit avec le frontend Docker exposé sur `8081`.
 
 Prérequis : Xcode installé avec au moins un simulateur iOS.
 

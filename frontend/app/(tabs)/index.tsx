@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
 import {
-  ActivityIndicator,
   Text,
   TouchableOpacity,
   View,
@@ -15,6 +14,7 @@ import { useMyRdvs } from "@/hooks/useRdvs";
 import { useContact } from "@/hooks/useContacts";
 import { useEntreprises } from "@/hooks/useEntreprises";
 import { AppButton } from "@/components/ui/AppButton";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 import { BtnPlus } from "@/components/ui/BtnPlus";
 import { getRdvStatusConfig } from "@/utils/rdvStatus";
 
@@ -94,7 +94,7 @@ export default function HomeScreen() {
     return (
       <View>
         {isLoading ? (
-          <ActivityIndicator size="large" />
+          <AppSpinner size="large" />
         ) : (
           <>
             <Text>Non connecté</Text>
@@ -227,7 +227,7 @@ export default function HomeScreen() {
                   color="#007aff"
                 />
               </View>
-              {isLoadingRdvs && <ActivityIndicator size="small" />}
+              {isLoadingRdvs && <AppSpinner />}
             </View>
             {upcomingRdvs.length === 0 ? (
               <View className="rounded-3xl border border-slate-100 bg-white px-6 py-8 mt-8 items-center">

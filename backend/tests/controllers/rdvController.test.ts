@@ -10,10 +10,12 @@ const rdvStatics = vi.hoisted(() => ({
 }));
 
 const RdvMock = vi.hoisted(() => {
-  const ctor = vi.fn().mockImplementation((data) => ({
+  const ctor = vi.fn().mockImplementation(function MockRdv(data) {
+    return {
     ...data,
     save: rdvStatics.save,
-  }));
+    };
+  });
   Object.assign(ctor, rdvStatics);
   return ctor;
 });
@@ -44,10 +46,12 @@ function mockResponse() {
 describe("rdv controller", () => {
   beforeEach(() => {
     RdvMock.mockClear();
-    RdvMock.mockImplementation((data) => ({
-      ...data,
-      save: rdvStatics.save,
-    }));
+    RdvMock.mockImplementation(function MockRdv(data) {
+      return {
+        ...data,
+        save: rdvStatics.save,
+      };
+    });
     Object.values(rdvStatics).forEach((mock) => mock.mockReset());
     vi.spyOn(console, "error").mockImplementation(() => {});
   });

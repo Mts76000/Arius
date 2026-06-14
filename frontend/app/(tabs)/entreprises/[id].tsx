@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   Alert,
   Linking,
   Platform,
@@ -48,6 +47,7 @@ import { NotesTab } from "@/components/entreprise/NotesTab";
 import { RdvsTab } from "@/components/entreprise/RdvsTab";
 import { ChiffresTab } from "@/components/entreprise/ChiffresTab";
 import { DevisTab } from "@/components/entreprise/DevisTab";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 export default function EntrepriseDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -446,9 +446,7 @@ export default function EntrepriseDetailScreen() {
 
   if (isLoading) {
     return (
-      <View>
-        <ActivityIndicator size="large" color="#2563eb" />
-      </View>
+      <AppSpinner size="large" centered />
     );
   }
 
