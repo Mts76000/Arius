@@ -20,7 +20,7 @@ export function BtnPlus({
   onOpenCA,
   onOpenEntreprise,
   onPress,
-  bottom = 108,
+  bottom = 116,
   right = 20,
 }: BtnPlusProps) {
   const handlePress = () => {

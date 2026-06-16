@@ -1,5 +1,6 @@
 import { api } from "./api";
 import type { EntrepriseStatus } from "@/shared/apiTypes";
+import { Platform } from "react-native";
 
 export interface Entreprise {
   id: string;
@@ -26,6 +27,12 @@ export interface CreateEntrepriseInput {
   pays?: string;
   description?: string;
   logo?: string;
+}
+
+export interface EntrepriseLogoUpload {
+  uri: string;
+  filename: string;
+  mimeType: string;
 }
 
 export interface UpdateEntrepriseInput {
@@ -95,5 +102,39 @@ export const entreprisesService = {
     await api.delete(`/v1/entreprises/${id}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
+  },
+
+  async uploadLogo(
+    token: string,
+    entrepriseId: string,
+    logo: EntrepriseLogoUpload,
+  ): Promise<string> {
+    const formData = new FormData();
+    formData.append("entrepriseId", entrepriseId);
+
+    if (Platform.OS === "web") {
+      const response = await fetch(logo.uri);
+      const blob = await response.blob();
+      formData.append("image", blob, logo.filename);
+    } else {
+      formData.append("image", {
+        uri: logo.uri,
+        type: logo.mimeType,
+        name: logo.filename,
+      } as any);
+    }
+
+    const response = await fetch(`${api.defaults.baseURL}/v1/upload`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Logo upload failed");
+    }
+
+    const data = await response.json();
+    return data.url;
   },
 };

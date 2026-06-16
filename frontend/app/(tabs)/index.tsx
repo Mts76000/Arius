@@ -22,7 +22,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { user, isLoading } = useAuthStore();
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 700;
   const nowIso = useMemo(() => new Date().toISOString(), []);
 
   const rdvFilters = useMemo(

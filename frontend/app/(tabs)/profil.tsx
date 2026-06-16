@@ -9,6 +9,7 @@ import {
   Platform,
   Modal,
   useWindowDimensions,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -41,7 +42,7 @@ export default function ProfilModal() {
   const { width } = useWindowDimensions();
   const logout = useAuthStore((state) => state.logout);
   const token = useAuthStore((state) => state.token);
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 700;
   const [editMode, setEditMode] = useState(false);
   const [passwordMode, setPasswordMode] = useState(false);
 
@@ -331,19 +332,17 @@ export default function ProfilModal() {
       setIsExporting(true);
       setExportError(null);
       if (Platform.OS !== "web") {
-        setIsExporting(false);
-        Alert.alert(
-          "Info",
-          "Téléchargement disponible sur la version web pour l’instant",
+        const { url } = await exportService.createMobileDownloadLink(
+          token,
+          type,
         );
+        await Linking.openURL(url);
+        setIsExporting(false);
         return;
       }
 
-      const { data, filename, contentType } = await exportService.download(
-        token,
-        type,
-      );
-
+      const { data, filename, contentType } =
+        await exportService.download(token, type);
       const blob =
         data instanceof Blob ? data : new Blob([data], { type: contentType });
       const url = URL.createObjectURL(blob);
@@ -401,25 +400,30 @@ export default function ProfilModal() {
         }
       >
         <View className="flex-col gap-6 mt-4">
-          <View className="flex-row  bg-white  rounded-3xl p-6 gap-6   shadow-base">
+          <View className="flex-row bg-white rounded-3xl p-6 gap-6 shadow-base">
             <View className="h-[60px] w-[60px] items-center justify-center rounded-xl bg-primary">
               <Text className="text-xl font-semibold text-white uppercase">
                 {profilData?.prenom?.charAt(0)}
                 {profilData?.nom?.charAt(0)}
               </Text>
             </View>
-            <View className="flex-col gap-2">
-              <Text className="text-lg font-semibold capitalize text-slate-900">
+            <View className="min-w-0 flex-1 flex-col gap-2">
+              <Text
+                className="text-lg font-semibold capitalize text-slate-900"
+                numberOfLines={1}
+              >
                 {profilData?.prenom || "Utilisateur"} {profilData?.nom || ""}
               </Text>
-              <Text className="text-sm text-gray">{profilData?.email}</Text>
+              <Text className="text-sm text-gray" numberOfLines={1}>
+                {profilData?.email}
+              </Text>
             </View>
           </View>
 
           {/* Informations Personnelles */}
-          <View className="flex-col  bg-white rounded-3xl p-6 gap-6 shadow-base">
-            <View className="flex-row items-center">
-              <View className="flex-row gap-4 items-center">
+          <View className="flex-col bg-white rounded-3xl p-6 gap-6 shadow-base">
+            <View className="flex-row items-start">
+              <View className="min-w-0 flex-1 flex-row gap-4 items-start">
                 <Ionicons
                   className="bg-[#E6F9EE] p-2 rounded-2xl"
                   name="document-text-outline"
@@ -427,8 +431,11 @@ export default function ProfilModal() {
                   color="#34C759"
                 />
                 <View className="flex-1">
-                  <Text className="text-lg font-semibold text-slate-900">
-                    Informations Personnelles
+                  <Text
+                    className="text-lg font-semibold text-slate-900"
+                    numberOfLines={2}
+                  >
+                    Informations personnelles
                   </Text>
                   <Text className="text-gray text-sm">
                     {"Gérez vos informations de profil visibles dans l'application"}

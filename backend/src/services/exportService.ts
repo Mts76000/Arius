@@ -174,7 +174,7 @@ export async function streamRgpdExport(
     prospects: "prospects",
     rdvs: "rdvs",
     notes: "notes",
-    ca: "ca",
+    ca: "chiffre-affaires",
     objectifs: "objectifs",
   };
   const label = normalizedType

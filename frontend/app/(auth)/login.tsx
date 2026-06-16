@@ -144,7 +144,7 @@ export default function LoginScreen() {
         </View>
         {error && (
           <View
-            className="w-full flex-row items-start gap-2 rounded-lg border p-3"
+            className="w-full flex-row items-center gap-2 rounded-lg border p-3"
             style={{ backgroundColor: "#fef2f2", borderColor: "#fecaca" }}
           >
             <Ionicons name="alert-circle-outline" size={20} color="#b91c1c" />
@@ -155,7 +155,7 @@ export default function LoginScreen() {
         )}
         {successMessage && (
           <View
-            className="w-full flex-row items-start gap-2 rounded-lg border p-3"
+            className="w-full flex-row items-center gap-2 rounded-lg border p-3"
             style={{ backgroundColor: "#ecfdf3", borderColor: "#abefc6" }}
           >
             <Ionicons name="checkmark-circle-outline" size={20} color="#067647" />
@@ -230,7 +230,7 @@ export default function LoginScreen() {
         <View className="items-center gap-3">
           {!isRegisterMode && !isForgotMode && (
             <Pressable onPress={showForgotMode} accessibilityRole="button">
-              <Text className="text-primary font-medium">
+              <Text className="text-sm font-medium text-slate-500">
                 Mot de passe oublié ?
               </Text>
             </Pressable>

@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -111,6 +112,24 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
   };
 
   const handleDeleteCA = (ca: CAMensuel) => {
+    const doDelete = async () => {
+      try {
+        await deleteCAMutation.mutateAsync(ca.id);
+      } catch {
+        Alert.alert("Erreur", "Impossible de supprimer le CA");
+      }
+    };
+
+    if (Platform.OS === "web") {
+      const ok = window.confirm(
+        `Supprimer le CA de ${MOIS_LABELS[ca.mois - 1]} ${ca.annee} ?`,
+      );
+      if (ok) {
+        doDelete();
+      }
+      return;
+    }
+
     Alert.alert(
       "Supprimer le CA",
       `Supprimer le CA de ${MOIS_LABELS[ca.mois - 1]} ${ca.annee} ?`,
@@ -119,13 +138,7 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
         {
           text: "Supprimer",
           style: "destructive",
-          onPress: async () => {
-            try {
-              await deleteCAMutation.mutateAsync(ca.id);
-            } catch {
-              Alert.alert("Erreur", "Impossible de supprimer le CA");
-            }
-          },
+          onPress: doDelete,
         },
       ],
     );
@@ -266,10 +279,13 @@ export const ChiffresTab: React.FC<ChiffresTabProps> = ({ entreprise }) => {
                         },
                         {
                           key: `delete-${ca.id}`,
-                          label: "Supprimer",
+                          label: deleteCAMutation.isPending
+                            ? "Suppression..."
+                            : "Supprimer",
                           icon: "trash-outline",
                           iconColor: "#EF4444",
                           textClassName: "text-red-500",
+                          disabled: deleteCAMutation.isPending,
                           onPress: () => handleDeleteCA(ca),
                         },
                       ]}

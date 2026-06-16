@@ -5,9 +5,10 @@
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
-    "ios": "expo start --ios --localhost --port 8084",
+    "ios": "NODE_OPTIONS=--dns-result-order=ipv4first expo start --ios --localhost --port 8084 --clear",
     "web": "expo start --web",
     "web:export": "expo export --platform web",
+    "web:serve": "serve dist -s -l 8084",
     "lint": "eslint app components hooks services store utils shared",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -74,6 +75,8 @@
       "brace-expansion@>=4.0.0 <5.0.6": ">=5.0.6",
       "flatted@<=3.4.1": ">=3.4.2",
       "follow-redirects@<=1.15.11": ">=1.16.0",
+      "form-data@>=4.0.0 <4.0.6": ">=4.0.6",
+      "js-yaml@<=4.1.1": ">=4.2.0",
       "minimatch@3.1.5>brace-expansion": "5.0.6",
       "node-forge@<1.4.0": ">=1.4.0",
       "picomatch@<2.3.2": ">=2.3.2",
@@ -81,8 +84,10 @@
       "postcss@<8.5.10": ">=8.5.10",
       "shell-quote@>=1.1.0 <=1.8.3": ">=1.8.4",
       "uuid@<11.1.1": ">=11.1.1",
+      "ws@>=7.0.0 <7.5.11": ">=7.5.11",
       "ws@>=8.0.0 <8.20.1": ">=8.20.1",
       "yaml@>=2.0.0 <2.8.3": ">=2.8.3"
     }
-  }
+  },
+  "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
 }

@@ -47,7 +47,7 @@ const statusBadgeClassName: Record<
 export default function EntreprisesScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 700;
   const [rechercheInput, setRechercheInput] = useState("");
   const [recherche, setRecherche] = useState("");
   const [statutFilter, setStatutFilter] = useState<

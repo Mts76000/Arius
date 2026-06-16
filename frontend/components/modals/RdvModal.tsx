@@ -7,7 +7,6 @@ import {
   Alert,
   Platform,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Rdv, CreateRdvInput, RdvStatus } from "@/services/rdvs";
 import { Entreprise } from "@/services/entreprises";
@@ -21,6 +20,7 @@ import {
   Form,
   PickerFrame,
 } from "@/components/forms/Form";
+import { NativeSelectField } from "@/components/forms/NativeSelectField";
 import {
   getFormModalPresentationStyle,
   RDV_DURATION_OPTIONS,
@@ -58,6 +58,26 @@ export function RdvModal({
   const [selectedStatus, setSelectedStatus] = useState<RdvStatus>("planifie");
   const [errors, setErrors] = useState<FormErrors>({});
   const initializedRef = useRef(false);
+  const entrepriseOptions = [
+    { label: "Sélectionner une entreprise", value: "" },
+    ...(entreprises || []).map((entreprise) => ({
+      label: entreprise.nom,
+      value: entreprise.id,
+    })),
+  ];
+  const filteredContacts = (contacts || []).filter(
+    (contact) => contact.entreprise_id === selectedEntrepriseId,
+  );
+  const contactOptions = [
+    { label: "Sélectionner un contact (optionnel)", value: "" },
+    ...(filteredContacts || []).map((contact) => ({
+      label:
+        contact.prenom && contact.nom
+          ? `${contact.prenom} ${contact.nom}`
+          : contact.nom,
+      value: contact.id,
+    })),
+  ];
 
   useEffect(() => {
     if (visible && !initializedRef.current) {
@@ -171,25 +191,22 @@ export function RdvModal({
                 </select>
               </PickerFrame>
             ) : (
-              <PickerFrame error={!!errors.entreprise_id}>
-                <Picker
-                  selectedValue={selectedEntrepriseId}
-                  onValueChange={(value) => setSelectedEntrepriseId(value)}
-                  enabled={!isLoading}
-                >
-                  <Picker.Item label="Sélectionner une entreprise" value="" />
-                  {entreprises?.map((e) => (
-                    <Picker.Item key={e.id} label={e.nom} value={e.id} />
-                  ))}
-                </Picker>
-              </PickerFrame>
+              <NativeSelectField
+                value={selectedEntrepriseId}
+                options={entrepriseOptions}
+                onChange={(value) => {
+                  setSelectedEntrepriseId(value);
+                  setSelectedContactId("");
+                }}
+                placeholder="Entreprise"
+                disabled={isLoading}
+                error={!!errors.entreprise_id}
+              />
             )}
           </FormGroup>
 
           {/* Contact - Only show if enterprise selected and has contacts */}
-          {selectedEntrepriseId &&
-            contacts?.filter((c) => c.entreprise_id === selectedEntrepriseId)
-              .length > 0 && (
+          {selectedEntrepriseId && filteredContacts.length > 0 && (
               <FormGroup title="Contact (optionnel)">
                 {Platform.OS === "web" ? (
                   <PickerFrame>
@@ -216,31 +233,13 @@ export function RdvModal({
                     </select>
                   </PickerFrame>
                 ) : (
-                  <PickerFrame>
-                    <Picker
-                      selectedValue={selectedContactId}
-                      onValueChange={(value) => setSelectedContactId(value)}
-                      enabled={!isLoading}
-                    >
-                      <Picker.Item
-                        label="Sélectionner un contact (optionnel)"
-                        value=""
-                      />
-                      {contacts
-                        ?.filter(
-                          (c) => c.entreprise_id === selectedEntrepriseId,
-                        )
-                        .map((c) => (
-                          <Picker.Item
-                            key={c.id}
-                            label={
-                              c.prenom && c.nom ? `${c.prenom} ${c.nom}` : c.nom
-                            }
-                            value={c.id}
-                          />
-                        ))}
-                    </Picker>
-                  </PickerFrame>
+                  <NativeSelectField
+                    value={selectedContactId}
+                    options={contactOptions}
+                    onChange={setSelectedContactId}
+                    placeholder="Contact"
+                    disabled={isLoading}
+                  />
                 )}
               </FormGroup>
             )}
@@ -321,23 +320,27 @@ export function RdvModal({
               </View>
             ) : (
               <View className="gap-3">
-                <View className="rounded-2xl border border-gray-200 bg-white px-2">
-                  <Text className="text-xs text-gray-500 px-2 pt-2">Date</Text>
+                <View className="rounded-xl border border-slate-300 bg-white px-4 py-3">
+                  <Text className="mb-1 text-xs font-semibold uppercase text-slate-500">
+                    Date
+                  </Text>
                   <DateTimePicker
                     value={date}
                     mode="date"
-                    display="default"
+                    display={Platform.OS === "ios" ? "compact" : "default"}
                     onChange={(event, selectedDate) => {
                       if (selectedDate) setDate(selectedDate);
                     }}
                   />
                 </View>
-                <View className="rounded-2xl border border-gray-200 bg-white px-2">
-                  <Text className="text-xs text-gray-500 px-2 pt-2">Heure</Text>
+                <View className="rounded-xl border border-slate-300 bg-white px-4 py-3">
+                  <Text className="mb-1 text-xs font-semibold uppercase text-slate-500">
+                    Heure
+                  </Text>
                   <DateTimePicker
                     value={date}
                     mode="time"
-                    display="default"
+                    display={Platform.OS === "ios" ? "compact" : "default"}
                     onChange={(event, selectedDate) => {
                       if (selectedDate) setDate(selectedDate);
                     }}

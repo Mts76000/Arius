@@ -7,6 +7,10 @@ export interface ExportDownloadResponse {
   contentType: string;
 }
 
+export interface ExportLinkResponse {
+  url: string;
+}
+
 function getFilenameFromDisposition(header?: string) {
   if (!header) return undefined;
   const match = /filename="?([^";]+)"?/i.exec(header);
@@ -15,7 +19,7 @@ function getFilenameFromDisposition(header?: string) {
 
 function buildFilename(type?: string) {
   const date = new Date().toISOString().slice(0, 10);
-  const label = type ?? "complet";
+  const label = type === "ca" ? "chiffre-affaires" : (type ?? "complet");
   return `export_${label}_${date}.xlsx`;
 }
 
@@ -42,5 +46,16 @@ export const exportService = {
       filename,
       contentType,
     };
+  },
+
+  async createMobileDownloadLink(
+    token: string,
+    type?: "prospects" | "rdvs" | "notes" | "ca" | "objectifs",
+  ): Promise<ExportLinkResponse> {
+    const response = await api.get<ExportLinkResponse>("/v1/export/rgpd/link", {
+      headers: { Authorization: `Bearer ${token}` },
+      params: type ? { type } : undefined,
+    });
+    return response.data;
   },
 };
