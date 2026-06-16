@@ -10,6 +10,8 @@ RUN pnpm install --frozen-lockfile
 
 COPY . .
 
+RUN pnpm web:export
+
 EXPOSE 8081
 
-CMD ["pnpm", "exec", "expo", "start", "--web", "--port", "8081"]
+CMD ["pnpm", "exec", "serve", "dist", "-s", "-l", "8081"]
