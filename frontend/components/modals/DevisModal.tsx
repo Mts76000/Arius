@@ -14,6 +14,7 @@ import { FormErrors } from "@/utils/validation";
 import { FormInput } from "@/components/forms/FormInput";
 import { FormHeader, FormSection } from "@/components/forms/Form";
 import { getFormModalPresentationStyle } from "@/components/forms/formDefinitions";
+import { AppSpinner } from "@/components/ui/AppSpinner";
 
 interface DevisModalProps {
   visible: boolean;
@@ -30,7 +31,9 @@ export function DevisModal({
 }: DevisModalProps) {
   const [nom, setNom] = useState("");
   const [notes, setNotes] = useState("");
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<UploadDevisInput["file"] | null>(
+    null,
+  );
   const [errors, setErrors] = useState<FormErrors>({});
   const initializedRef = useRef(false);
 
@@ -93,12 +96,12 @@ export function DevisModal({
           return;
         }
 
-        // Convert URI to File-like object for upload
-        const response = await fetch(asset.uri);
-        const blob = await response.blob();
-        const file = new File([blob], asset.name || "devis.pdf", {
+        const file = {
+          uri: asset.uri,
+          name: asset.name || "devis.pdf",
           type: "application/pdf",
-        });
+          size: asset.size,
+        };
 
         setSelectedFile(file);
       }
@@ -206,7 +209,9 @@ export function DevisModal({
                   </Text>
                   <Text className="text-gray-500 text-sm">
                     {selectedFile
-                      ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`
+                      ? selectedFile.size
+                        ? `${(selectedFile.size / 1024 / 1024).toFixed(2)} MB`
+                        : "PDF prêt à être envoyé"
                       : "PDF uniquement, max 20 MB"}
                   </Text>
                 </View>
@@ -216,6 +221,15 @@ export function DevisModal({
               <Text className="text-red-600 text-sm">{errors.file}</Text>
             )}
           </View>
+
+          {isLoading && (
+            <View className="flex-row items-center gap-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
+              <AppSpinner />
+              <Text className="text-sm font-medium text-primary">
+                Upload du devis en cours...
+              </Text>
+            </View>
+          )}
         </FormSection>
       </ScrollView>
     </Modal>

@@ -83,7 +83,7 @@ export function Header() {
   const segments = useSegments();
   const { width } = useWindowDimensions();
   const user = useAuthStore((state) => state.user as UserData | null);
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 700;
 
   const handleAvatarPress = () => {
     router.push("/(tabs)/profil");

@@ -62,7 +62,7 @@ const getProgressionMeta = (progression: number | null) => {
 export default function CAScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 700;
   const currentDate = new Date();
 
   const [selectedMois, setSelectedMois] = useState(currentDate.getMonth() + 1);

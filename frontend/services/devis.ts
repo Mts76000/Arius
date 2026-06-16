@@ -17,7 +17,7 @@ export interface Devis {
 export interface UploadDevisInput {
   nom: string;
   notes?: string;
-  file: File;
+  file: File | { uri: string; type: string; name: string; size?: number };
 }
 
 export const devisService = {
@@ -41,7 +41,7 @@ export const devisService = {
     const formData = new FormData();
     formData.append("nom", data.nom);
     if (data.notes) formData.append("notes", data.notes);
-    formData.append("file", data.file);
+    formData.append("file", data.file as any);
 
     // Don't set Content-Type header - let axios/browser handle it for FormData
     const response = await api.post(

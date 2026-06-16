@@ -16,7 +16,14 @@ const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
 const getLogoUri = (logo?: string | null) => {
   const path = typeof logo === "string" ? logo.trim() : "";
   if (!path) return "";
-  if (path.startsWith("http")) return path;
+  if (
+    path.startsWith("http") ||
+    path.startsWith("data:") ||
+    path.startsWith("file:") ||
+    path.startsWith("blob:")
+  ) {
+    return path;
+  }
   return `${baseURL.replace(/\/$/, "")}/${path.replace(/^\//, "")}`;
 };
 

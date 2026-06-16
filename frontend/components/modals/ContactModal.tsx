@@ -35,6 +35,8 @@ export function ContactModal({
   onTogglePrincipal,
 }: Props) {
   const { height } = useWindowDimensions();
+  const sanitizePhone = (value: string) =>
+    value.replace(/[^\d+\s().-]/g, "");
 
   return (
     <Modal
@@ -98,7 +100,7 @@ export function ContactModal({
             <FormInput
               label="Téléphone mobile"
               value={contactForm.tel_mobile || ""}
-              onChangeText={(text) => onChange("tel_mobile", text)}
+              onChangeText={(text) => onChange("tel_mobile", sanitizePhone(text))}
               placeholder="06 12 34 56 78"
               keyboardType="phone-pad"
               error={null}
@@ -107,7 +109,7 @@ export function ContactModal({
             <FormInput
               label="Téléphone direct"
               value={contactForm.tel_direct || ""}
-              onChangeText={(text) => onChange("tel_direct", text)}
+              onChangeText={(text) => onChange("tel_direct", sanitizePhone(text))}
               placeholder="01 23 45 67 89"
               keyboardType="phone-pad"
               error={null}

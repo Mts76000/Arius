@@ -37,7 +37,7 @@ interface RdvGroup {
 
 export default function RdvsScreen() {
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 700;
   const [page, setPage] = useState(1);
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [timelineFilter, setTimelineFilter] =

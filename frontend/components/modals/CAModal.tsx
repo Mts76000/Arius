@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Modal, View, Text, ScrollView } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { Ionicons } from "@expo/vector-icons";
 
 import { Entreprise } from "@/services/entreprises";
@@ -9,8 +8,8 @@ import {
   FormGroup,
   FormHeader,
   FormSection,
-  PickerFrame,
 } from "@/components/forms/Form";
+import { NativeSelectField } from "@/components/forms/NativeSelectField";
 import {
   getFormModalPresentationStyle,
   MONTH_LABELS,
@@ -68,6 +67,21 @@ export function CAModal({
   const [mois, setMois] = useState(moisInitial || currentDate.getMonth() + 1);
   const [annee, setAnnee] = useState(validAnnee || currentDate.getFullYear());
   const [ca, setCa] = useState(caInitial?.toString() || "");
+  const entrepriseOptions = [
+    { label: "Sélectionner une entreprise", value: "" },
+    ...entreprises.map((entreprise) => ({
+      label: entreprise.nom,
+      value: entreprise.id,
+    })),
+  ];
+  const moisOptions = MONTH_LABELS.map((moisLabel, index) => ({
+    label: moisLabel,
+    value: index + 1,
+  }));
+  const anneeOptions = annees.map((anneeOption) => ({
+    label: anneeOption.toString(),
+    value: anneeOption,
+  }));
 
   useEffect(() => {
     if (visible) {
@@ -120,54 +134,37 @@ export function CAModal({
         <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
           <FormSection className="mt-4">
             <FormGroup title="Entreprise" required>
-              <PickerFrame disabled={isEditing}>
-                <Picker
-                  selectedValue={entrepriseId}
-                  onValueChange={setEntrepriseId}
-                  enabled={!isEditing}
-                >
-                  <Picker.Item label="Sélectionner une entreprise" value="" />
-                  {entreprises.map((e) => (
-                    <Picker.Item key={e.id} label={e.nom} value={e.id} />
-                  ))}
-                </Picker>
-              </PickerFrame>
+              <NativeSelectField
+                value={entrepriseId}
+                options={entrepriseOptions}
+                onChange={setEntrepriseId}
+                placeholder="Entreprise"
+                disabled={isEditing}
+              />
             </FormGroup>
           </FormSection>
 
           <FormSection>
             <FormGroup title="Mois" required>
-              <PickerFrame disabled={isEditing}>
-                <Picker
-                  selectedValue={mois}
-                  onValueChange={(value) => setMois(value)}
-                  enabled={!isEditing}
-                >
-                  {MONTH_LABELS.map((moisLabel, index) => (
-                    <Picker.Item
-                      key={index + 1}
-                      label={moisLabel}
-                      value={index + 1}
-                    />
-                  ))}
-                </Picker>
-              </PickerFrame>
+              <NativeSelectField
+                value={mois}
+                options={moisOptions}
+                onChange={setMois}
+                placeholder="Mois"
+                disabled={isEditing}
+              />
             </FormGroup>
           </FormSection>
 
           <FormSection>
             <FormGroup title="Année" required>
-              <PickerFrame disabled={isEditing}>
-                <Picker
-                  selectedValue={annee}
-                  onValueChange={(value) => setAnnee(value)}
-                  enabled={!isEditing}
-                >
-                  {annees.map((a) => (
-                    <Picker.Item key={a} label={a.toString()} value={a} />
-                  ))}
-                </Picker>
-              </PickerFrame>
+              <NativeSelectField
+                value={annee}
+                options={anneeOptions}
+                onChange={setAnnee}
+                placeholder="Année"
+                disabled={isEditing}
+              />
             </FormGroup>
           </FormSection>
 

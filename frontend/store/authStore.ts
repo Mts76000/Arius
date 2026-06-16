@@ -52,6 +52,29 @@ function getFrenchAuthError(error: any, fallback: string): string {
   return error?.response?.data?.error || fallback;
 }
 
+function getFrenchResetPasswordError(error: any): string {
+  const apiMessage = (error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    "")
+    .toString()
+    .toLowerCase();
+
+  if (
+    apiMessage.includes("invalid_reset_token") ||
+    apiMessage.includes("lien invalide") ||
+    apiMessage.includes("expire") ||
+    apiMessage.includes("token")
+  ) {
+    return "Ce lien de réinitialisation est invalide ou déjà utilisé. Redemande un nouveau lien.";
+  }
+
+  if (apiMessage.includes("network") || !error?.response) {
+    return "Impossible de contacter le serveur. Verifie ta connexion.";
+  }
+
+  return "Impossible de modifier le mot de passe. Redemande un nouveau lien.";
+}
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
   user: null,
@@ -122,10 +145,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await authService.resetPassword(token, password);
     } catch (error: any) {
       set({
-        error: getFrenchAuthError(
-          error,
-          "Lien invalide ou expiré. Redemande un nouveau lien.",
-        ),
+        error: getFrenchResetPasswordError(error),
       });
       throw error;
     } finally {

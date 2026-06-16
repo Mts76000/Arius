@@ -26,11 +26,20 @@ import Constants from "expo-constants";
 
 interface EntrepriseFormProps {
   initialData?: Partial<CreateEntrepriseInput>;
-  onSubmit: (data: CreateEntrepriseInput) => Promise<void>;
+  onSubmit: (
+    data: CreateEntrepriseInput,
+    pendingLogo?: PendingEntrepriseLogo,
+  ) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
   submitLabel?: string;
   entrepriseId?: string;
+}
+
+export interface PendingEntrepriseLogo {
+  uri: string;
+  filename: string;
+  mimeType: string;
 }
 
 export function EntrepriseForm({
@@ -43,7 +52,7 @@ export function EntrepriseForm({
 }: EntrepriseFormProps) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
-  const isCompactLayout = width < 900;
+  const isCompactLayout = width < 700;
   const token = useAuthStore((state) => state.token);
   const baseURL =
     Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
@@ -59,6 +68,9 @@ export function EntrepriseForm({
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [uploading, setUploading] = useState(false);
+  const [pendingLogo, setPendingLogo] = useState<
+    PendingEntrepriseLogo | undefined
+  >();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileNameRef = useRef<string>("");
 
@@ -84,7 +96,15 @@ export function EntrepriseForm({
       });
 
       if (!result.canceled) {
-        const uri = result.assets[0].uri;
+        const asset = result.assets[0];
+        const uri = asset.uri;
+        const filename = asset.fileName || uri.split("/").pop() || "logo.jpg";
+        const mimeType = getMimeType(filename);
+        if (!entrepriseId) {
+          setPendingLogo({ uri, filename, mimeType });
+          setFormData((prevData) => ({ ...prevData, logo: uri }));
+          return;
+        }
         await uploadImage(uri);
       }
     } catch {
@@ -105,6 +125,15 @@ export function EntrepriseForm({
       const reader = new FileReader();
       reader.onload = async (e) => {
         const dataUrl = e.target?.result as string;
+        if (!entrepriseId) {
+          setPendingLogo({
+            uri: dataUrl,
+            filename: file.name,
+            mimeType: file.type || getMimeType(file.name),
+          });
+          setFormData((prevData) => ({ ...prevData, logo: dataUrl }));
+          return;
+        }
         await uploadImage(dataUrl);
       };
       reader.readAsDataURL(file);
@@ -115,17 +144,16 @@ export function EntrepriseForm({
     }
   };
 
+  const getMimeType = (filename: string) => {
+    const lowerFilename = filename.toLowerCase();
+    if (lowerFilename.endsWith(".png")) return "image/png";
+    if (lowerFilename.endsWith(".webp")) return "image/webp";
+    return "image/jpeg";
+  };
+
   const uploadImage = async (uri: string) => {
     if (!token) {
       Alert.alert("Erreur", "Vous devez être connecté pour uploader une image");
-      return;
-    }
-
-    if (!entrepriseId) {
-      Alert.alert(
-        "Avertissement",
-        "Vous devez créer l'entreprise d'abord avant de pouvoir uploader un logo",
-      );
       return;
     }
 
@@ -146,15 +174,10 @@ export function EntrepriseForm({
       }
 
       // Détecter le type MIME
-      let mimeType = "image/jpeg";
-      if (filename.toLowerCase().includes(".png")) {
-        mimeType = "image/png";
-      } else if (filename.toLowerCase().includes(".webp")) {
-        mimeType = "image/webp";
-      }
+      const mimeType = getMimeType(filename);
 
       // Ajouter l'entrepriseId au FormData
-      formData.append("entrepriseId", entrepriseId);
+      formData.append("entrepriseId", entrepriseId ?? "");
 
       // Fetcher le fichier et convertir en blob
       // Sur mobile, utiliser directement l'objet {uri, type, name}
@@ -218,10 +241,16 @@ export function EntrepriseForm({
     if (!validateForm()) {
       return;
     }
-    await onSubmit(formData);
+    const data = { ...formData };
+    if (pendingLogo && !entrepriseId) {
+      data.logo = "";
+    }
+    await onSubmit(data, pendingLogo);
   };
 
-  const bottomSpacing = isCompactLayout ? Math.max(112, insets.bottom + 96) : 48;
+  const bottomSpacing = isCompactLayout
+    ? Math.max(132, insets.bottom + 112)
+    : 48;
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -338,7 +367,10 @@ export function EntrepriseForm({
                   </TouchableOpacity>
                   {formData.logo && (
                     <TouchableOpacity
-                      onPress={() => setFormData({ ...formData, logo: "" })}
+                      onPress={() => {
+                        setPendingLogo(undefined);
+                        setFormData({ ...formData, logo: "" });
+                      }}
                       className="rounded-lg border border-red-200 px-4 py-3"
                     >
                       <Text className="font-semibold text-red-600">Retirer</Text>

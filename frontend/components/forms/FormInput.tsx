@@ -85,9 +85,15 @@ export const FormInput: React.FC<FormInputProps> = ({
         )}
       </View>
       {error && (
-        <Text className="text-sm font-medium" style={{ color: "#b91c1c" }}>
-          {error}
-        </Text>
+        <View className="flex-row items-center gap-1.5">
+          <Ionicons name="alert-circle-outline" size={15} color="#b91c1c" />
+          <Text
+            className="flex-1 text-sm font-medium"
+            style={{ color: "#b91c1c" }}
+          >
+            {error}
+          </Text>
+        </View>
       )}
     </View>
   );

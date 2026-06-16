@@ -77,7 +77,7 @@ export default function ResetPasswordScreen() {
 
         {(error || formErrors.token) && (
           <View
-            className="w-full flex-row items-start gap-2 rounded-lg border p-3"
+            className="w-full flex-row items-center gap-2 rounded-lg border p-3"
             style={{ backgroundColor: "#fef2f2", borderColor: "#fecaca" }}
           >
             <Ionicons name="alert-circle-outline" size={20} color="#b91c1c" />
@@ -89,7 +89,7 @@ export default function ResetPasswordScreen() {
 
         {successMessage && (
           <View
-            className="w-full flex-row items-start gap-2 rounded-lg border p-3"
+            className="w-full flex-row items-center gap-2 rounded-lg border p-3"
             style={{ backgroundColor: "#ecfdf3", borderColor: "#abefc6" }}
           >
             <Ionicons name="checkmark-circle-outline" size={20} color="#067647" />

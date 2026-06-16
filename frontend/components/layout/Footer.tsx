@@ -76,7 +76,7 @@ export function FooterTabs() {
   const router = useRouter();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 700;
 
   const renderNativeWindTabBar = ({ state, navigation }: BottomTabBarProps) => {
     const visibleRouteNames: FooterTabName[] = [

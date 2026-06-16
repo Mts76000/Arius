@@ -54,7 +54,7 @@ const sections = [
 
 export default function PrivacyScreen() {
   const { width } = useWindowDimensions();
-  const isDesktop = width >= 900;
+  const isDesktop = width >= 700;
 
   return (
     <ScrollView
