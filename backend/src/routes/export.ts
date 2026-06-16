@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
-import { downloadExport } from "../controllers/exportController.js";
+import {
+  createExportLink,
+  downloadExport,
+  downloadExportFromLink,
+} from "../controllers/exportController.js";
 
 const router = Router();
 
@@ -24,5 +28,7 @@ const router = Router();
  *         $ref: '#/components/responses/Unauthorized'
  */
 router.get("/export/rgpd", requireAuth, downloadExport);
+router.get("/export/rgpd/link", requireAuth, createExportLink);
+router.get("/export/rgpd/link/:token", downloadExportFromLink);
 
 export default router;

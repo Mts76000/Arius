@@ -24,6 +24,7 @@ import exportRoutes from "./routes/export.js";
 import { requireAuth } from "./middleware/auth.js";
 import { runHealthChecks } from "./services/healthService.js";
 import { sendError, sendInternalError } from "./http/apiResponse.js";
+import { getEntrepriseById } from "./models/entreprise.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -230,6 +231,15 @@ export function createApp() {
       }
 
       try {
+        const entreprise = await getEntrepriseById(
+          String(entrepriseId),
+          req.userId,
+        );
+        if (!entreprise) {
+          fs.rmSync(req.file.path, { force: true });
+          return sendError(res, 404, "not_found", "Entreprise introuvable");
+        }
+
         const logoDir = getSafeLogoDir(String(entrepriseId));
         const filename = req.file.filename;
 
