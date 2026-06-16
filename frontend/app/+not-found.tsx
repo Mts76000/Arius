@@ -36,7 +36,7 @@ export default function NotFoundScreen() {
                   Page introuvable
                 </Text>
                 <Text className="text-base leading-6 text-slate-500">
-                  Cette page n'existe pas ou n'est plus disponible.
+                  {"Cette page n'existe pas ou n'est plus disponible."}
                 </Text>
               </View>
             </View>
@@ -49,7 +49,7 @@ export default function NotFoundScreen() {
                   Que faire maintenant ?
                 </Text>
                 <Text className="mt-1 text-sm leading-5 text-slate-500">
-                  Reviens à l'accueil ou retourne à la page précédente pour
+                  {"Reviens à l'accueil ou retourne à la page précédente pour "}
                   continuer ta navigation dans Arius.
                 </Text>
               </View>

@@ -235,6 +235,7 @@ describe("forms, entreprise and layout components", () => {
     await vi.waitFor(() =>
       expect(onSubmit).toHaveBeenCalledWith(
         expect.objectContaining({ nom: "Arius", statut: "fournisseur" }),
+        undefined,
       ),
     );
 

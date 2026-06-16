@@ -44,13 +44,13 @@ export async function createExportLink(req: Request, res: Response) {
   });
   const url = `${req.protocol}://${req.get("host")}/v1/export/rgpd/link/${encodeURIComponent(token)}`;
 
-  return res.json({ url });
+  return res.json({ url, expiresInSeconds: 120 });
 }
 
 export async function downloadExportFromLink(req: Request, res: Response) {
   try {
     const token = req.params.token;
-    if (!token) {
+    if (typeof token !== "string" || token.length === 0) {
       return sendError(res, 400, "validation_error", "Lien invalide");
     }
 

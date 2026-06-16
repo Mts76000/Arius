@@ -78,8 +78,14 @@ const createEntrepriseMutation = vi.hoisted(() => ({
   mutateAsync: vi.fn(),
 }));
 
+const updateEntrepriseMutation = vi.hoisted(() => ({
+  isPending: false,
+  mutateAsync: vi.fn(),
+}));
+
 vi.mock("@/hooks/useEntreprises", () => ({
   useCreateEntreprise: () => createEntrepriseMutation,
+  useUpdateEntreprise: () => updateEntrepriseMutation,
 }));
 
 import LoginScreen from "../../app/(auth)/login";
@@ -138,6 +144,8 @@ describe("app user flows", () => {
     Object.values(authStore).forEach((mock) => mock.mockReset());
     createEntrepriseMutation.mutateAsync.mockReset();
     createEntrepriseMutation.isPending = false;
+    updateEntrepriseMutation.mutateAsync.mockReset();
+    updateEntrepriseMutation.isPending = false;
   });
 
   it("logs in from the login screen with entered credentials", async () => {

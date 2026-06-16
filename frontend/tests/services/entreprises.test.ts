@@ -11,6 +11,10 @@ vi.mock("../../services/api", () => ({
   api: apiMock,
 }));
 
+vi.mock("react-native", () => ({
+  Platform: { OS: "web" },
+}));
+
 import { entreprisesService } from "../../services/entreprises";
 
 describe("entreprisesService", () => {
