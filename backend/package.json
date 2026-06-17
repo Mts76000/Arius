@@ -15,6 +15,7 @@
     "db:seed": "tsx src/scripts/seed.ts",
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "tsx src/scripts/migrate.ts",
+    "db:migrate:prod": "node dist/scripts/migrate.js",
     "db:migrate:drizzle": "npx drizzle-kit migrate",
     "db:push": "npx drizzle-kit push",
     "openapi:export": "tsx src/scripts/exportOpenApi.ts",

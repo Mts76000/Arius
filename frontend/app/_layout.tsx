@@ -1,13 +1,13 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "@/web-config";
 import "../global.css";
 
 import { useAuthStore } from "@/store/authStore";
 import { Header } from "@/components/layout/Header";
+import { initWebConfig } from "@/web-config";
 
 const queryClient = new QueryClient();
 
@@ -16,13 +16,21 @@ export const unstable_settings = {
 };
 
 export default function RootLayout() {
+  const [isMounted, setIsMounted] = useState(false);
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const token = useAuthStore((state) => state.token);
   const isInitialized = useAuthStore((state) => state.isInitialized);
 
   useEffect(() => {
+    setIsMounted(true);
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => initWebConfig(), []);
+
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

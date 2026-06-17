@@ -14,7 +14,7 @@ Ce document sert de checklist pour construire le dossier projet de 40 a 60 pages
 - Developper des composants d'acces aux donnees SQL et NoSQL.
 - Preparer et executer les plans de tests.
 
-Le deploiement et la demarche DevOps seront documentes comme perimetre a finaliser si la mise en production n'est pas realisee avant l'examen.
+Le deploiement est prepare via Coolify pour l'API backend et la version web du frontend. La distribution mobile App Store / Play Store est documentee comme une evolution possible, car elle depend de comptes editeurs payants.
 
 ## 2. Structure conseillee du dossier
 
@@ -33,6 +33,8 @@ Le deploiement et la demarche DevOps seront documentes comme perimetre a finalis
 13. Jeu d'essai representatif.
 14. Veille securite.
 15. Bilan: difficultes, satisfactions, evolutions.
+
+Voir aussi `docs/deploiement-coolify.md` pour la strategie de mise en ligne.
 
 ## 3. Annexes a preparer
 

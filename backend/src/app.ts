@@ -29,8 +29,25 @@ import { getEntrepriseById } from "./models/entreprise.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function normalizeOrigin(origin: string) {
+  try {
+    return new URL(origin).origin;
+  } catch {
+    return origin.replace(/\/$/, "");
+  }
+}
+
 export function createApp() {
   const app = express();
+  app.set("trust proxy", 1);
+  const allowedOrigins =
+    env.nodeEnv === "production"
+      ? env.frontendUrl
+          .split(",")
+          .map((origin) => origin.trim())
+          .map(normalizeOrigin)
+          .filter(Boolean)
+      : [];
 
   if (env.nodeEnv !== "production") {
     app.get("/docs.json", (_req, res) => {
@@ -41,7 +58,23 @@ export function createApp() {
 
   // Autoriser le chargement des images depuis un autre port (expo web)
   app.use(helmet({ crossOriginResourcePolicy: false }));
-  app.use(cors());
+  app.use(
+    cors({
+      origin:
+        env.nodeEnv === "production"
+          ? (origin, callback) => {
+              const requestOrigin = origin ? normalizeOrigin(origin) : null;
+
+              if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
+                callback(null, true);
+                return;
+              }
+
+              callback(new Error("Origin not allowed by CORS"));
+            }
+          : true,
+    }),
+  );
   app.use(express.json({ limit: "10mb" }));
   app.use(express.urlencoded({ limit: "10mb", extended: true }));
   app.use(

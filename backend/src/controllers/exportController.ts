@@ -12,6 +12,15 @@ function normalizeExportType(value: unknown) {
       : undefined;
 }
 
+function getPublicBaseUrl(req: Request) {
+  const forwardedProto = normalizeExportType(req.headers["x-forwarded-proto"]);
+  const forwardedHost = normalizeExportType(req.headers["x-forwarded-host"]);
+  const proto = forwardedProto?.split(",")[0]?.trim() || req.protocol;
+  const host = forwardedHost?.split(",")[0]?.trim() || req.get("host");
+
+  return `${proto}://${host}`;
+}
+
 export async function downloadExport(req: Request, res: Response) {
   const userId = (req as any).userId;
 
@@ -42,7 +51,7 @@ export async function createExportLink(req: Request, res: Response) {
   const token = jwt.sign({ sub: userId, type, scope: "export" }, env.jwtSecret, {
     expiresIn: "2m",
   });
-  const url = `${req.protocol}://${req.get("host")}/v1/export/rgpd/link/${encodeURIComponent(token)}`;
+  const url = `${getPublicBaseUrl(req)}/v1/export/rgpd/link/${encodeURIComponent(token)}`;
 
   return res.json({ url, expiresInSeconds: 120 });
 }

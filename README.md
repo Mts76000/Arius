@@ -176,6 +176,8 @@ SENTRY_TRACES_SAMPLE_RATE=0
 
 ## Mise en ligne
 
+La procédure détaillée est dans `docs/deploiement-coolify.md`.
+
 L'app mobile ne se déploie pas comme un site web : elle se lance en simulateur ou se distribue ensuite via EAS/TestFlight/App Store.
 
 Pour le référentiel, on peut mettre en ligne :
@@ -194,3 +196,4 @@ Points importants en production :
 - `RESEND_API_KEY` si le reset password doit envoyer de vrais emails
 - `SENTRY_DSN` si le monitoring est activé
 - ne pas exposer Adminer ou mongo-express publiquement sans protection
+- ajouter un volume persistant Coolify sur `/app/uploads` pour conserver les logos
