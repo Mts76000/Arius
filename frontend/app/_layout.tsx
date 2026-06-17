@@ -3,11 +3,11 @@ import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import "@/web-config";
 import "../global.css";
 
 import { useAuthStore } from "@/store/authStore";
 import { Header } from "@/components/layout/Header";
+import { initWebConfig } from "@/web-config";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +23,8 @@ export default function RootLayout() {
   useEffect(() => {
     initializeAuth();
   }, [initializeAuth]);
+
+  useEffect(() => initWebConfig(), []);
 
   return (
     <QueryClientProvider client={queryClient}>

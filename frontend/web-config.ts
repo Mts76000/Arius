@@ -1,45 +1,53 @@
-// Fix pour React Navigation sur web - désactiver aria-hidden problématique
-if (typeof window !== "undefined" && typeof document !== "undefined") {
-  // Attendre que le DOM soit chargé
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", removeAriaHidden);
-  } else {
-    removeAriaHidden();
+export function initWebConfig() {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return;
   }
 
-  // Observer pour corriger les nouveaux éléments
+  removeAriaHidden();
   const observer = new MutationObserver(() => {
     removeAriaHidden();
   });
 
-  observer.observe(document.body, {
-    attributes: true,
-    subtree: true,
-    attributeFilter: ["aria-hidden"],
-  });
-
-  function removeAriaHidden() {
-    // Trouver tous les éléments avec aria-hidden qui contiennent des éléments focalisables
-    const ariaHiddenElements = document.querySelectorAll(
-      '[aria-hidden="true"]',
-    );
-    ariaHiddenElements.forEach((element) => {
-      const focusableElements = element.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      if (focusableElements.length > 0) {
-        // Supprimer aria-hidden si des éléments focalisables sont présents
-        element.removeAttribute("aria-hidden");
-      }
+  if (document.body) {
+    observer.observe(document.body, {
+      attributes: true,
+      subtree: true,
+      attributeFilter: ["aria-hidden"],
     });
   }
+
+  patchConsoleError();
+
+  return () => {
+    observer.disconnect();
+  };
 }
 
-// Supprimer les avertissements React Native sur les nœuds texte vides dans les View
-if (typeof window !== "undefined" && typeof console !== "undefined") {
+function removeAriaHidden() {
+  const ariaHiddenElements = document.querySelectorAll('[aria-hidden="true"]');
+
+  ariaHiddenElements.forEach((element) => {
+    const focusableElements = element.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+
+    if (focusableElements.length > 0) {
+      element.removeAttribute("aria-hidden");
+    }
+  });
+}
+
+let consoleErrorPatched = false;
+
+function patchConsoleError() {
+  if (consoleErrorPatched || typeof console === "undefined") {
+    return;
+  }
+
+  consoleErrorPatched = true;
   const originalError = console.error;
+
   console.error = function (...args) {
-    // Ignorer l'erreur "Unexpected text node" qui provient d'espaces dans les View
     if (
       args[0] &&
       typeof args[0] === "string" &&
@@ -47,6 +55,7 @@ if (typeof window !== "undefined" && typeof console !== "undefined") {
     ) {
       return;
     }
+
     originalError.apply(console, args);
   };
 }
