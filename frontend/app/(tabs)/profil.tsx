@@ -331,28 +331,13 @@ export default function ProfilModal() {
     try {
       setIsExporting(true);
       setExportError(null);
-      if (Platform.OS !== "web") {
-        const { url } = await exportService.createMobileDownloadLink(
-          token,
-          type,
-        );
-        await Linking.openURL(url);
-        setIsExporting(false);
-        return;
-      }
+      const { url } = await exportService.createMobileDownloadLink(token, type);
 
-      const { data, filename, contentType } =
-        await exportService.download(token, type);
-      const blob =
-        data instanceof Blob ? data : new Blob([data], { type: contentType });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
+      if (Platform.OS === "web") {
+        window.location.assign(url);
+      } else {
+        await Linking.openURL(url);
+      }
 
       setIsExporting(false);
     } catch (error: any) {
