@@ -101,11 +101,13 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     steps:
       - name: Deploy backend
-        run: curl -fsSL "$COOLIFY_BACKEND_WEBHOOK"
+        run: curl -fsSL -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_BACKEND_WEBHOOK"
         env:
           COOLIFY_BACKEND_WEBHOOK: ${{ secrets.COOLIFY_BACKEND_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
 
       - name: Deploy frontend
-        run: curl -fsSL "$COOLIFY_FRONTEND_WEBHOOK"
+        run: curl -fsSL -H "Authorization: Bearer $COOLIFY_TOKEN" "$COOLIFY_FRONTEND_WEBHOOK"
         env:
           COOLIFY_FRONTEND_WEBHOOK: ${{ secrets.COOLIFY_FRONTEND_WEBHOOK }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
