@@ -29,6 +29,14 @@ import { getEntrepriseById } from "./models/entreprise.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+function normalizeOrigin(origin: string) {
+  try {
+    return new URL(origin).origin;
+  } catch {
+    return origin.replace(/\/$/, "");
+  }
+}
+
 export function createApp() {
   const app = express();
   app.set("trust proxy", 1);
@@ -37,6 +45,7 @@ export function createApp() {
       ? env.frontendUrl
           .split(",")
           .map((origin) => origin.trim())
+          .map(normalizeOrigin)
           .filter(Boolean)
       : [];
 
@@ -54,7 +63,9 @@ export function createApp() {
       origin:
         env.nodeEnv === "production"
           ? (origin, callback) => {
-              if (!origin || allowedOrigins.includes(origin)) {
+              const requestOrigin = origin ? normalizeOrigin(origin) : null;
+
+              if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
                 callback(null, true);
                 return;
               }
