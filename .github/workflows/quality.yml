@@ -93,3 +93,19 @@ jobs:
 
       - name: E2E browser test
         run: pnpm test:e2e
+
+  deploy:
+    name: Deploy Coolify
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    steps:
+      - name: Deploy backend
+        run: curl -fsSL "$COOLIFY_BACKEND_WEBHOOK"
+        env:
+          COOLIFY_BACKEND_WEBHOOK: ${{ secrets.COOLIFY_BACKEND_WEBHOOK }}
+
+      - name: Deploy frontend
+        run: curl -fsSL "$COOLIFY_FRONTEND_WEBHOOK"
+        env:
+          COOLIFY_FRONTEND_WEBHOOK: ${{ secrets.COOLIFY_FRONTEND_WEBHOOK }}
