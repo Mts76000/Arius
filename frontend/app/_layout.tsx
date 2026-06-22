@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Stack, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { useEffect, useState } from "react";
@@ -20,6 +20,8 @@ export default function RootLayout() {
   const initializeAuth = useAuthStore((state) => state.initializeAuth);
   const token = useAuthStore((state) => state.token);
   const isInitialized = useAuthStore((state) => state.isInitialized);
+  const segments = useSegments();
+  const isLandingRoute = segments.length === 0;
 
   useEffect(() => {
     setIsMounted(true);
@@ -34,8 +36,9 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {isInitialized && token && <Header />}
+      {isInitialized && token && !isLandingRoute && <Header />}
       <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" options={{ headerShown: false }} />

@@ -58,7 +58,7 @@ export default function NotFoundScreen() {
                 <View className="flex-1">
                   <AppButton
                     title="Retour à l'accueil"
-                    onPress={() => router.replace("/(tabs)" as any)}
+                    onPress={() => router.replace("/accueil" as any)}
                   />
                 </View>
                 <View className="flex-1">

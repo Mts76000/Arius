@@ -8,7 +8,7 @@ import type {
 import { Pressable, Text, useWindowDimensions, View } from "react-native";
 import { AriusLogo } from "@/components/ui/AriusLogo";
 
-export type FooterTabName = "index" | "entreprises" | "rdvs" | "ca";
+export type FooterTabName = "accueil" | "entreprises" | "rdvs" | "ca";
 
 interface FooterTabConfig {
   name: FooterTabName;
@@ -19,23 +19,21 @@ const createTabIcon = (
   iconName: keyof typeof Ionicons.glyphMap,
 ): NonNullable<BottomTabNavigationOptions["tabBarIcon"]> => {
   function TabBarIcon({ color, size }: { color: string; size: number }) {
-    return (
-      <Ionicons name={iconName} size={size} color={color} />
-    );
+    return <Ionicons name={iconName} size={size} color={color} />;
   }
 
   return TabBarIcon;
 };
 
 const iconByRoute: Record<FooterTabName, keyof typeof Ionicons.glyphMap> = {
-  index: "home-outline",
+  accueil: "home-outline",
   entreprises: "people-outline",
   rdvs: "calendar-outline",
   ca: "bar-chart-outline",
 };
 
 const labelByRoute: Record<FooterTabName, string> = {
-  index: "Accueil",
+  accueil: "Accueil",
   entreprises: "Entreprises",
   rdvs: "Rendez-vous",
   ca: "Chiffre d'affaires",
@@ -43,7 +41,7 @@ const labelByRoute: Record<FooterTabName, string> = {
 
 export const footerTabs: FooterTabConfig[] = [
   {
-    name: "index",
+    name: "accueil",
     options: {
       headerShown: false,
       tabBarIcon: createTabIcon("home-outline"),
@@ -79,12 +77,7 @@ export function FooterTabs() {
   const isDesktop = width >= 700;
 
   const renderNativeWindTabBar = ({ state, navigation }: BottomTabBarProps) => {
-    const visibleRouteNames: FooterTabName[] = [
-      "index",
-      "entreprises",
-      "rdvs",
-      "ca",
-    ];
+    const visibleRouteNames: FooterTabName[] = ["accueil", "entreprises", "rdvs", "ca"];
 
     const visibleRoutes = state.routes.filter((route) =>
       visibleRouteNames.includes(route.name as FooterTabName),
@@ -103,10 +96,7 @@ export function FooterTabs() {
               const routeName = route.name as FooterTabName;
 
               const onPress = () => {
-                if (
-                  routeName === "entreprises" &&
-                  pathname !== "/(tabs)/entreprises"
-                ) {
+                if (routeName === "entreprises" && pathname !== "/(tabs)/entreprises") {
                   router.replace("/(tabs)/entreprises");
                   return;
                 }
@@ -158,10 +148,7 @@ export function FooterTabs() {
           const routeName = route.name as FooterTabName;
 
           const onPress = () => {
-            if (
-              routeName === "entreprises" &&
-              pathname !== "/(tabs)/entreprises"
-            ) {
+            if (routeName === "entreprises" && pathname !== "/(tabs)/entreprises") {
               router.replace("/(tabs)/entreprises");
               return;
             }
@@ -216,8 +203,7 @@ export function FooterTabs() {
             tab.name === "entreprises"
               ? {
                   tabPress: (e) => {
-                    const isOnEntreprisesList =
-                      pathname === "/(tabs)/entreprises";
+                    const isOnEntreprisesList = pathname === "/(tabs)/entreprises";
 
                     if (!isOnEntreprisesList) {
                       e.preventDefault();
