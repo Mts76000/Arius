@@ -90,7 +90,7 @@ export default function Root() {
                   <Ionicons name="arrow-forward" size={20} color="#fff" />
                 </Pressable>
                 <Text className="text-center text-sm font-medium text-slate-500">
-                  Une interface claire pour retrouver l'essentiel avant chaque échange
+                  Une interface claire pour retrouver l&apos;essentiel avant chaque échange
                   client.
                 </Text>
               </View>
@@ -108,7 +108,7 @@ export default function Root() {
                 <View className="flex-row items-center justify-between rounded-2xl bg-primary p-4">
                   <View>
                     <Text className="text-sm font-semibold text-white/80">
-                      Aujourd'hui
+                      Aujourd&apos;hui
                     </Text>
                     <Text className="text-xl font-bold text-white">3 rendez-vous</Text>
                   </View>
