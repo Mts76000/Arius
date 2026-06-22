@@ -59,8 +59,7 @@ const routeTitleRules: RouteTitleRule[] = [
   },
   {
     title: DEFAULT_PAGE_TITLE,
-    match: (path) =>
-      path === "/" || path === "/(tabs)" || path === "/(tabs)/index",
+    match: (path) => path === "/accueil" || path === "/(tabs)/accueil",
   },
 ];
 
