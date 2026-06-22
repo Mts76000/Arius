@@ -4,7 +4,7 @@ CRM mobile-first pour gérer entreprises, contacts, notes, rendez-vous, devis, o
 
 ## Stack
 
-- Backend : Node 20, Express, TypeScript, MySQL, MongoDB, JWT
+- Backend : Node 22, Express, TypeScript, MySQL, MongoDB, JWT
 - Frontend : Expo React Native, React Native Web, Zustand, TanStack Query, NativeWind
 - Dev local : Docker Compose, Drizzle, Faker, Zod, Vitest
 
