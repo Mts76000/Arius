@@ -2,18 +2,19 @@ const apiUrl = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
 
 module.exports = {
   expo: {
-    name: "frontend",
-    slug: "frontend",
+    name: "Arius",
+    slug: "arius",
     version: "1.0.0",
     orientation: "default",
     icon: "./assets/images/icon.png",
     scheme: "arius",
     userInterfaceStyle: "automatic",
-    newArchEnabled: true,
+    newArchEnabled: false,
     ios: {
       supportsTablet: true,
     },
     android: {
+      package: "com.arius.app",
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
         foregroundImage: "./assets/images/android-icon-foreground.png",
@@ -28,29 +29,16 @@ module.exports = {
       favicon: "./assets/images/favicon.png",
       bundler: "metro",
     },
-    plugins: [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          image: "./assets/images/splash-icon.png",
-          imageWidth: 200,
-          resizeMode: "contain",
-          backgroundColor: "#ffffff",
-          dark: {
-            backgroundColor: "#000000",
-          },
-        },
-      ],
-      "@react-native-community/datetimepicker",
-      "expo-font",
-    ],
+    plugins: [],
     experiments: {
-      typedRoutes: true,
-      reactCompiler: true,
+      typedRoutes: false,
+      reactCompiler: false,
     },
     extra: {
       apiUrl,
+      eas: {
+        projectId: "93e70fda-13c9-4f6b-bb6b-64aaa03339bf",
+      },
     },
   },
 };
