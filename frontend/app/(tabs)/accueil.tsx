@@ -45,8 +45,7 @@ export default function HomeScreen() {
   const rdvs = rdvsData?.rdvs || [];
   const upcomingRdvs = [...rdvs]
     .sort(
-      (a, b) =>
-        new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime(),
+      (a, b) => new Date(a.date_prevue).getTime() - new Date(b.date_prevue).getTime(),
     )
     .slice(0, 3);
 
@@ -111,7 +110,7 @@ export default function HomeScreen() {
   return (
     <View className="flex-1">
       <ScrollView
-        className="pt-8"
+        className="pt-4"
         contentContainerStyle={{
           alignSelf: "center",
           maxWidth: 1120,
@@ -142,11 +141,7 @@ export default function HomeScreen() {
                   className={`${quickActionCardBase} bg-white`}
                 >
                   <View className={`${quickActionIconBase} bg-primary/30`}>
-                    <Ionicons
-                      name="person-add-outline"
-                      size={22}
-                      color="#2563eb"
-                    />
+                    <Ionicons name="person-add-outline" size={22} color="#2563eb" />
                   </View>
                   <Text className={quickActionTextBase} numberOfLines={2}>
                     Nouvelle entreprise
@@ -158,11 +153,7 @@ export default function HomeScreen() {
                   className={`${quickActionCardBase} bg-white`}
                 >
                   <View className={`${quickActionIconBase} bg-primary/30`}>
-                    <Ionicons
-                      name="business-outline"
-                      size={22}
-                      color="#2563eb"
-                    />
+                    <Ionicons name="business-outline" size={22} color="#2563eb" />
                   </View>
                   <Text className={quickActionTextBase} numberOfLines={2}>
                     Mes entreprises
@@ -176,11 +167,7 @@ export default function HomeScreen() {
                   className={`${quickActionCardBase} bg-purpleLight`}
                 >
                   <View className={`${quickActionIconBase} bg-purple/30`}>
-                    <Ionicons
-                      name="calendar-outline"
-                      size={22}
-                      color={"#A855F7"}
-                    />
+                    <Ionicons name="calendar-outline" size={22} color={"#A855F7"} />
                   </View>
                   <Text className={quickActionTextBase} numberOfLines={2}>
                     Rendez-vous
@@ -192,11 +179,7 @@ export default function HomeScreen() {
                   className={`${quickActionCardBase} bg-greenLight`}
                 >
                   <View className={`${quickActionIconBase} bg-greenMedium`}>
-                    <Ionicons
-                      name="trending-up-outline"
-                      size={22}
-                      color="#34C759"
-                    />
+                    <Ionicons name="trending-up-outline" size={22} color="#34C759" />
                   </View>
                   <Text className={quickActionTextBase} numberOfLines={2}>
                     Objectifs CA
@@ -215,17 +198,10 @@ export default function HomeScreen() {
                 </Text>
               </View>
               <View className="flex flex-row items-center  gap-2">
-                <Text
-                  className=" text-primary  "
-                  onPress={() => router.push("/rdvs")}
-                >
+                <Text className=" text-primary  " onPress={() => router.push("/rdvs")}>
                   Voir tous
                 </Text>
-                <Ionicons
-                  name="chevron-forward-outline"
-                  size={20}
-                  color="#007aff"
-                />
+                <Ionicons name="chevron-forward-outline" size={20} color="#007aff" />
               </View>
               {isLoadingRdvs && <AppSpinner />}
             </View>
@@ -273,11 +249,7 @@ export default function HomeScreen() {
                       </View>
                       <View className="bg-grayLight h-[0.3px]"></View>
                       <View className="flex flex-row gap-2 items-center ">
-                        <Ionicons
-                          name="business-outline"
-                          size={15}
-                          color="#4B5563"
-                        />
+                        <Ionicons name="business-outline" size={15} color="#4B5563" />
                         <Text className="text-sm capitalize text-gray">
                           {getEntrepriseNameById(rdv.entreprise_id)}
                         </Text>

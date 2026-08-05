@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Redirect, useRouter } from "expo-router";
+import type { ComponentProps } from "react";
 import {
   Platform,
   Pressable,
@@ -11,10 +12,51 @@ import {
 import { AriusLogo } from "@/components/ui/AriusLogo";
 import { useAuthStore } from "@/store/authStore";
 
-const benefits = [
-  "Clients et contacts au même endroit",
-  "Rendez-vous et notes faciles à retrouver",
-  "Export Excel quand vous en avez besoin",
+type IconName = ComponentProps<typeof Ionicons>["name"];
+
+const features: { icon: IconName; title: string; description: string }[] = [
+  {
+    icon: "business-outline",
+    title: "Entreprises & contacts",
+    description:
+      "Centralisez vos entreprises, contacts et leur historique dans une seule fiche claire.",
+  },
+  {
+    icon: "calendar-outline",
+    title: "Rendez-vous",
+    description:
+      "Planifiez vos rendez-vous et retrouvez vos notes en un instant avant chaque échange.",
+  },
+  {
+    icon: "trending-up-outline",
+    title: "Suivi du chiffre d'affaires",
+    description:
+      "Visualisez votre CA par client et par période pour piloter votre activité commerciale.",
+  },
+  {
+    icon: "download-outline",
+    title: "Export Excel",
+    description:
+      "Exportez vos données en un clic pour vos rapports ou votre comptabilité.",
+  },
+];
+
+const steps: { number: string; title: string; description: string }[] = [
+  {
+    number: "1",
+    title: "Ajoutez vos entreprises",
+    description: "Importez ou créez vos clients et prospects en quelques secondes.",
+  },
+  {
+    number: "2",
+    title: "Suivez vos échanges",
+    description: "Notez vos rendez-vous, relances et informations importantes.",
+  },
+  {
+    number: "3",
+    title: "Pilotez votre activité",
+    description: "Gardez une vue d'ensemble claire de votre chiffre d'affaires.",
+  },
 ];
 
 export default function Root() {
@@ -39,134 +81,177 @@ export default function Root() {
   const goToLogin = () => router.push("/login");
 
   return (
-    <ScrollView className="flex-1 bg-fond" contentContainerStyle={{ flexGrow: 1 }}>
-      <View className="min-h-screen w-full items-center px-5 py-6">
-        <View className="w-full" style={{ maxWidth: 1080 }}>
-          <View className="flex-row items-center justify-between">
-            <AriusLogo size={44} showText />
+    <ScrollView className="flex-1 bg-white" contentContainerStyle={{ flexGrow: 1 }}>
+      <View className="w-full items-center">
+        {/* Nav */}
+        <View
+          className="w-full flex-row items-center justify-between border-b border-slate-100 px-5 py-4"
+          style={{ maxWidth: "100%" }}
+        >
+          <View className="w-full flex-row items-center justify-between" style={{ maxWidth: 1080, marginHorizontal: "auto" }}>
+            <AriusLogo size={40} showText />
             <Pressable
               accessibilityRole="button"
               onPress={goToLogin}
-              className="rounded-full bg-white px-5 py-3 shadow-sm"
+              className="rounded-lg border border-slate-300 px-5 py-2.5"
             >
               <Text className="font-semibold text-slate-800">Connexion</Text>
             </Pressable>
           </View>
+        </View>
 
+        <View className="w-full px-5" style={{ maxWidth: 1080 }}>
+          {/* Hero */}
           <View
-            className="gap-8"
+            className="items-center gap-4"
             style={{
-              alignItems: isDesktop ? "center" : "stretch",
-              flexDirection: isDesktop ? "row" : "column",
-              paddingBottom: isDesktop ? 72 : 44,
-              paddingTop: isDesktop ? 92 : 56,
+              paddingBottom: isDesktop ? 64 : 40,
+              paddingTop: isDesktop ? 96 : 56,
             }}
           >
-            <View className="gap-7" style={{ flex: 1 }}>
-              <View className="self-start rounded-full bg-primaryLight px-4 py-2">
-                <Text className="text-sm font-bold text-primary">CRM mobile-first</Text>
-              </View>
-
-              <View className="gap-4">
-                <Text
-                  className="font-bold leading-tight text-slate-950"
-                  style={{ fontSize: isDesktop ? 64 : 46 }}
-                >
-                  Suivez vos clients sans vous perdre dans Excel.
-                </Text>
-                <Text className="max-w-xl text-lg leading-8 text-slate-600">
-                  Arius garde vos entreprises, contacts, rendez-vous et notes dans une
-                  interface simple, rapide et pensée pour le téléphone.
-                </Text>
-              </View>
-
-              <View className="gap-3">
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={goToLogin}
-                  className="h-14 flex-row items-center justify-center gap-2 rounded-full bg-primary px-6"
-                >
-                  <Text className="text-lg font-bold text-white">Commencer</Text>
-                  <Ionicons name="arrow-forward" size={20} color="#fff" />
-                </Pressable>
-                <Text className="text-center text-sm font-medium text-slate-500">
-                  Une interface claire pour retrouver l&apos;essentiel avant chaque échange
-                  client.
-                </Text>
-              </View>
+            <View className="rounded-full border border-slate-200 px-4 py-1.5">
+              <Text className="text-sm font-semibold text-slate-600">
+                CRM commercial pour indépendants et PME
+              </Text>
             </View>
 
-            <View
-              className="self-center rounded-[24px] border border-slate-200 bg-white p-3 shadow-sm"
-              style={{
-                flex: isDesktop ? 0.9 : undefined,
-                width: "100%",
-                maxWidth: isDesktop ? undefined : 390,
-              }}
+            <Text
+              className="text-center font-bold leading-tight text-slate-950"
+              style={{ fontSize: isDesktop ? 56 : 38, maxWidth: 820 }}
             >
-              <View className="gap-3 rounded-[20px] bg-slate-50 p-3">
-                <View className="flex-row items-center justify-between rounded-2xl bg-primary p-4">
-                  <View>
-                    <Text className="text-sm font-semibold text-white/80">
-                      Aujourd&apos;hui
-                    </Text>
-                    <Text className="text-xl font-bold text-white">3 rendez-vous</Text>
-                  </View>
-                  <View className="h-11 w-11 items-center justify-center rounded-full bg-white/20">
-                    <Ionicons name="calendar-outline" size={22} color="#fff" />
-                  </View>
-                </View>
+              Le CRM simple pour gérer vos clients au quotidien.
+            </Text>
 
-                {[
-                  ["Meca Industrie", "Client", "2 contacts"],
-                  ["Nord Equipement", "Prospect", "Relance devis"],
-                  ["Alojob", "À réactiver", "Note ajoutée"],
-                ].map(([name, status, meta]) => (
-                  <View
-                    key={name}
-                    className="rounded-2xl border border-slate-100 bg-white p-3"
-                  >
-                    <View className="flex-row items-center justify-between">
-                      <View className="flex-1 pr-3">
-                        <Text className="text-xs font-bold text-primary">{status}</Text>
-                        <Text className="mt-1 text-base font-bold text-slate-950">
-                          {name}
-                        </Text>
-                        <Text className="text-sm text-slate-500">{meta}</Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={18} color="#94a3b8" />
-                    </View>
-                  </View>
-                ))}
-              </View>
+            <Text
+              className="text-center text-lg leading-8 text-slate-600"
+              style={{ maxWidth: 640 }}
+            >
+              Arius rassemble vos entreprises, vos rendez-vous et votre chiffre
+              d&apos;affaires dans une interface simple, pensée pour aller vite au
+              quotidien.
+            </Text>
+
+            <View
+              className="mt-2 items-center gap-3"
+              style={{ flexDirection: isDesktop ? "row" : "column", width: isDesktop ? undefined : "100%" }}
+            >
+              <Pressable
+                accessibilityRole="button"
+                onPress={goToLogin}
+                className="h-14 w-full flex-row items-center justify-center gap-2 rounded-lg bg-primary px-8"
+                style={{ width: isDesktop ? undefined : "100%" }}
+              >
+                <Text className="text-lg font-bold text-white">Commencer</Text>
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
+              </Pressable>
             </View>
           </View>
 
-          <View className="pb-10">
-            <View
-              className="gap-3 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm"
-              style={{ flexDirection: isDesktop ? "row" : "column" }}
+          {/* Features */}
+          <View style={{ paddingBottom: isDesktop ? 72 : 48 }}>
+            <Text
+              className="text-center font-bold text-slate-950"
+              style={{ fontSize: isDesktop ? 32 : 26 }}
             >
-              {benefits.map((benefit, index) => (
+              Tout ce qu&apos;il faut, rien de superflu
+            </Text>
+            <Text className="mx-auto mt-3 text-center text-base text-slate-600" style={{ maxWidth: 560 }}>
+              Quatre outils essentiels pour ne plus rien perdre de votre relation
+              client.
+            </Text>
+
+            <View
+              className="mt-10 gap-4"
+              style={{
+                flexDirection: isDesktop ? "row" : "column",
+                flexWrap: "wrap",
+              }}
+            >
+              {features.map((feature) => (
                 <View
-                  key={benefit}
-                  className="flex-row items-center gap-3"
+                  key={feature.title}
+                  className="gap-3 rounded-xl border border-slate-200 p-6"
                   style={{
-                    borderLeftColor: isDesktop && index > 0 ? "#e2e8f0" : "transparent",
-                    borderLeftWidth: isDesktop && index > 0 ? 1 : 0,
-                    flex: 1,
-                    paddingLeft: isDesktop && index > 0 ? 18 : 0,
+                    flexBasis: isDesktop ? "48%" : undefined,
+                    flexGrow: 1,
                   }}
                 >
-                  <View className="h-8 w-8 items-center justify-center rounded-full bg-primaryLight">
-                    <Ionicons name="checkmark" size={17} color="#007aff" />
+                  <View className="h-11 w-11 items-center justify-center rounded-lg bg-primaryLight">
+                    <Ionicons name={feature.icon} size={22} color="#007aff" />
                   </View>
-                  <Text className="flex-1 text-base font-semibold text-slate-800">
-                    {benefit}
+                  <Text className="text-lg font-bold text-slate-950">{feature.title}</Text>
+                  <Text className="text-base leading-6 text-slate-600">
+                    {feature.description}
                   </Text>
                 </View>
               ))}
             </View>
+          </View>
+
+          {/* How it works */}
+          <View
+            className="rounded-2xl border border-slate-200 p-6"
+            style={{ paddingBottom: isDesktop ? 48 : 32, paddingTop: isDesktop ? 48 : 32 }}
+          >
+            <Text
+              className="text-center font-bold text-slate-950"
+              style={{ fontSize: isDesktop ? 32 : 26 }}
+            >
+              Comment ça marche
+            </Text>
+
+            <View
+              className="mt-10 gap-8"
+              style={{ flexDirection: isDesktop ? "row" : "column" }}
+            >
+              {steps.map((step) => (
+                <View key={step.number} className="gap-3" style={{ flex: 1 }}>
+                  <View className="h-10 w-10 items-center justify-center rounded-full bg-slate-900">
+                    <Text className="text-base font-bold text-white">{step.number}</Text>
+                  </View>
+                  <Text className="text-lg font-bold text-slate-950">{step.title}</Text>
+                  <Text className="text-base leading-6 text-slate-600">
+                    {step.description}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+
+          {/* Closing CTA */}
+          <View
+            className="items-center gap-5 rounded-2xl border border-slate-200 bg-slate-50 px-6"
+            style={{
+              marginTop: isDesktop ? 72 : 48,
+              paddingBottom: isDesktop ? 56 : 40,
+              paddingTop: isDesktop ? 56 : 40,
+            }}
+          >
+            <Text
+              className="text-center font-bold text-slate-950"
+              style={{ fontSize: isDesktop ? 32 : 24, maxWidth: 560 }}
+            >
+              Prêt à simplifier le suivi de vos clients ?
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={goToLogin}
+              className="h-14 flex-row items-center justify-center gap-2 rounded-lg bg-primary px-8"
+            >
+              <Text className="text-lg font-bold text-white">Commencer maintenant</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </Pressable>
+          </View>
+
+          {/* Footer */}
+          <View
+            className="items-center border-t border-slate-100"
+            style={{ marginTop: 48, paddingBottom: 32, paddingTop: 24 }}
+          >
+            <AriusLogo size={32} showText />
+            <Text className="mt-3 text-sm text-slate-500">
+              © {new Date().getFullYear()} Arius. Tous droits réservés.
+            </Text>
           </View>
         </View>
       </View>
