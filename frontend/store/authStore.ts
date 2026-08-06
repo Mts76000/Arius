@@ -178,7 +178,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initializeAuth: async () => {
     set({ isLoading: true });
     // Initialiser les intercepteurs au premier démarrage
-    setupAuthInterceptors();
+    setupAuthInterceptors({
+      getToken: () => get().token,
+      logout: () => get().logout(),
+    });
     try {
       const savedToken = await storage.getItem(STORAGE_KEY);
       if (savedToken) {

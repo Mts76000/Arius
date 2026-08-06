@@ -1,6 +1,5 @@
 import axios from "axios";
 import Constants from "expo-constants";
-import { useAuthStore } from "../store/authStore";
 
 const baseURL = Constants.expoConfig?.extra?.apiUrl ?? "http://localhost:3000";
 
@@ -14,15 +13,20 @@ export const api = axios.create({
   },
 });
 
+export interface AuthInterceptorConfig {
+  getToken: () => string | null;
+  logout: () => void;
+}
+
 // Les intercepteurs seront configurés après l'initialisation du store
-export function setupAuthInterceptors() {
+export function setupAuthInterceptors(config: AuthInterceptorConfig) {
   // Ajouter un interceptor pour les requêtes sortantes
-  api.interceptors.request.use((config) => {
-    const token = useAuthStore.getState().token;
+  api.interceptors.request.use((requestConfig) => {
+    const token = config.getToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      requestConfig.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
+    return requestConfig;
   });
 
   // Ajouter un interceptor pour les réponses
@@ -31,7 +35,7 @@ export function setupAuthInterceptors() {
     (error) => {
       if (error.response?.status === 401) {
         // Token expiré ou invalide
-        useAuthStore.getState().logout();
+        config.logout();
       }
       return Promise.reject(error);
     },
