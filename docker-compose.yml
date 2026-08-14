@@ -63,7 +63,6 @@ services:
       MYSQL_PASSWORD: root
       MYSQL_DATABASE: arius
       MONGO_URL: mongodb://mongo:27017/arius
-      JWT_SECRET: change-me-in-prod
       FRONTEND_URL: http://localhost:8081
     ports:
       - "3000:3000"

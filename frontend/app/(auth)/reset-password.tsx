@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View, Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppButton } from "@/components/ui/AppButton";
@@ -66,7 +66,12 @@ export default function ResetPasswordScreen() {
         style={{ maxWidth: 460 }}
       >
         <View className="flex-col items-center gap-4">
-          <AriusLogo size={54} />
+          <AriusLogo
+            size={54}
+            onPress={
+              Platform.OS === "web" ? () => router.push("/") : undefined
+            }
+          />
           <Text className="text-center text-4xl font-bold">
             Nouveau mot de passe
           </Text>
