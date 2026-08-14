@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, ScrollView, Text, Pressable } from "react-native";
+import { View, ScrollView, Text, Pressable, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/store/authStore";
 import { FormInput } from "@/components/forms/FormInput";
@@ -132,7 +132,12 @@ export default function LoginScreen() {
         style={{ maxWidth: 460 }}
       >
         <View className="flex-col items-center gap-4">
-          <AriusLogo size={54} />
+          <AriusLogo
+            size={54}
+            onPress={
+              Platform.OS === "web" ? () => router.push("/") : undefined
+            }
+          />
           <Text className="text-4xl font-bold">Arius CRM</Text>
           <Text className="text-gray text-lg">
             {isForgotMode
