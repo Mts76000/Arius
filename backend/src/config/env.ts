@@ -17,7 +17,7 @@ export const env = {
   mysqlPassword: process.env.MYSQL_PASSWORD ?? "",
   mysqlDatabase: required("MYSQL_DATABASE", "arius"),
   mongoUrl: required("MONGO_URL", "mongodb://localhost:27017/arius"),
-  jwtSecret: required("JWT_SECRET", "change-me-in-prod"),
+  jwtSecret: required("JWT_SECRET"),
   frontendUrl: process.env.FRONTEND_URL ?? "http://localhost:8081",
   resendApiKey: process.env.RESEND_API_KEY ?? "",
   resendFromEmail: process.env.RESEND_FROM_EMAIL ?? "",

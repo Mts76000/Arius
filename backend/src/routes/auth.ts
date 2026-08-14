@@ -33,6 +33,20 @@ const passwordResetLimiter = rateLimit({
     ),
 });
 
+const authAttemptsLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) =>
+    sendError(
+      res,
+      429,
+      "too_many_requests",
+      "Trop de tentatives, reessaie plus tard",
+    ),
+});
+
 /**
  * @openapi
  * /v1/auth/register:
@@ -57,7 +71,12 @@ const passwordResetLimiter = rateLimit({
  *       400:
  *         description: Payload invalide
  */
-router.post("/register", validateBody(registerSchema), register);
+router.post(
+  "/register",
+  authAttemptsLimiter,
+  validateBody(registerSchema),
+  register,
+);
 
 /**
  * @openapi
@@ -77,7 +96,12 @@ router.post("/register", validateBody(registerSchema), register);
  *       401:
  *         description: Identifiants invalides
  */
-router.post("/login", validateBody(loginSchema), login);
+router.post(
+  "/login",
+  authAttemptsLimiter,
+  validateBody(loginSchema),
+  login,
+);
 
 /**
  * @openapi
