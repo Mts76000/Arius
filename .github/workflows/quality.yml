@@ -104,7 +104,7 @@ jobs:
     steps:
       - name: Deploy backend
         run: |
-          curl -fsSL \
+          curl -fsSL -X POST \
             -H "Authorization: Bearer $COOLIFY_TOKEN" \
             "$COOLIFY_BACKEND_WEBHOOK"
         env:
@@ -113,7 +113,7 @@ jobs:
 
       - name: Deploy frontend
         run: |
-          curl -fsSL \
+          curl -fsSL -X POST \
             -H "Authorization: Bearer $COOLIFY_TOKEN" \
             "$COOLIFY_FRONTEND_WEBHOOK"
         env:
