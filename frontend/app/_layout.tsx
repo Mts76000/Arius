@@ -7,6 +7,7 @@ import "../global.css";
 
 import { useAuthStore } from "@/store/authStore";
 import { Header } from "@/components/layout/Header";
+import { ErrorBoundary } from "@/components/layout/ErrorBoundary";
 import { initWebConfig } from "@/web-config";
 
 const queryClient = new QueryClient();
@@ -35,16 +36,18 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      {isInitialized && token && !isLandingRoute && <Header />}
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" options={{ headerShown: false }} />
-      </Stack>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        {isInitialized && token && !isLandingRoute && <Header />}
+        <Stack>
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" options={{ headerShown: false }} />
+        </Stack>
 
-      <StatusBar />
-    </QueryClientProvider>
+        <StatusBar />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }

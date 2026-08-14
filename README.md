@@ -50,7 +50,7 @@ npm run db:seed
 Compte créé :
 
 - Email : `demo@arius.local`
-- Mot de passe : `password123`
+- Mot de passe : `Password123`
 
 ## Réinitialiser les bases Docker
 
@@ -174,26 +174,3 @@ SENTRY_DSN=https://...
 SENTRY_TRACES_SAMPLE_RATE=0
 ```
 
-## Mise en ligne
-
-La procédure détaillée est dans `docs/deploiement-coolify.md`.
-
-L'app mobile ne se déploie pas comme un site web : elle se lance en simulateur ou se distribue ensuite via EAS/TestFlight/App Store.
-
-Pour le référentiel, on peut mettre en ligne :
-
-- l'API backend ;
-- la version web exportée du frontend.
-
-Avec Coolify, l'idée est de connecter le repo GitHub, configurer les variables d'environnement de production, brancher MySQL/MongoDB, puis déployer automatiquement après push.
-
-Points importants en production :
-
-- `NODE_ENV=production`
-- vrai `JWT_SECRET`
-- `FRONTEND_URL` vers le domaine web
-- `EXPO_PUBLIC_API_URL` vers le domaine API
-- `RESEND_API_KEY` si le reset password doit envoyer de vrais emails
-- `SENTRY_DSN` si le monitoring est activé
-- ne pas exposer Adminer ou mongo-express publiquement sans protection
-- ajouter un volume persistant Coolify sur `/app/uploads` pour conserver les logos

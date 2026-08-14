@@ -9,6 +9,7 @@ import {
 } from "../models/entreprise.js";
 import {
   createEntrepriseSchema,
+  listEntreprisesQuerySchema,
   updateEntrepriseSchema,
 } from "../validation/entrepriseSchemas.js";
 import {
@@ -22,14 +23,11 @@ export async function list(req: AuthenticatedRequest, res: Response) {
     const userId = req.userId as string;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
-    const { recherche, statut, page, limite } = req.query;
-
-    const filters = {
-      recherche: recherche ? String(recherche) : undefined,
-      statut: statut as "client" | "prospect" | "fournisseur" | undefined,
-      page: page ? parseInt(String(page)) : undefined,
-      limite: limite ? parseInt(String(limite)) : undefined,
-    };
+    const parsedQuery = listEntreprisesQuerySchema.safeParse(
+      req.validatedQuery ?? req.query,
+    );
+    if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
+    const filters = parsedQuery.data;
 
     const { entreprises, total } = await getEntreprises(userId, filters);
     return res.status(200).json({ entreprises, total });

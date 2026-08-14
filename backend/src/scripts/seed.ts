@@ -19,7 +19,7 @@ import { Devis } from "../models/devis.js";
 
 const DEMO_USER_ID = "00000000-0000-4000-8000-000000000001";
 const DEMO_EMAIL = "demo@arius.local";
-const DEMO_PASSWORD = "password123";
+const DEMO_PASSWORD = "Password123";
 
 const statuts = ["client", "prospect", "fournisseur", "a_reactiver"] as const;
 const postes = [

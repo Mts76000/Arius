@@ -143,7 +143,7 @@ describe("E2E user workflow", () => {
 
     const registerResponse = await request(app).post("/v1/auth/register").send({
       email: "mathis@example.com",
-      password: "secret123",
+      password: "Secret123",
       prenom: "Mathis",
       nom: "Lamotte",
     });
