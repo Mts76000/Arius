@@ -4,7 +4,7 @@ describe("storage utility", () => {
   afterEach(() => {
     vi.resetModules();
     vi.doUnmock("react-native");
-    vi.doUnmock("@react-native-async-storage/async-storage");
+    vi.doUnmock("expo-secure-store");
   });
 
   it("uses localStorage on web", async () => {
@@ -15,12 +15,10 @@ describe("storage utility", () => {
     };
     vi.stubGlobal("localStorage", localStorageMock);
     vi.doMock("react-native", () => ({ Platform: { OS: "web" } }));
-    vi.doMock("@react-native-async-storage/async-storage", () => ({
-      default: {
-        getItem: vi.fn(),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-      },
+    vi.doMock("expo-secure-store", () => ({
+      getItemAsync: vi.fn(),
+      setItemAsync: vi.fn(),
+      deleteItemAsync: vi.fn(),
     }));
 
     const { storage } = await import("../../utils/storage");
@@ -34,16 +32,14 @@ describe("storage utility", () => {
     expect(localStorageMock.removeItem).toHaveBeenCalledWith("key");
   });
 
-  it("uses AsyncStorage on native platforms", async () => {
-    const asyncStorageMock = {
-      getItem: vi.fn().mockResolvedValue("value"),
-      setItem: vi.fn().mockResolvedValue(undefined),
-      removeItem: vi.fn().mockResolvedValue(undefined),
+  it("uses SecureStore on native platforms", async () => {
+    const secureStoreMock = {
+      getItemAsync: vi.fn().mockResolvedValue("value"),
+      setItemAsync: vi.fn().mockResolvedValue(undefined),
+      deleteItemAsync: vi.fn().mockResolvedValue(undefined),
     };
     vi.doMock("react-native", () => ({ Platform: { OS: "ios" } }));
-    vi.doMock("@react-native-async-storage/async-storage", () => ({
-      default: asyncStorageMock,
-    }));
+    vi.doMock("expo-secure-store", () => secureStoreMock);
 
     const { storage } = await import("../../utils/storage");
 
@@ -51,8 +47,8 @@ describe("storage utility", () => {
     await storage.setItem("key", "value");
     await storage.removeItem("key");
 
-    expect(asyncStorageMock.getItem).toHaveBeenCalledWith("key");
-    expect(asyncStorageMock.setItem).toHaveBeenCalledWith("key", "value");
-    expect(asyncStorageMock.removeItem).toHaveBeenCalledWith("key");
+    expect(secureStoreMock.getItemAsync).toHaveBeenCalledWith("key");
+    expect(secureStoreMock.setItemAsync).toHaveBeenCalledWith("key", "value");
+    expect(secureStoreMock.deleteItemAsync).toHaveBeenCalledWith("key");
   });
 });

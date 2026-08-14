@@ -59,7 +59,7 @@ describe("auth controller", () => {
     const res = mockResponse();
 
     await register(
-      { body: { email: "test@example.com", password: "secret" } } as any,
+      { body: { email: "test@example.com", password: "Secret123" } } as any,
       res as any,
     );
 
@@ -84,7 +84,7 @@ describe("auth controller", () => {
       {
         body: {
           email: "test@example.com",
-          password: "secret",
+          password: "Secret123",
           prenom: "Mathis",
         },
       } as any,
@@ -187,7 +187,7 @@ describe("auth controller", () => {
     const res = mockResponse();
 
     await resetPassword(
-      { body: { token: "reset-token", password: "new-secret" } } as any,
+      { body: { token: "reset-token", password: "NewSecret123" } } as any,
       res as any,
     );
 

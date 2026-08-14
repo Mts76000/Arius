@@ -7,9 +7,10 @@ import {
   update,
   remove,
 } from "../controllers/entrepriseController.js";
-import { validateBody } from "../middleware/validate.js";
+import { validateBody, validateQuery } from "../middleware/validate.js";
 import {
   createEntrepriseSchema,
+  listEntreprisesQuerySchema,
   updateEntrepriseSchema,
 } from "../validation/entrepriseSchemas.js";
 
@@ -106,7 +107,7 @@ const router = Router();
  *       404:
  *         $ref: '#/components/responses/NotFound'
  */
-router.get("/", requireAuth, list);
+router.get("/", requireAuth, validateQuery(listEntreprisesQuerySchema), list);
 router.get("/:id", requireAuth, get);
 router.post("/", requireAuth, validateBody(createEntrepriseSchema), create);
 router.put("/:id", requireAuth, validateBody(updateEntrepriseSchema), update);

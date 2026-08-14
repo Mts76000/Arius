@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ENTREPRISE_STATUSES } from "../shared/apiTypes.js";
+import { queryIntWithDefault } from "./queryHelpers.js";
 
 const nullableString = z
   .string()
@@ -31,4 +32,11 @@ export const createEntrepriseSchema = z.object({
 
 export const updateEntrepriseSchema = createEntrepriseSchema.partial().extend({
   nom: z.string().min(1).optional(),
+});
+
+export const listEntreprisesQuerySchema = z.object({
+  recherche: z.string().max(255).optional(),
+  statut: z.enum(ENTREPRISE_STATUSES).optional(),
+  page: queryIntWithDefault(1, { min: 1 }),
+  limite: queryIntWithDefault(20, { min: 1, max: 100 }),
 });

@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { AuthenticatedRequest } from "../middleware/auth.js";
 import { v4 as uuidv4 } from "uuid";
+import { escapeRegex } from "../utils/regex.js";
 import { Devis } from "../models/devis.js";
 import fs from "fs";
 import path from "path";
@@ -26,7 +27,7 @@ export async function listByEntreprise(req: AuthenticatedRequest, res: Response)
     const filter: any = { entreprise_id: id, user_id: userId };
 
     if (search && typeof search === "string") {
-      filter.nom = { $regex: search, $options: "i" };
+      filter.nom = { $regex: escapeRegex(search), $options: "i" };
     }
 
     const devis = await Devis.find(filter).sort({ createdAt: -1 });

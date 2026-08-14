@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+import { escapeRegex } from "../utils/regex.js";
 
 export type NoteType = "appel" | "reunion" | "email" | "info" | "autre";
 
@@ -126,7 +127,7 @@ export async function searchNotes(
   query: string,
 ): Promise<INote[]> {
   return Note.find(
-    { user_id: userId, contenu: { $regex: query, $options: "i" } },
+    { user_id: userId, contenu: { $regex: escapeRegex(query), $options: "i" } },
     null,
     { limit: 50 },
   ).sort({ created_at: -1 });
