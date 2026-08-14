@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import {
   getObjectifs,
   createObjectif,
@@ -16,9 +17,9 @@ import {
   sendValidationError,
 } from "../http/apiResponse.js";
 
-export async function getObjectifsHandler(req: Request, res: Response) {
+export async function getObjectifsHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const parsedQuery = objectifQuerySchema.safeParse(
       req.validatedQuery ?? req.query,
     );
@@ -34,9 +35,9 @@ export async function getObjectifsHandler(req: Request, res: Response) {
   }
 }
 
-export async function createObjectifHandler(req: Request, res: Response) {
+export async function createObjectifHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const parsedBody = createObjectifSchema.safeParse(
       req.validatedBody ?? req.body,
     );
@@ -52,9 +53,9 @@ export async function createObjectifHandler(req: Request, res: Response) {
   }
 }
 
-export async function updateObjectifHandler(req: Request, res: Response) {
+export async function updateObjectifHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const parsedBody = updateObjectifSchema.safeParse(
       req.validatedBody ?? req.body,
@@ -75,9 +76,9 @@ export async function updateObjectifHandler(req: Request, res: Response) {
   }
 }
 
-export async function deleteObjectifHandler(req: Request, res: Response) {
+export async function deleteObjectifHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
     const deleted = await deleteObjectif(userId, id);

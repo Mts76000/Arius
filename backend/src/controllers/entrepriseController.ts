@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import {
   getEntreprises,
   getEntrepriseById,
@@ -16,9 +17,9 @@ import {
   sendValidationError,
 } from "../http/apiResponse.js";
 
-export async function list(req: Request, res: Response) {
+export async function list(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const { recherche, statut, page, limite } = req.query;
@@ -38,9 +39,9 @@ export async function list(req: Request, res: Response) {
   }
 }
 
-export async function get(req: Request, res: Response) {
+export async function get(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const { id } = req.params;
@@ -57,9 +58,9 @@ export async function get(req: Request, res: Response) {
   }
 }
 
-export async function create(req: Request, res: Response) {
+export async function create(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const parsed = createEntrepriseSchema.safeParse(
@@ -90,9 +91,9 @@ export async function create(req: Request, res: Response) {
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const { id } = req.params;
@@ -134,9 +135,9 @@ export async function update(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const { id } = req.params;

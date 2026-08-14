@@ -86,6 +86,20 @@ export function createApp() {
     }),
   );
 
+  const uploadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 30,
+    standardHeaders: true,
+    legacyHeaders: false,
+    handler: (_req, res) =>
+      sendError(
+        res,
+        429,
+        "too_many_requests",
+        "Trop d'uploads, reessaie plus tard",
+      ),
+  });
+
   const httpLoggerOptions = {
     level: env.nodeEnv === "production" ? "info" : "debug",
     redact: [
@@ -229,6 +243,7 @@ export function createApp() {
   app.post(
     "/v1/upload",
     requireAuth,
+    uploadLimiter,
     async (req: any, res: any) => {
       await new Promise<void>((resolve) => {
         upload.single("image")(req, res, (error: unknown) => {

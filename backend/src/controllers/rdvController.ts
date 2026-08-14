@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import { v4 as uuidv4 } from "uuid";
 import { Rdv } from "../models/rdv.js";
 import {
@@ -13,14 +14,14 @@ import {
   sendValidationError,
 } from "../http/apiResponse.js";
 
-export async function listMyRdvs(req: Request, res: Response) {
+export async function listMyRdvs(req: AuthenticatedRequest, res: Response) {
   try {
     const parsedQuery = listMyRdvsQuerySchema.safeParse(
       req.validatedQuery ?? req.query,
     );
     if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
     const { statut, de, a, page = 1, limite = 20 } = parsedQuery.data;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -96,7 +97,7 @@ export async function listMyRdvs(req: Request, res: Response) {
   }
 }
 
-export async function listByEntreprise(req: Request, res: Response) {
+export async function listByEntreprise(req: AuthenticatedRequest, res: Response) {
   try {
     const { id } = req.params;
     const parsedQuery = listEntrepriseRdvsQuerySchema.safeParse(
@@ -104,7 +105,7 @@ export async function listByEntreprise(req: Request, res: Response) {
     );
     if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
     const { de, a, page = 1, limite = 20 } = parsedQuery.data;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -174,10 +175,10 @@ export async function listByEntreprise(req: Request, res: Response) {
   }
 }
 
-export async function get(req: Request, res: Response) {
+export async function get(req: AuthenticatedRequest, res: Response) {
   try {
     const { id } = req.params;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -196,9 +197,9 @@ export async function get(req: Request, res: Response) {
   }
 }
 
-export async function create(req: Request, res: Response) {
+export async function create(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -241,10 +242,10 @@ export async function create(req: Request, res: Response) {
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthenticatedRequest, res: Response) {
   try {
     const { id } = req.params;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -278,10 +279,10 @@ export async function update(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthenticatedRequest, res: Response) {
   try {
     const { id } = req.params;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");

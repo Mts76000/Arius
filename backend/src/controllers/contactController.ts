@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import {
   getContactsByEntreprise,
   getContactById,
@@ -17,9 +18,9 @@ import {
   sendValidationError,
 } from "../http/apiResponse.js";
 
-export async function listContactsByEntreprise(req: Request, res: Response) {
+export async function listContactsByEntreprise(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const { entreprise_id } = req.params;
 
     if (!entreprise_id || typeof entreprise_id !== "string") {
@@ -40,9 +41,9 @@ export async function listContactsByEntreprise(req: Request, res: Response) {
   }
 }
 
-export async function getContact(req: Request, res: Response) {
+export async function getContact(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const { id } = req.params;
 
     if (!id || typeof id !== "string") {
@@ -61,9 +62,9 @@ export async function getContact(req: Request, res: Response) {
   }
 }
 
-export async function createContactHandler(req: Request, res: Response) {
+export async function createContactHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const { entreprise_id } = req.params;
 
     if (!entreprise_id || typeof entreprise_id !== "string") {
@@ -95,9 +96,9 @@ export async function createContactHandler(req: Request, res: Response) {
   }
 }
 
-export async function updateContactHandler(req: Request, res: Response) {
+export async function updateContactHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const { id } = req.params;
 
     if (!id || typeof id !== "string") {
@@ -123,9 +124,9 @@ export async function updateContactHandler(req: Request, res: Response) {
   }
 }
 
-export async function deleteContactHandler(req: Request, res: Response) {
+export async function deleteContactHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const { id } = req.params;
 
     if (!id || typeof id !== "string") {

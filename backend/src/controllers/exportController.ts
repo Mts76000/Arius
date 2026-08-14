@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import jwt from "jsonwebtoken";
 import { streamRgpdExport } from "../services/exportService.js";
 import { sendError, sendInternalError } from "../http/apiResponse.js";
@@ -21,8 +22,8 @@ function getPublicBaseUrl(req: Request) {
   return `${proto}://${host}`;
 }
 
-export async function downloadExport(req: Request, res: Response) {
-  const userId = (req as any).userId;
+export async function downloadExport(req: AuthenticatedRequest, res: Response) {
+  const userId = req.userId;
 
   if (!userId) {
     return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -40,8 +41,8 @@ export async function downloadExport(req: Request, res: Response) {
   }
 }
 
-export async function createExportLink(req: Request, res: Response) {
-  const userId = (req as any).userId;
+export async function createExportLink(req: AuthenticatedRequest, res: Response) {
+  const userId = req.userId;
 
   if (!userId) {
     return sendError(res, 401, "unauthorized", "Non authentifie");

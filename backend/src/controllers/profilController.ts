@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -27,9 +28,9 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export async function getProfil(req: Request, res: Response) {
+export async function getProfil(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const user = await getUserById(userId);
@@ -50,9 +51,9 @@ export async function getProfil(req: Request, res: Response) {
   }
 }
 
-export async function updateProfil(req: Request, res: Response) {
+export async function updateProfil(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
     const parsedBody = updateProfilSchema.safeParse(
       req.validatedBody ?? req.body ?? {},
@@ -83,9 +84,9 @@ export async function updateProfil(req: Request, res: Response) {
   }
 }
 
-export async function anonymiserCompte(req: Request, res: Response) {
+export async function anonymiserCompte(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
     const parsedBody = anonymizeAccountSchema.safeParse(
       req.validatedBody ?? req.body ?? {},
@@ -158,9 +159,9 @@ export async function anonymiserCompte(req: Request, res: Response) {
   }
 }
 
-export async function changerMotdepasse(req: Request, res: Response) {
+export async function changerMotdepasse(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const parsedBody = changePasswordSchema.safeParse(

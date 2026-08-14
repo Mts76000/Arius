@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import {
   comparePassword,
   createUser,
@@ -147,9 +148,9 @@ export async function resetPassword(req: Request, res: Response) {
   }
 }
 
-export async function me(req: Request, res: Response) {
+export async function me(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string | undefined;
+    const userId = req.userId;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
     const user = await getUserById(userId);
     if (!user) return sendError(res, 404, "not_found", "Utilisateur introuvable");

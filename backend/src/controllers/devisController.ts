@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import { v4 as uuidv4 } from "uuid";
 import { Devis } from "../models/devis.js";
 import fs from "fs";
@@ -12,11 +13,11 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export async function listByEntreprise(req: Request, res: Response) {
+export async function listByEntreprise(req: AuthenticatedRequest, res: Response) {
   try {
     const { id } = req.params;
     const { search } = req.query;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -37,10 +38,10 @@ export async function listByEntreprise(req: Request, res: Response) {
   }
 }
 
-export async function get(req: Request, res: Response) {
+export async function get(req: AuthenticatedRequest, res: Response) {
   try {
     const { id } = req.params;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -59,10 +60,10 @@ export async function get(req: Request, res: Response) {
   }
 }
 
-export async function upload(req: Request, res: Response) {
+export async function upload(req: AuthenticatedRequest, res: Response) {
   try {
     const { id } = req.params;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -108,10 +109,10 @@ export async function upload(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthenticatedRequest, res: Response) {
   try {
     const { id } = req.params;
-    const userId = (req as any).userId;
+    const userId = req.userId;
 
     if (!userId) {
       return sendError(res, 401, "unauthorized", "Non authentifie");

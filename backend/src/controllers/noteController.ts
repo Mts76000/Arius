@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import * as NoteModel from "../models/note.js";
 import {
   createNoteSchema,
@@ -57,9 +58,9 @@ const normalizeCreateNotePayload = (body: any) => ({
         : undefined,
 });
 
-export async function listByEntreprise(req: Request, res: Response) {
+export async function listByEntreprise(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     const { id: entrepriseId } = req.params;
     const parsedQuery = listNotesQuerySchema.safeParse(
       req.validatedQuery ?? req.query,
@@ -88,9 +89,9 @@ export async function listByEntreprise(req: Request, res: Response) {
   }
 }
 
-export async function get(req: Request, res: Response) {
+export async function get(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     const { id } = req.params;
 
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -106,9 +107,9 @@ export async function get(req: Request, res: Response) {
   }
 }
 
-export async function create(req: Request, res: Response) {
+export async function create(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
 
     const parsed = createNoteSchema.safeParse(
@@ -125,9 +126,9 @@ export async function create(req: Request, res: Response) {
   }
 }
 
-export async function update(req: Request, res: Response) {
+export async function update(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     const { id } = req.params;
 
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -148,9 +149,9 @@ export async function update(req: Request, res: Response) {
   }
 }
 
-export async function remove(req: Request, res: Response) {
+export async function remove(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     const { id } = req.params;
 
     if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
@@ -166,9 +167,9 @@ export async function remove(req: Request, res: Response) {
   }
 }
 
-export async function search(req: Request, res: Response) {
+export async function search(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     const parsedQuery = searchNotesQuerySchema.safeParse(
       req.validatedQuery ?? req.query,
     );
@@ -184,9 +185,9 @@ export async function search(req: Request, res: Response) {
   }
 }
 
-export async function getTemplates(req: Request, res: Response) {
+export async function getTemplates(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     const parsedQuery = noteTemplatesQuerySchema.safeParse(
       req.validatedQuery ?? req.query,
     );
@@ -205,9 +206,9 @@ export async function getTemplates(req: Request, res: Response) {
   }
 }
 
-export async function getDashboard(req: Request, res: Response) {
+export async function getDashboard(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId as string;
+    const userId = req.userId as string;
     const parsedQuery = dashboardNotesQuerySchema.safeParse(
       req.validatedQuery ?? req.query,
     );

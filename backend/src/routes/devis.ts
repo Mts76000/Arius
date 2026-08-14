@@ -1,4 +1,5 @@
 import { Router } from "express";
+import rateLimit from "express-rate-limit";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -11,6 +12,20 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const router = Router();
+
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (_req, res) =>
+    sendError(
+      res,
+      429,
+      "too_many_requests",
+      "Trop d'uploads, reessaie plus tard",
+    ),
+});
 
 const uploadsDir = path.join(path.dirname(path.dirname(__dirname)), "uploads");
 
@@ -132,6 +147,7 @@ router.get("/devis/:id", requireAuth, devisController.get);
 router.post(
   "/entreprises/:id/devis",
   requireAuth,
+  uploadLimiter,
   uploadPdf.single("file"),
   (err: any, req: any, res: any, next: any) => {
     if (err instanceof multer.MulterError) {

@@ -1,4 +1,5 @@
-import { Request, Response } from "express";
+import { Response } from "express";
+import { AuthenticatedRequest } from "../middleware/auth.js";
 import {
   getCA,
   createCA,
@@ -20,9 +21,10 @@ import {
   sendValidationError,
 } from "../http/apiResponse.js";
 
-export async function getCAHandler(req: Request, res: Response) {
+export async function getCAHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
+    if (!userId) return sendError(res, 401, "unauthorized", "Non authentifie");
     const parsedQuery = caQuerySchema.safeParse(req.validatedQuery ?? req.query);
     if (!parsedQuery.success) return sendValidationError(res, parsedQuery.error);
     const filters = parsedQuery.data;
@@ -36,9 +38,9 @@ export async function getCAHandler(req: Request, res: Response) {
   }
 }
 
-export async function createCAHandler(req: Request, res: Response) {
+export async function createCAHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const parsedBody = createCASchema.safeParse(req.validatedBody ?? req.body);
     if (!parsedBody.success) return sendValidationError(res, parsedBody.error);
     const input = parsedBody.data;
@@ -52,9 +54,9 @@ export async function createCAHandler(req: Request, res: Response) {
   }
 }
 
-export async function updateCAHandler(req: Request, res: Response) {
+export async function updateCAHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const parsedBody = updateCASchema.safeParse(req.validatedBody ?? req.body);
     if (!parsedBody.success) return sendValidationError(res, parsedBody.error);
@@ -73,9 +75,9 @@ export async function updateCAHandler(req: Request, res: Response) {
   }
 }
 
-export async function deleteCAHandler(req: Request, res: Response) {
+export async function deleteCAHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
 
     const deleted = await deleteCA(userId, id);
@@ -91,9 +93,9 @@ export async function deleteCAHandler(req: Request, res: Response) {
   }
 }
 
-export async function getCAStatsHandler(req: Request, res: Response) {
+export async function getCAStatsHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const parsedQuery = caStatsQuerySchema.safeParse(
       req.validatedQuery ?? req.query,
     );
@@ -109,9 +111,9 @@ export async function getCAStatsHandler(req: Request, res: Response) {
   }
 }
 
-export async function getCAEntrepriseHandler(req: Request, res: Response) {
+export async function getCAEntrepriseHandler(req: AuthenticatedRequest, res: Response) {
   try {
-    const userId = (req as any).userId;
+    const userId = req.userId as string;
     const entreprise_id = Array.isArray(req.params.entreprise_id)
       ? req.params.entreprise_id[0]
       : req.params.entreprise_id;

@@ -2,7 +2,7 @@ import type { Request, Response, NextFunction } from "express";
 import { getUserById, isAnonymizedUser, verifyJwt } from "../models/user.js";
 import { sendError } from "../http/apiResponse.js";
 
-interface AuthenticatedRequest extends Request {
+export interface AuthenticatedRequest extends Request {
   userId?: string;
 }
 
