@@ -96,6 +96,20 @@ describe("note model", () => {
     );
     expect(searchChain.sort).toHaveBeenCalledWith({ created_at: -1 });
 
+    const maliciousChain = chain([]);
+    vi.spyOn(Note, "find").mockReturnValueOnce(maliciousChain as any);
+
+    await searchNotes("user-1", "(a+)+$.*");
+
+    expect(Note.find).toHaveBeenCalledWith(
+      {
+        user_id: "user-1",
+        contenu: { $regex: "\\(a\\+\\)\\+\\$\\.\\*", $options: "i" },
+      },
+      null,
+      { limit: 50 },
+    );
+
     const templateChain = chain([{ _id: "t1" }]);
     vi.spyOn(Note, "find").mockReturnValueOnce(templateChain as any);
     await getTemplatesByType("user-1", "appel");
