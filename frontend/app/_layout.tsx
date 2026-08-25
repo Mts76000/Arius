@@ -1,4 +1,5 @@
 import { Stack, useSegments } from "expo-router";
+import Head from "expo-router/head";
 import { StatusBar } from "expo-status-bar";
 import "react-native-reanimated";
 import { useEffect, useState } from "react";
@@ -36,7 +37,31 @@ export default function RootLayout() {
   }
 
   return (
-    <ErrorBoundary>
+    <>
+      <Head>
+        <title>Arius — Le CRM de poche pour indépendants et PME</title>
+        <meta
+          name="description"
+          content="Arius est un CRM simple, rapide et mobile-first pour gérer vos clients, rendez-vous, notes et chiffre d'affaires. Vos données vous appartiennent."
+        />
+        <meta property="og:title" content="Arius — Le CRM de poche" />
+        <meta
+          property="og:description"
+          content="Arius rassemble entreprises, rendez-vous, notes et chiffre d'affaires dans une application conçue pour aller vite — sur mobile comme sur desktop."
+        />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="Arius" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Arius — Le CRM de poche" />
+        <meta
+          name="twitter:description"
+          content="Arius rassemble entreprises, rendez-vous, notes et chiffre d'affaires dans une application conçue pour aller vite."
+        />
+        <meta name="robots" content="index, follow" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="canonical" href="https://arius.app" />
+      </Head>
+      <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         {isInitialized && token && !isLandingRoute && <Header />}
         <Stack>
@@ -49,5 +74,6 @@ export default function RootLayout() {
         <StatusBar />
       </QueryClientProvider>
     </ErrorBoundary>
+    </>
   );
 }
